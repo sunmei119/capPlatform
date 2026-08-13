@@ -1,0 +1,41 @@
+# 工作流运行产物
+.workflow/
+.archive/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 宿主工具本地配置
+.claude/
+.codex/
+.trae-cn/
+.trae/
+.workbuddy/
+
+# 临时文件
+.tmp/
+.tmp-validator-empty/
+_tmp_*.md
+_verify_changes.py
+
+# 本地开发遗留产物
+test-prototype-mark.html
+
+# 回归测试固定输入与编排回放素材由测试使用，不忽略
+
+contracts/
+skills/
+.history/
+docs/
+references/
+scripts/
+schemas/
+templates/
+lib/
+test-fixture/
+design-rule-cache/
+node_modules/
+_edge_profile/
+archive/

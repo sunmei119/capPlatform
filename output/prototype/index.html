@@ -101,6 +101,7 @@ const MENU_TREE = {
       { label: '厂商管理', page: 'P01' },
       { label: 'API接口管理', page: 'P04' },
       { label: '接口申请记录', page: 'P08' },
+      { label: '接口调用记录', page: 'P27' },
       { label: '厂商注册的接口', page: 'P11' },
       { label: '数据同步', page: 'P22' },
       { label: '运营统计', page: 'P13' },
@@ -136,7 +137,7 @@ const PAGE_TITLES = {
   P14: '租户管理', P15: '新增/编辑租户',
   P16: '企业信息管理', P17: '企业子账号管理',
   P19: 'API接口列表', P20: '开发者接口文档', P21: '开发者接口申请',
-  P22: '数据同步申请列表', P23: '数据同步申请', P24: '数据同步审批', P26: '数据同步查看',
+  P22: '数据同步申请列表', P23: '数据同步申请', P24: '数据同步审批', P26: '数据同步查看', P27: '接口调用记录',
 };
 
 /* ---------------- 共享演示数据 ---------------- */
@@ -155,31 +156,31 @@ const VENDORS = [
 ];
 
 const APIS = [
-  { id: 1, source: 'platform', name: '学生信息查询接口', service: 'student_info_query', type: '敏感接口', methods: ['POST','GET'], sign: '签名鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/student/info',  gwUrl: 'https://gw.gjt.cn/student/info',  visible: true, status: '启用', doc: 'https://doc.gjt.cn/student-info', params: [
-    { name: 'studentId', type: 'string', required: true, desc: '学生学号' }, { name: 'name', type: 'string', required: true, desc: '学生姓名' }, { name: 'classId', type: 'int32', required: false, desc: '班级标识' } ] },
-  { id: 2, source: 'platform', name: '课程同步接口',     service: 'course_sync',   type: '非敏感接口', methods: ['POST'], sign: 'AccessToken鉴权', needAuth: false, reqUrl: 'https://api.gjt.cn/course/sync',   gwUrl: 'https://gw.gjt.cn/course/sync',   visible: true, status: '启用', doc: 'https://doc.gjt.cn/course-sync', params: [
-    { name: 'courseCode', type: 'string', required: true, desc: '课程编码' } ] },
-  { id: 3, source: 'platform', name: '成绩上报接口',     service: 'score_report',  type: '敏感接口', methods: ['POST'], sign: '签名鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/score/report', gwUrl: 'https://gw.gjt.cn/score/report',  visible: true, status: '停用', doc: 'https://doc.gjt.cn/score-report', params: [] },
-  { id: 4, source: 'platform', name: '考勤数据接口',     service: 'attendance',    type: '非敏感接口', methods: ['GET'],  sign: 'AccessToken鉴权', needAuth: false, reqUrl: 'https://api.gjt.cn/attendance',    gwUrl: 'https://gw.gjt.cn/attendance',    visible: true, status: '启用', doc: 'https://doc.gjt.cn/attendance', params: [] },
-  { id: 5, source: 'platform', name: '教学计划接口',     service: 'teaching_plan', type: '非敏感接口', methods: ['GET'],  sign: '签名鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/teaching/plan', gwUrl: 'https://gw.gjt.cn/teaching/plan', visible: true, status: '启用', doc: 'https://doc.gjt.cn/teaching-plan', params: [] },
-  { id: 6, source: 'platform', name: '内部测试接口',     service: 'internal_test', type: '非敏感接口', methods: ['POST'], sign: 'AccessToken鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/internal/test', gwUrl: 'https://gw.gjt.cn/internal/test', visible: false, status: '启用', doc: 'https://doc.gjt.cn/internal-test', params: [] },
-  { id: 101, source: 'org', name: '本校选课接口', service: 'my_course_select', type: '非敏感接口', methods: ['POST'], sign: '签名鉴权', needAuth: true, reqUrl: 'https://api.school.cn/my/select', gwUrl: 'https://gw.gjt.cn/my/select', visible: true, status: '启用', doc: 'https://doc.gjt.cn/my-select', params: [ { name: 'stuId', type: 'string', required: true, desc: '学号' } ] },
-  { id: 102, source: 'org', name: '本校成绩查询接口', service: 'my_score_query', type: '敏感接口', methods: ['GET'], sign: 'AccessToken鉴权', needAuth: true, reqUrl: 'https://api.school.cn/my/score', gwUrl: 'https://gw.gjt.cn/my/score', visible: true, status: '停用', doc: 'https://doc.gjt.cn/my-score', params: [] },
+  { id: 1, source: 'platform', name: '学生信息查询接口', maxCalls: 1000000, service: 'student_info_query', type: '敏感接口', apiType: '家校通讯录', identity: '机构', methods: ['POST','GET'], sign: '签名鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/student/info',  gwUrl: 'https://gw.gjt.cn/student/info',  visible: true, status: '启用', doc: 'https://doc.gjt.cn/student-info', params: [
+    { name: 'studentId', type: 'string', required: true, desc: '学生学号', paramType: '请求头参数', enumId: '' }, { name: 'name', type: 'string', required: true, desc: '学生姓名', paramType: '返回参数', enumId: '' }, { name: 'classId', type: 'int32', required: false, desc: '班级标识', paramType: '返回参数', enumId: 'class_id_dict' } ] },
+  { id: 2, source: 'platform', name: '课程同步接口', maxCalls: 500000,     service: 'course_sync',   type: '非敏感接口', apiType: '应用', identity: '机构', methods: ['POST'], sign: 'AccessToken鉴权', needAuth: false, reqUrl: 'https://api.gjt.cn/course/sync',   gwUrl: 'https://gw.gjt.cn/course/sync',   visible: true, status: '启用', doc: 'https://doc.gjt.cn/course-sync', params: [
+    { name: 'courseCode', type: 'string', required: true, desc: '课程编码', paramType: '请求头参数', enumId: '' } ] },
+  { id: 3, source: 'platform', name: '成绩上报接口', maxCalls: 100000,     service: 'score_report',  type: '敏感接口', apiType: '应用', identity: '个人', methods: ['POST'], sign: '签名鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/score/report', gwUrl: 'https://gw.gjt.cn/score/report',  visible: true, status: '停用', doc: 'https://doc.gjt.cn/score-report', params: [] },
+  { id: 4, source: 'platform', name: '考勤数据接口', maxCalls: 100000,     service: 'attendance',    type: '非敏感接口', apiType: '家校通讯录', identity: '个人', methods: ['GET'],  sign: 'AccessToken鉴权', needAuth: false, reqUrl: 'https://api.gjt.cn/attendance',    gwUrl: 'https://gw.gjt.cn/attendance',    visible: true, status: '启用', doc: 'https://doc.gjt.cn/attendance', params: [] },
+  { id: 5, source: 'platform', name: '教学计划接口', maxCalls: 100000,     service: 'teaching_plan', type: '非敏感接口', apiType: '内部通讯录', identity: '机构', methods: ['GET'],  sign: '签名鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/teaching/plan', gwUrl: 'https://gw.gjt.cn/teaching/plan', visible: true, status: '启用', doc: 'https://doc.gjt.cn/teaching-plan', params: [] },
+  { id: 6, source: 'platform', name: '内部测试接口', maxCalls: 10000,     service: 'internal_test', type: '非敏感接口', apiType: '内部通讯录', identity: '机构', methods: ['POST'], sign: 'AccessToken鉴权', needAuth: true,  reqUrl: 'https://api.gjt.cn/internal/test', gwUrl: 'https://gw.gjt.cn/internal/test', visible: false, status: '启用', doc: 'https://doc.gjt.cn/internal-test', params: [] },
+  { id: 101, source: 'org', name: '本校选课接口', maxCalls: 10000, service: 'my_course_select', type: '非敏感接口', apiType: '应用', identity: '个人', methods: ['POST'], sign: '签名鉴权', needAuth: true, reqUrl: 'https://api.school.cn/my/select', gwUrl: 'https://gw.gjt.cn/my/select', visible: true, status: '启用', doc: 'https://doc.gjt.cn/my-select', params: [ { name: 'stuId', type: 'string', required: true, desc: '学号', paramType: '请求头参数', enumId: '' } ] },
+  { id: 102, source: 'org', name: '本校成绩查询接口', maxCalls: 10000, service: 'my_score_query', type: '敏感接口', apiType: '应用', identity: '机构', methods: ['GET'], sign: 'AccessToken鉴权', needAuth: true, reqUrl: 'https://api.school.cn/my/score', gwUrl: 'https://gw.gjt.cn/my/score', visible: true, status: '停用', doc: 'https://doc.gjt.cn/my-score', params: [] },
 ];
 
 const APP_LIST = [
-  { appId: 'app_1001', appName: '智慧校园APP',   appAttr: '生态应用' },
-  { appId: 'app_1002', appName: '家校互动平台',   appAttr: '生态应用' },
-  { appId: 'app_1003', appName: '教务管理系统',   appAttr: '原生应用/自建应用' },
-  { appId: 'app_1004', appName: '教师助手',       appAttr: '原生应用/低代码应用' },
-  { appId: 'app_1005', appName: '校园支付中心',   appAttr: '原生应用/自建应用' },
-  { appId: 'app_1006', appName: '校园OA系统',     appAttr: '生态应用' },
-  { appId: 'app_1007', appName: '数据可视化平台', appAttr: '原生应用/低代码应用' },
-  { appId: 'app_1008', appName: '智慧食堂系统',   appAttr: '原生应用/自建应用' },
-  { appId: 'app_1009', appName: '家校通',         appAttr: '生态应用' },
-  { appId: 'app_1010', appName: '校园安防平台',   appAttr: '原生应用/自建应用' },
-  { appId: 'app_1011', appName: '在线备课系统',   appAttr: '原生应用/低代码应用' },
-  { appId: 'app_1012', appName: '学生成长档案',   appAttr: '生态应用' },
+  { appId: 'app_1001', appName: '智慧校园APP',   appAttr: '生态应用', suiteKey: 'gjt_9f3a2c1e7b4d8a05' },
+  { appId: 'app_1002', appName: '家校互动平台',   appAttr: '生态应用', suiteKey: 'gjt_1c5e8a2b7d3f6a09' },
+  { appId: 'app_1003', appName: '教务管理系统',   appAttr: '原生应用/自建应用', suiteKey: 'gjt_7d2e9a1c4b8f3056' },
+  { appId: 'app_1004', appName: '教师助手',       appAttr: '原生应用/低代码应用', suiteKey: 'gjt_a4b6c8d0e2f40518' },
+  { appId: 'app_1005', appName: '校园支付中心',   appAttr: '原生应用/自建应用', suiteKey: 'gjt_2c4e6a8b0d1f3a72' },
+  { appId: 'app_1006', appName: '校园OA系统',     appAttr: '生态应用', suiteKey: 'gjt_5b7d9f1c3e5a7b94' },
+  { appId: 'app_1007', appName: '数据可视化平台', appAttr: '原生应用/低代码应用', suiteKey: 'gjt_8a0c2e4f6b8d0a26' },
+  { appId: 'app_1008', appName: '智慧食堂系统',   appAttr: '原生应用/自建应用', suiteKey: 'gjt_3d5f7a9c1b3e5d80' },
+  { appId: 'app_1009', appName: '家校通',         appAttr: '生态应用', suiteKey: 'gjt_6a8c0e2f4d6b8a03' },
+  { appId: 'app_1010', appName: '校园安防平台',   appAttr: '原生应用/自建应用', suiteKey: 'gjt_9b1d3f5a7c9e1f42' },
+  { appId: 'app_1011', appName: '在线备课系统',   appAttr: '原生应用/低代码应用', suiteKey: 'gjt_4c6e8a0b2d4f6a91' },
+  { appId: 'app_1012', appName: '学生成长档案',   appAttr: '生态应用', suiteKey: 'gjt_7a9b1c3d5e7f8b60' },
 ];
 
 // 开发者已申请且通过审核的应用（P21 开发者申请 API 时可选）
@@ -191,10 +192,26 @@ const DEV_PASSED_APPS = [
 ];
 
 const API_APPS = [
-  { id: 1, apiName: '学生信息查询接口', appId: 'app_1001', apiType: '敏感接口', vendor: '南宁智课教育', category: '学生数据', status: '未审核', reason: '用于家校互通的学生基础信息展示', applyTime: '2026-07-20' },
-  { id: 2, apiName: '课程同步接口',     appId: 'app_1002', apiType: '非敏感接口', vendor: '广西云启',   category: '教学管理', status: '未审核', reason: '同步课程数据到校内教学平台', applyTime: '2026-07-21' },
-  { id: 3, apiName: '成绩上报接口',     appId: 'app_1003', apiType: '敏感接口', vendor: '北海海创',   category: '成绩数据', status: '已审核', opinion: '通过', approver: '王超管', approveTime: '2026-07-18', authKey: 'a7K2m9Pq1x', reason: '成绩数据上报到局端', applyTime: '2026-07-15' },
-  { id: 4, apiName: '考勤数据接口',     appId: 'app_1004', apiType: '非敏感接口', vendor: '个人开发者 王磊', category: '考勤', status: '已审核', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-07-19', reason: '需要考勤数据', applyTime: '2026-07-12' },
+  { id: 1, apiName: '学生信息查询接口', appId: 'app_1001', apiType: '敏感接口', vendor: '南宁智课教育', category: '学生数据', status: '未审核', reason: '用于家校互通的学生基础信息展示', whiteList: ['https://api.zhike.edu.cn', 'http://dev.zhike.edu.cn'], applyTime: '2026-07-20' },
+  { id: 2, apiName: '课程同步接口',     appId: 'app_1002', apiType: '非敏感接口', vendor: '广西云启',   category: '教学管理', status: '未审核', reason: '同步课程数据到校内教学平台', whiteList: ['https://open.gxyunqi.com'], applyTime: '2026-07-21' },
+  { id: 3, apiName: '成绩上报接口',     appId: 'app_1003', apiType: '敏感接口', vendor: '北海海创',   category: '成绩数据', status: '已审核', opinion: '通过', approver: '王超管', approveTime: '2026-07-18', authKey: 'gjt_7d2e9a1c4b8f3056', reason: '成绩数据上报到局端', whiteList: ['https://bhhaichuang.com'], applyTime: '2026-07-15' },
+  { id: 4, apiName: '考勤数据接口',     appId: 'app_1004', apiType: '非敏感接口', vendor: '个人开发者 王磊', category: '考勤', status: '已审核', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-07-19', reason: '需要考勤数据', whiteList: ['http://wanglei.dev.cn'], applyTime: '2026-07-12' },
+];
+
+// 接口调用记录（各厂商调用桂教通接口的流水，桂教通超管查看）
+const CALL_RECORDS = [
+  { id: 1, time: '2026-08-13 09:12:35', apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 86 },
+  { id: 2, time: '2026-08-13 09:15:02', apiName: '课程同步接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 132 },
+  { id: 3, time: '2026-08-13 09:20:41', apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '失败', code: '500', cost: 12 },
+  { id: 4, time: '2026-08-13 09:33:18', apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 64 },
+  { id: 5, time: '2026-08-13 09:41:55', apiName: '教学计划接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 98 },
+  { id: 6, time: '2026-08-13 09:47:09', apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 73 },
+  { id: 7, time: '2026-08-13 09:52:27', apiName: '学生信息查询接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 51 },
+  { id: 8, time: '2026-08-13 10:03:44', apiName: '考勤数据接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '失败', code: '401', cost: 9 },
+  { id: 9, time: '2026-08-13 10:15:36', apiName: '课程同步接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 145 },
+  { id: 10, time: '2026-08-13 10:28:03', apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 88 },
+  { id: 11, time: '2026-08-13 10:36:21', apiName: '成绩上报接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 67 },
+  { id: 12, time: '2026-08-13 10:44:58', apiName: '学生信息查询接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 54 },
 ];
 
 const VENDOR_APIS = [
@@ -793,7 +810,7 @@ app.component('P03', {
  * ===================================================================== */
 app.component('P04', {
   data() {
-    return { rows: APIS.map(a=>({...a, mStop:false})), q:{ name:'', type:'' } };
+    return { rows: APIS.map(a=>({...a, mStop:false})), q:{ name:'', type:'', apiType:'' } };
   },
   computed: {
     isSuper(){ return this.$root.role==='super'; },
@@ -802,7 +819,7 @@ app.component('P04', {
       let list = this.rows;
       // 机构管理员：展示桂教通平台接口 + 本机构新增接口
       if (this.isOrg) list = list.filter(r => r.source==='platform' || r.source==='org');
-      return list.filter(r => (!this.q.name||r.name.includes(this.q.name)) && (!this.q.type||r.type===this.q.type));
+      return list.filter(r => (!this.q.name||r.name.includes(this.q.name)) && (!this.q.type||r.type===this.q.type) && (!this.q.apiType||r.apiType===this.q.apiType));
     },
     // 本机构接口（机构管理员）或全平台接口（桂教通超管）：可编辑/授权/停用启用
     canManage(r){ return this.isSuper || (this.isOrg && r.source==='org'); },
@@ -815,11 +832,14 @@ app.component('P04', {
   <div>
     <div class="toolbar">
       <span class="q-label">接口名称</span><el-input v-model="q.name" placeholder="请输入接口名称" clearable style="width:180px"></el-input>
-      <span class="q-label">接口类型</span><el-select v-model="q.type" placeholder="请选择" clearable style="width:120px">
+      <span class="q-label">数据敏感等级</span><el-select v-model="q.type" placeholder="请选择" clearable style="width:120px">
         <el-option label="敏感接口" value="敏感接口"></el-option><el-option label="非敏感接口" value="非敏感接口"></el-option>
       </el-select>
+      <span class="q-label">接口类型</span><el-select v-model="q.apiType" placeholder="请选择" clearable style="width:120px">
+        <el-option label="家校通讯录" value="家校通讯录"></el-option><el-option label="应用" value="应用"></el-option><el-option label="内部通讯录" value="内部通讯录"></el-option>
+      </el-select>
       <el-button type="primary">查询</el-button>
-      <el-button @click="q.name='';q.type=''">重置</el-button>
+      <el-button @click="q.name='';q.type='';q.apiType=''">重置</el-button>
       <div style="flex:1"></div>
       <el-button type="primary" @click="$root.go('P05')">新增接口</el-button>
     </div>
@@ -828,7 +848,10 @@ app.component('P04', {
         <el-table-column type="index" label="序号" width="60"></el-table-column>
         <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
         <el-table-column prop="reqUrl" label="请求路径" min-width="220"></el-table-column>
-        <el-table-column prop="type" label="接口类型" width="100"></el-table-column>
+        <el-table-column prop="apiType" label="接口类型" width="110"></el-table-column>
+        <el-table-column prop="identity" label="调用身份" width="90"></el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
+        <el-table-column prop="maxCalls" label="最大调用量/日" width="120"></el-table-column>
         <el-table-column label="来源" width="90"><template #default="s"><el-tag size="small" :type="s.row.source==='platform'?'info':'success'">{{ s.row.source==='platform'?'桂教通平台':'本机构' }}</el-tag></template></el-table-column>
         <el-table-column label="接口状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
         <el-table-column label="操作" min-width="320">
@@ -857,17 +880,21 @@ app.component('P05', {
   data() {
     const src = this.ctx && this.ctx.apiId ? APIS.find(a=>a.id===this.ctx.apiId) : null;
     return {
-      f: src ? { name:src.name, service:src.service, type:src.type, methods:src.methods, sign:src.sign, needAuth:src.needAuth, reqUrl:src.reqUrl, gwUrl:src.gwUrl, visible:src.visible, remark:'' }
-             : { name:'', service:'', type:'非敏感接口', methods:['POST'], sign:'签名鉴权', needAuth:true, reqUrl:'', gwUrl:'', visible:true, remark:'' },
-      params: src ? src.params.map(p=>({...p})) : [{name:'',type:'string',required:true,desc:''}],
+      f: src ? { name:src.name, service:src.service, type:src.type, apiType:src.apiType||'', identity:src.identity||'', methods:src.methods, sign:src.sign, needAuth:src.needAuth, reqUrl:src.reqUrl, gwUrl:src.gwUrl, visible:src.visible, maxCalls:src.maxCalls||10000, remark:'' }
+             : { name:'', service:'', type:'非敏感接口', apiType:'', identity:'', methods:['POST'], sign:'签名鉴权', needAuth:true, reqUrl:'', gwUrl:'', visible:true, maxCalls:10000, remark:'' },
+      params: src ? src.params.map(p=>({...p, paramType:p.paramType||'', enumId:p.enumId||''})) : [{name:'',type:'string',paramType:'',enumId:'',required:true,desc:''}],
     };
   },
   methods: {
-    addParam(){ this.params.push({name:'',type:'string',required:false,desc:''}); },
+    addParam(){ this.params.push({name:'',type:'string',paramType:'',enumId:'',required:false,desc:''}); },
     delParam(i){ this.params.splice(i,1); },
     save(){
       if(!this.f.name||!this.f.service||!this.f.reqUrl||!this.f.gwUrl){this.$message.warning('请填写接口必填项');return;}
+      if(!this.f.apiType){this.$message.warning('请选择接口类型');return;}
+      if(!this.f.identity){this.$message.warning('请选择调用身份');return;}
+      if(!this.f.maxCalls||this.f.maxCalls<=0){this.$message.warning('请填写最大调用量/日');return;}
       if(!this.params.length||this.params.some(p=>!p.name)){this.$message.warning('参数列表至少需要一条完整记录');return;}
+      if(this.params.some(p=>!p.paramType)){this.$message.warning('请为每个参数选择参数类型');return;}
       this.$message.success('已保存'); this.$root.go('P04');
     },
   },
@@ -879,8 +906,17 @@ app.component('P05', {
         <el-row :gutter="16">
           <el-col :span="12"><el-form-item label="接口名称" required><el-input v-model="f.name" maxlength="20"></el-input></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="接口服务名" required><el-input v-model="f.service" maxlength="50" placeholder="英文/数字/下划线，不含中文"></el-input></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="接口类型" required>
+          <el-col :span="12"><el-form-item label="数据敏感等级" required>
             <el-select v-model="f.type" style="width:100%"><el-option label="敏感接口" value="敏感接口"></el-option><el-option label="非敏感接口" value="非敏感接口"></el-option></el-select>
+          </el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="接口类型" required>
+            <el-select v-model="f.apiType" style="width:100%"><el-option label="家校通讯录" value="家校通讯录"></el-option><el-option label="应用" value="应用"></el-option><el-option label="内部通讯录" value="内部通讯录"></el-option></el-select>
+          </el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="调用身份" required>
+            <el-radio-group v-model="f.identity"><el-radio value="机构">机构</el-radio><el-radio value="个人">个人</el-radio></el-radio-group>
+          </el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="最大调用量/日" required>
+            <el-input-number v-model="f.maxCalls" :min="1" :max="99999999" controls-position="right" style="width:100%"></el-input-number>
           </el-form-item></el-col>
           <el-col :span="12"><el-form-item label="接口请求方式" required>
             <el-checkbox-group v-model="f.methods"><el-checkbox value="POST">POST</el-checkbox><el-checkbox value="GET">GET</el-checkbox></el-checkbox-group>
@@ -907,7 +943,9 @@ app.component('P05', {
       </div>
       <el-table :data="params" size="small">
         <el-table-column label="参数名称"><template #default="s"><el-input v-model="s.row.name" placeholder="英文/数字/下划线"></el-input></template></el-table-column>
-        <el-table-column label="类型" width="140"><template #default="s"><el-select v-model="s.row.type"><el-option label="string" value="string"></el-option><el-option label="bool" value="bool"></el-option><el-option label="int32" value="int32"></el-option></el-select></template></el-table-column>
+        <el-table-column label="参数类型" width="160"><template #default="s"><el-select v-model="s.row.paramType" placeholder="请选择"><el-option label="请求头参数" value="请求头参数"></el-option><el-option label="返回参数" value="返回参数"></el-option></el-select></template></el-table-column>
+        <el-table-column label="数据类型" width="120"><template #default="s"><el-select v-model="s.row.type"><el-option label="string" value="string"></el-option><el-option label="bool" value="bool"></el-option><el-option label="int32" value="int32"></el-option></el-select></template></el-table-column>
+        <el-table-column label="枚举说明ID" width="140"><template #default="s"><el-input v-model="s.row.enumId" placeholder="选填"></el-input></template></el-table-column>
         <el-table-column label="必填" width="90"><template #default="s"><el-checkbox v-model="s.row.required"></el-checkbox></template></el-table-column>
         <el-table-column label="说明"><template #default="s"><el-input v-model="s.row.desc" maxlength="200"></el-input></template></el-table-column>
         <el-table-column width="70"><template #default="s"><el-button link type="danger" @click="delParam($index)">删除</el-button></template></el-table-column>
@@ -1166,7 +1204,7 @@ app.component('P08', {
       <el-table :data="sorted" stripe>
         <el-table-column prop="apiName" label="接口名称" min-width="150"></el-table-column>
         <el-table-column prop="appId" label="应用ID" width="110"></el-table-column>
-        <el-table-column prop="apiType" label="接口类型" width="100"></el-table-column>
+        <el-table-column prop="apiType" label="数据敏感等级" width="100"></el-table-column>
         <el-table-column prop="vendor" label="厂商名称" min-width="130"></el-table-column>
         <el-table-column prop="category" label="接口分类" width="90"></el-table-column>
         <el-table-column label="授权key" min-width="160">
@@ -1203,12 +1241,12 @@ app.component('P09', {
     return { row, api, opinion:'通过', note:'' };
   },
   methods: {
-    genKey(){ const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<10;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; },
+    suiteKeyOf(appId){ const a = (APP_LIST||[]).find(x=>x.appId===appId); return a ? a.suiteKey : ''; },
     submit(){
       if(this.opinion==='不通过'&&!this.note){this.$message.warning('不通过时审核说明必填');return;}
       this.row.status='已审核'; this.row.opinion=this.opinion; this.row.opinionNote=this.note; this.row.approver='王超管'; this.row.approveTime='2026-08-05 15:00';
-      if(this.opinion==='通过'){ this.row.authKey = this.genKey(); }
-      this.$message.success('审批已提交' + (this.opinion==='通过'?'，已生成授权key':'')); this.$root.go('P08');
+      if(this.opinion==='通过'){ this.row.authKey = this.suiteKeyOf(this.row.appId); }
+      this.$message.success('审批已提交' + (this.opinion==='通过'?'，授权key已按应用suiteKey生成':'')); this.$root.go('P08');
     },
   },
   template: `
@@ -1219,7 +1257,9 @@ app.component('P09', {
         <el-row :gutter="16">
           <el-col :span="12"><el-form-item label="接口名称"><div class="ro-text">{{ api.name }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="接口服务名"><div class="ro-text">{{ api.service }}</div></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="接口类型"><div class="ro-text">{{ api.type }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="数据敏感等级"><div class="ro-text">{{ api.type }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="接口类型"><div class="ro-text">{{ api.apiType || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="调用身份"><div class="ro-text">{{ api.identity || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="接口请求方式"><div class="ro-text">{{ (api.methods||[]).join('/') }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="接口签名类型"><div class="ro-text">{{ api.sign }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="是否需要授权"><div class="ro-text">{{ api.needAuth?'是':'否' }}</div></el-form-item></el-col>
@@ -1227,6 +1267,8 @@ app.component('P09', {
           <el-col :span="12"><el-form-item label="网关转发地址"><div class="ro-text">{{ api.gwUrl }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="是否对外可见"><div class="ro-text">{{ api.visible?'是':'否' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="应用ID"><div class="ro-text">{{ row.appId }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="申请理由"><div class="ro-text">{{ row.reason }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (row.whiteList||[]).join('、') || '—' }}</div></el-form-item></el-col>
         </el-row>
       </el-form>
       <el-form label-width="90px" style="max-width:520px">
@@ -1437,10 +1479,11 @@ app.component('P10', {
         <el-row :gutter="16">
           <el-col :span="12"><el-form-item label="接口名称"><div class="ro-text">{{ row.apiName }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="应用ID"><div class="ro-text">{{ row.appId }}</div></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="接口类型"><div class="ro-text">{{ row.apiType }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="数据敏感等级"><div class="ro-text">{{ row.apiType }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="厂商名称"><div class="ro-text">{{ row.vendor }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="接口分类"><div class="ro-text">{{ row.category }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="申请理由"><div class="ro-text">{{ row.reason }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (row.whiteList||[]).join('、') || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="申请时间"><div class="ro-text">{{ row.applyTime }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="审批状态"><div class="ro-text">{{ row.status }}</div></el-form-item></el-col>
         </el-row>
@@ -1460,6 +1503,59 @@ app.component('P10', {
       <div style="margin-top:14px;text-align:center">
         <el-button @click="$root.go('P08')">返回</el-button>
       </div>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * P27 接口调用记录（桂教通超管）
+ * 功能点：按接口/厂商/调用结果筛选 / 汇总统计 / 调用流水明细
+ * ===================================================================== */
+app.component('P27', {
+  data() {
+    return { rows: CALL_RECORDS.map(x => ({ ...x })), q: { apiName: '', vendor: '', result: '' } };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.apiName || r.apiName.includes(this.q.apiName)) &&
+        (!this.q.vendor || r.vendor.includes(this.q.vendor)) &&
+        (!this.q.result || r.result === this.q.result));
+    },
+    totalCalls() { return this.filtered.length; },
+    successCount() { return this.filtered.filter(r => r.result === '成功').length; },
+    failCount() { return this.filtered.filter(r => r.result === '失败').length; },
+    successRate() { return this.totalCalls ? Math.round(this.successCount / this.totalCalls * 100) + '%' : '—'; },
+  },
+  template: `
+  <div>
+    <div class="toolbar">
+      <span class="q-label">接口名称</span><el-input v-model="q.apiName" placeholder="请输入接口名称" clearable style="width:150px"></el-input>
+      <span class="q-label">厂商名称</span><el-input v-model="q.vendor" placeholder="请输入厂商名称" clearable style="width:150px"></el-input>
+      <span class="q-label">调用结果</span><el-select v-model="q.result" placeholder="请选择" clearable style="width:110px">
+        <el-option label="成功" value="成功"></el-option><el-option label="失败" value="失败"></el-option>
+      </el-select>
+      <el-button type="primary">查询</el-button>
+      <el-button @click="q.apiName='';q.vendor='';q.result=''">重置</el-button>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:28px;margin-bottom:14px;flex-wrap:wrap">
+        <div><span style="color:#909399">调用总次数：</span><b>{{ totalCalls }}</b></div>
+        <div><span style="color:#909399">成功：</span><b style="color:#67c23a">{{ successCount }}</b></div>
+        <div><span style="color:#909399">失败：</span><b style="color:#f56c6c">{{ failCount }}</b></div>
+        <div><span style="color:#909399">成功率：</span><b>{{ successRate }}</b></div>
+      </div>
+      <el-table :data="filtered" stripe>
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="time" label="调用时间" width="165"></el-table-column>
+        <el-table-column prop="apiName" label="接口名称" min-width="140"></el-table-column>
+        <el-table-column prop="vendor" label="厂商名称" min-width="150"></el-table-column>
+        <el-table-column prop="appName" label="调用应用" min-width="120"></el-table-column>
+        <el-table-column prop="appId" label="应用ID" width="105"></el-table-column>
+        <el-table-column label="调用结果" width="90"><template #default="s"><st-tag :v="s.row.result"/></template></el-table-column>
+        <el-table-column prop="code" label="状态码" width="80"></el-table-column>
+        <el-table-column prop="cost" label="耗时(ms)" width="90"></el-table-column>
+      </el-table>
     </div>
   </div>`,
 });
@@ -2890,26 +2986,31 @@ app.component('P11c', {
 app.component('P19', {
   data() {
     return {
-      q:{ name:'', type:'' },
+      q:{ name:'', type:'', apiType:'' },
       applyVisible: false,
-      applyForm: { apiId:'', appIds:[], reason:'' },
+      applyForm: { apiId:'', appIds:[], reason:'', whiteList:[{ scheme:'https', domain:'' }] },
       applyApiOptions: APIS.filter(a=>a.visible),
       applyAppOptions: DEV_PASSED_APPS,
     };
   },
   computed: {
     visibleApis(){ return APIS.filter(a=>a.visible); },
-    filtered(){ return this.visibleApis.filter(r=> (!this.q.name||r.name.includes(this.q.name)) && (!this.q.type||r.type===this.q.type)); },
+    filtered(){ return this.visibleApis.filter(r=> (!this.q.name||r.name.includes(this.q.name)) && (!this.q.type||r.type===this.q.type) && (!this.q.apiType||r.apiType===this.q.apiType)); },
   },
   methods: {
     openApply(row){
-      this.applyForm = { apiId: row ? row.id : '', appIds: [], reason: '' };
+      this.applyForm = { apiId: row ? row.id : '', appIds: [], reason: '', whiteList:[{ scheme:'https', domain:'' }] };
       this.applyVisible = true;
     },
+    addWhite(){ this.applyForm.whiteList.push({ scheme:'https', domain:'' }); },
+    removeWhite(i){ this.applyForm.whiteList.splice(i,1); },
     submitApply(){
       if(!this.applyForm.apiId){ this.$message.warning('请选择接口'); return; }
       if(!this.applyForm.appIds.length){ this.$message.warning('请至少选择一个应用'); return; }
       if(!this.applyForm.reason){ this.$message.warning('请填写申请理由'); return; }
+      const wl = this.applyForm.whiteList.filter(x=>x.domain.trim());
+      if(!wl.length){ this.$message.warning('请至少填写一个白名单域名'); return; }
+      if(this.applyForm.whiteList.some(x=>x.domain && !/^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(:\d{1,5})?$/.test(x.domain.trim()))){ this.$message.warning('请填写正确的域名格式'); return; }
       this.$msgbox.confirm('确认提交该接口的申请？提交后将进入审批流程。', '提交申请', { type:'info', confirmButtonText:'确认提交', cancelButtonText:'取消' })
         .then(()=>{
           this.$message.success('申请已提交，请等待审核');
@@ -2922,11 +3023,14 @@ app.component('P19', {
   <div>
     <div class="toolbar">
       <span class="q-label">接口名称</span><el-input v-model="q.name" placeholder="请输入接口名称" clearable style="width:180px"></el-input>
-      <span class="q-label">接口类型</span><el-select v-model="q.type" placeholder="请选择" clearable style="width:120px">
+      <span class="q-label">数据敏感等级</span><el-select v-model="q.type" placeholder="请选择" clearable style="width:120px">
         <el-option label="敏感接口" value="敏感接口"></el-option><el-option label="非敏感接口" value="非敏感接口"></el-option>
       </el-select>
+      <span class="q-label">接口类型</span><el-select v-model="q.apiType" placeholder="请选择" clearable style="width:120px">
+        <el-option label="家校通讯录" value="家校通讯录"></el-option><el-option label="应用" value="应用"></el-option><el-option label="内部通讯录" value="内部通讯录"></el-option>
+      </el-select>
       <el-button type="primary">查询</el-button>
-      <el-button @click="q.name='';q.type=''">重置</el-button>
+      <el-button @click="q.name='';q.type='';q.apiType=''">重置</el-button>
       <div style="flex:1"></div>
       <el-button type="primary" @click="openApply()">新增申请</el-button>
       <span style="color:#909399;font-size:12px">仅展示对外可见的接口</span>
@@ -2935,7 +3039,8 @@ app.component('P19', {
       <el-table :data="filtered" stripe>
         <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
         <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
-        <el-table-column prop="type" label="接口类型" width="100"></el-table-column>
+        <el-table-column prop="apiType" label="接口类型" width="110"></el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
         <el-table-column label="请求方式" width="110"><template #default="s">{{ s.row.methods.join('、') }}</template></el-table-column>
         <el-table-column label="接口文档" width="90"><template #default="s"><el-link type="primary" :href="s.row.doc" target="_blank">查看</el-link></template></el-table-column>
         <el-table-column label="操作" min-width="160" fixed="right">
@@ -2956,6 +3061,18 @@ app.component('P19', {
         </el-form-item>
         <el-form-item label="申请理由" required>
           <el-input type="textarea" :rows="3" maxlength="500" show-word-limit v-model="applyForm.reason" placeholder="请填写申请理由"></el-input>
+        </el-form-item>
+        <el-form-item label="白名单" required>
+          <div v-for="(w,i) in applyForm.whiteList" :key="i" style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+            <el-select v-model="w.scheme" style="width:120px">
+              <el-option label="https://" value="https"></el-option>
+              <el-option label="http://" value="http"></el-option>
+            </el-select>
+            <el-input v-model="w.domain" placeholder="请输入厂商域名，如 api.example.com"></el-input>
+            <el-button link type="danger" @click="removeWhite(i)" :disabled="applyForm.whiteList.length<=1">删除</el-button>
+          </div>
+          <el-button link type="primary" @click="addWhite">+ 新增白名单</el-button>
+          <div style="color:#909399;font-size:12px;line-height:1.5">填写需要调用该接口的厂商域名，支持添加多个</div>
         </el-form-item>
       </el-form>
       <template #footer>
