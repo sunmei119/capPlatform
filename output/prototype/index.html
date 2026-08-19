@@ -1740,7 +1740,7 @@ app.component('P08', {
 app.component('P08Auth', {
   props: ['ctx'],
   data() {
-    return { q:{ name:'', appId:'', status:'' }, showKey:{} };
+    return { q:{ name:'', appId:'', status:'' }, showKey:{}, activeTab:'all' };
   },
   computed: {
     isDev(){ return this.$root.role==='dev'; },
@@ -1748,48 +1748,88 @@ app.component('P08Auth', {
       const arr = API_APPS.filter(r=> (!this.q.name||r.apis.some(a=>a.name.includes(this.q.name))) && (!this.q.appId||r.appId.includes(this.q.appId)) && (!this.q.status||r.status===this.q.status));
       return arr.slice().sort((a,b)=>(a.status===b.status?0:a.status==='未审批'?-1:1));
     },
+    // 授权记录：开发者申请的所有记录，按机构拆分，一个机构一条
+    authRows(){ return this.sorted.flatMap(r=>this.splitOrgs(r)); },
+    // 已审批通过：所有审批通过的授权记录，同样按机构拆分
+    approvedRows(){ return API_APPS.filter(r=>r.status==='已审批'&&r.opinion==='通过').flatMap(r=>this.splitOrgs(r)); },
+    curRows(){ return this.activeTab==='approved' ? this.approvedRows : this.authRows; },
   },
   methods: {
     apiNames(row){ return (row.apis||[]).map(a=>a.name).join(','); },
     apiIdsOf(row){ return (row.apis||[]).map(a => { const x = APIS.find(y=>y.name===a.name); return x ? x.id : null; }).filter(Boolean); },
     appNameOf(row){ const a = APP_LIST.find(x=>x.appId===row.appId); return a ? a.appName : (row.appId||'—'); },
     resubmit(row){ this.$root.go('P21m', { apiIds: this.apiIdsOf(row), reapplyId: row.id }); },
+    // 申请时一个机构为一条数据：按分号拆分机构名称生成多条记录
+    splitOrgs(r){
+      const orgs = String(r.orgs||'').split(/[;；]/).map(s=>s.trim()).filter(Boolean);
+      if(orgs.length<=1) return [{ ...r }];
+      return orgs.map((o,i)=>({ ...r, orgs:o, _rid: String(r.id)+'-'+i }));
+    },
   },
   template: `
   <div>
     <div class="toolbar">
       <span class="q-label">接口名称</span><el-input v-model="q.name" placeholder="请输入接口名称" clearable style="width:150px"></el-input>
       <span class="q-label">应用ID</span><el-input v-model="q.appId" placeholder="请输入应用ID" clearable style="width:130px"></el-input>
-      <span class="q-label">审批状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:110px">
-        <el-option label="未审批" value="未审批"></el-option><el-option label="已审批" value="已审批"></el-option><el-option label="已驳回" value="已驳回"></el-option>
-      </el-select>
+      <template v-if="activeTab==='all'">
+        <span class="q-label">审批状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:110px">
+          <el-option label="未审批" value="未审批"></el-option><el-option label="已审批" value="已审批"></el-option><el-option label="已驳回" value="已驳回"></el-option>
+        </el-select>
+      </template>
       <el-button type="primary">查询</el-button>
       <el-button @click="q.name='';q.appId='';q.status=''">重置</el-button>
       <span style="color:#909399;font-size:12px">最新未审批数据排最前</span>
     </div>
-    <div class="card">
-      <el-table :data="sorted" stripe>
-        <el-table-column label="应用名称" min-width="150">
-          <template #default="s"><span>{{ appNameOf(s.row) }}</span></template>
-        </el-table-column>
-        <el-table-column label="同步数据范围" min-width="130">
-          <template #default="s"><span>{{ (s.row.rangeTypes||[]).join('、') || '—' }}</span></template>
-        </el-table-column>
-        <el-table-column prop="orgs" label="机构名称" min-width="160"></el-table-column>
-        <el-table-column label="申请理由" min-width="200">
-          <template #default="s"><span>{{ s.row.reason || '—' }}</span></template>
-        </el-table-column>
-        <el-table-column prop="applyTime" label="申请时间" width="110"></el-table-column>
-        <el-table-column label="审批状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
-        <el-table-column label="操作" min-width="160" fixed="right">
-          <template #default="s">
-            <el-button v-if="s.row.status==='未审批' && !isDev" link type="primary" @click="$root.go('P09Auth',{appId:s.row.id})">审批</el-button>
-            <el-button link @click="$root.go('P10Auth',{appId:s.row.id})">查看</el-button>
-            <el-button v-if="(s.row.status==='已审批' && s.row.opinion==='不通过') && isDev" link type="warning" @click="resubmit(s.row)">重新提交</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+    <el-tabs v-model="activeTab">
+      <el-tab-pane label="授权记录" name="all">
+        <div class="card">
+          <el-table :data="curRows" stripe>
+            <el-table-column label="应用名称" min-width="150">
+              <template #default="s"><span>{{ appNameOf(s.row) }}</span></template>
+            </el-table-column>
+            <el-table-column label="同步数据范围" min-width="130">
+              <template #default="s"><span>{{ (s.row.rangeTypes||[]).join('、') || '—' }}</span></template>
+            </el-table-column>
+            <el-table-column prop="orgs" label="机构名称" min-width="160"></el-table-column>
+            <el-table-column label="申请理由" min-width="200">
+              <template #default="s"><span>{{ s.row.reason || '—' }}</span></template>
+            </el-table-column>
+            <el-table-column prop="applyTime" label="申请时间" width="110"></el-table-column>
+            <el-table-column label="审批状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
+            <el-table-column label="操作" min-width="160" fixed="right">
+              <template #default="s">
+                <el-button v-if="activeTab==='all' && s.row.status==='未审批' && !isDev" link type="primary" @click="$root.go('P09Auth',{appId:s.row.id})">审批</el-button>
+                <el-button link @click="$root.go('P10Auth',{appId:s.row.id})">查看</el-button>
+                <el-button v-if="activeTab==='all' && (s.row.status==='已审批' && s.row.opinion==='不通过') && isDev" link type="warning" @click="resubmit(s.row)">重新提交</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="已审批通过" name="approved">
+        <div class="card">
+          <el-table :data="curRows" stripe>
+            <el-table-column label="应用名称" min-width="150">
+              <template #default="s"><span>{{ appNameOf(s.row) }}</span></template>
+            </el-table-column>
+            <el-table-column label="同步数据范围" min-width="130">
+              <template #default="s"><span>{{ (s.row.rangeTypes||[]).join('、') || '—' }}</span></template>
+            </el-table-column>
+            <el-table-column prop="orgs" label="机构名称" min-width="160"></el-table-column>
+            <el-table-column label="申请理由" min-width="200">
+              <template #default="s"><span>{{ s.row.reason || '—' }}</span></template>
+            </el-table-column>
+            <el-table-column prop="approveTime" label="审批时间" width="110"></el-table-column>
+            <el-table-column label="审批状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
+            <el-table-column label="操作" min-width="90" fixed="right">
+              <template #default="s">
+                <el-button link @click="$root.go('P10Auth',{appId:s.row.id})">查看</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-tab-pane>
+    </el-tabs>
   </div>`,
 });
 
