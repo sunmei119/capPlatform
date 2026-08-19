@@ -1027,6 +1027,8 @@ app.component('P35', {
     addCap() { this.$root.go('P35Form'); },
     editCap(c) { this.$root.go('P35Form', { id: c.id, from: 'P35' }); },
     viewCap(c) { this.$root.go('P35View', { id: c.id, from: 'P35' }); },
+    docOf(api){ const a = (APIS||[]).find(x=>x.id===api.id); return a ? (a.doc||'') : ''; },
+    openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
     openAddApi() {
       if (!this.activeCap) return;
       this.tempApiIds = [];
@@ -1094,6 +1096,12 @@ app.component('P35', {
             <el-table-column prop="service" label="接口服务名称" min-width="180"></el-table-column>
             <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
             <el-table-column prop="reqUrl" label="接口路径" min-width="220"></el-table-column>
+            <el-table-column label="文档链接" min-width="120">
+              <template #default="{row}">
+                <el-link v-if="docOf(row)" type="primary" @click="openDoc(row)">查看文档</el-link>
+                <span v-else style="color:#c0c4cc">—</span>
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="100">
               <template #default="{row}">
                 <el-button link type="danger" @click="removeApi(row)">移出</el-button>
@@ -1800,6 +1808,8 @@ app.component('P09', {
   },
   methods: {
     appNameOf(row){ const a = (APP_LIST||[]).find(x=>x.appId===row.appId); return a ? a.appName : (row.appId||'—'); },
+    docOf(api){ const a = (APIS||[]).find(x=>x.id===api.id); return a ? (a.doc||'') : ''; },
+    openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
     submit(){
       if(this.opinion==='不通过'&&!this.note){this.$message.warning('不通过时审批说明必填');return;}
       if(this.opinion==='通过'){
@@ -1839,6 +1849,12 @@ app.component('P09', {
             <el-input v-model.number="s.row.maxCalls" placeholder="正整数" size="small" style="width:120px"><template #append>次</template></el-input>
           </template>
         </el-table-column>
+        <el-table-column label="文档链接" min-width="120">
+          <template #default="s">
+            <el-link v-if="docOf(s.row)" type="primary" @click="openDoc(s.row)">查看文档</el-link>
+            <span v-else style="color:#c0c4cc">—</span>
+          </template>
+        </el-table-column>
       </el-table>
       <el-pagination layout="prev, pager, next" :total="row.apis.length" :page-size="apiPageSize" :current-page="apiPage" @current-change="apiPage=$event" style="margin-bottom:18px"></el-pagination>
       <el-form label-width="90px">
@@ -1873,6 +1889,8 @@ app.component('P09Auth', {
   methods: {
     appNameOf(row){ const a = (APP_LIST||[]).find(x=>x.appId===row.appId); return a ? a.appName : (row.appId||'—'); },
     suiteKeyOf(appId){ const a = (APP_LIST||[]).find(x=>x.appId===appId); return a ? a.suiteKey : ''; },
+    docOf(api){ const a = (APIS||[]).find(x=>x.service===api.service); return a ? (a.doc||'') : ''; },
+    openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
     beforeCredUpload(file){
       const isLt10M = file.size / 1024 / 1024 < 10;
       if(!isLt10M){ this.$message.error('单个图片不可超过 10MB'); }
@@ -1922,6 +1940,12 @@ app.component('P09Auth', {
         <el-table-column prop="category" label="接口分类" width="120"></el-table-column>
         <el-table-column label="最大调用量/日" width="110">
           <template #default="s"><div class="ro-text">{{ s.row.maxCalls }}</div></template>
+        </el-table-column>
+        <el-table-column label="文档链接" min-width="130">
+          <template #default="s">
+            <el-link v-if="docOf(s.row)" type="primary" @click="openDoc(s.row)">查看文档</el-link>
+            <span v-else style="color:#c0c4cc">—</span>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination layout="prev, pager, next" :total="row.apis.length" :page-size="apiPageSize" :current-page="apiPage" @current-change="apiPage=$event" style="margin-bottom:18px"></el-pagination>
@@ -2118,6 +2142,8 @@ app.component('P10', {
   },
   methods: {
     appNameOf(row){ const a = (APP_LIST||[]).find(x=>x.appId===row.appId); return a ? a.appName : (row.appId||'—'); },
+    docOf(api){ const a = (APIS||[]).find(x=>x.id===api.id); return a ? (a.doc||'') : ''; },
+    openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
   },
   template: `
   <div>
@@ -2138,6 +2164,12 @@ app.component('P10', {
         <el-table-column prop="apiType" label="接口能力" width="100"></el-table-column>
         <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
         <el-table-column prop="category" label="接口分类" width="120"></el-table-column>
+        <el-table-column label="文档链接" min-width="120">
+          <template #default="s">
+            <el-link v-if="docOf(s.row)" type="primary" @click="openDoc(s.row)">查看文档</el-link>
+            <span v-else style="color:#c0c4cc">—</span>
+          </template>
+        </el-table-column>
       </el-table>
       <el-pagination layout="prev, pager, next" :total="row.apis.length" :page-size="apiPageSize" :current-page="apiPage" @current-change="apiPage=$event" style="margin-bottom:18px"></el-pagination>
       <template v-if="row.status==='已审批'">
@@ -2188,6 +2220,8 @@ app.component('P10Auth', {
   methods: {
     appNameOf(row){ const a = (APP_LIST||[]).find(x=>x.appId===row.appId); return a ? a.appName : (row.appId||'—'); },
     previewCred(f){ if (f && f.url) window.open(f.url); },
+    docOf(api){ const a = (APIS||[]).find(x=>x.service===api.service); return a ? (a.doc||'') : ''; },
+    openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
   },
   template: `
   <div>
@@ -2214,6 +2248,12 @@ app.component('P10Auth', {
         <el-table-column prop="category" label="接口分类" width="120"></el-table-column>
         <el-table-column label="最大调用量/日" width="110">
           <template #default="s"><div class="ro-text">{{ s.row.maxCalls }}</div></template>
+        </el-table-column>
+        <el-table-column label="文档链接" min-width="130">
+          <template #default="s">
+            <el-link v-if="docOf(s.row)" type="primary" @click="openDoc(s.row)">查看文档</el-link>
+            <span v-else style="color:#c0c4cc">—</span>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination layout="prev, pager, next" :total="row.apis.length" :page-size="apiPageSize" :current-page="apiPage" @current-change="apiPage=$event" style="margin-bottom:18px"></el-pagination>
