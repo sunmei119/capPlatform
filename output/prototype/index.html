@@ -87,7 +87,7 @@
       <el-main style="padding:0; background:#f5f7fa; overflow:auto">
         <div class="page-wrap">
           <el-breadcrumb v-if="!standalone" separator="/" style="margin-bottom:14px">
-            <el-breadcrumb-item>能力管理</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="topMenuLabel">{{ topMenuLabel }}</el-breadcrumb-item>
             <el-breadcrumb-item>{{ activeTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
           <component :is="currentComp" :ctx="ctx"></component>
@@ -110,8 +110,11 @@ const MENU_TREE = {
     { label: '数据同步申请', page: 'P32' },
   ],
   super: [
-    { label: '能力管理', children: [
+    { label: '开发者管理', children: [
       { label: '开发者管理', page: 'P01' },
+      { label: '开发者信息审批', page: 'P01a' },
+    ]},
+    { label: '能力管理', children: [
       { label: 'API接口管理', page: 'P04' },
       { label: '接口能力管理', page: 'P35' },
       { label: '接口分类管理', page: 'P04a' },
@@ -123,6 +126,8 @@ const MENU_TREE = {
       { label: '客户端授权管理', page: 'P30' },
       { label: '数据授权管理', page: 'P34' },
       { label: '数据同步审批', page: 'P33' },
+      { label: '数据回流管理', page: 'P36Admin' },
+      { label: '数据回流明细', page: 'P36Detail' },
     ]},
   ],
   dev: [
@@ -130,13 +135,16 @@ const MENU_TREE = {
       { label: '企业信息管理', page: 'P16' },
       { label: '企业子账号管理', page: 'P17' },
     ]},
-    { label: '接口中心', children: [
+    { label: '接口管理', children: [
       { label: 'API接口管理', page: 'P19' },
     ]},
-    { label: '应用管理', children: [
+    { label: '接口数据申请管理', children: [
       { label: '应用管理', page: 'P28' },
       { label: '接口申请记录', page: 'P08' },
       { label: '数据授权记录', page: 'P08Auth' },
+    ]},
+    { label: '数据回流管理', children: [
+      { label: '数据回流管理', page: 'P36' },
     ]},
   ],
 };
@@ -148,7 +156,7 @@ const ROLES = [
 ];
 
 const PAGE_TITLES = {
-  P01: '开发者管理', P02: '新增/编辑开发者', P03: '开发者详情',
+  P01: '开发者管理', P01a: '开发者信息审批', P01aView: '厂商信息查看', P01aApprove: '开发者信息审批', P02: '新增/编辑开发者', P03: '开发者详情',
   P04: 'API接口管理', P04a: '接口分类管理', P05: '新增/编辑接口', P06: '接口文档查看', P07: '应用授权', P22: '接口信息查看',
   P08: '接口申请记录', P08Auth: '数据授权记录', P09: '接口申请审批', P09Auth: '数据授权审批', P10: '申请记录查看', P10Auth: '数据授权记录查看',
   P13: '运营统计看板', P35: '接口能力管理', P35Form: '新增/编辑能力', P35View: '能力详情',
@@ -156,9 +164,10 @@ const PAGE_TITLES = {
   P19: 'API接口列表', P20: '开发者接口文档', P21: '开发者接口申请',
   P27: '接口调用记录',
   P28: '应用管理', P29: '新增应用', P28Apply: '数据授权申请', P28ApplyApi: '接口申请',
-  P30: '客户端授权管理', P31: '新增客户端授权',
+  P30: '客户端授权管理', P31: '授权配置',
   P32: '数据同步申请', P33: '数据同步审批',
-  P34: '数据授权管理',
+  P34: '数据授权管理', P34Form: '新增/编辑数据授权',
+  P36: '数据回流管理', P36Form: '新增数据回流申请', P36Admin: '数据回流管理', P36Detail: '数据回流明细',
 };
 
 /* ---------------- 共享演示数据 ---------------- */
@@ -174,6 +183,18 @@ const VENDORS = [
   { id: 3, name: '个人开发者 王磊', type: '个人', legalPerson: '王磊', admin: '王磊', phone: '13600005566', isPublicSea: true, socialCode: '45010319900512001X', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市西乡塘区大学路100号', detailAddr: '广西大学创业园', vatPayer: false, intro: '独立开发者，擅长校园信息化工具开发。', companyPhone: '', businessDeadline: '2031-01-01', contacted: false, contactTime: '', coop: '未合作', coopTime: '', coopReason: '', cancelTime: '', cancelReason: '', recoopTime: '', portal: false, applyDate: '2026-07-18' },
   { id: 4, name: '桂林育才软件有限公司', type: '企业', legalPerson: '陈志远', admin: '陈曦', phone: '13700007788', isPublicSea: false, socialCode: '91450300MA5N8E1B3G', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '桂林市七星区漓江路20号', detailAddr: '创意产业园3栋', vatPayer: false, intro: '专注教育信息化软件研发与系统集成。', companyPhone: '0773-2800111', businessDeadline: '2030-12-31', contacted: true, contactTime: '2026-05-22', coop: '已取消', coopTime: '2026-05-28', coopReason: '共同拓展市场', cancelTime: '2026-06-28', cancelReason: '业务方向调整', recoopTime: '', portal: false, applyDate: '2026-05-20' },
   { id: 5, name: '北海海创科技有限公司', type: '企业', legalPerson: '刘海峰', admin: '刘洋', phone: '13500009900', isPublicSea: false, socialCode: '91450500MA5Q4H6A2P', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '北海市海城区北海大道168号', detailAddr: '高新区软件园B座', vatPayer: true, intro: '智慧校园与大数据分析解决方案提供商。', companyPhone: '0779-3060333', businessDeadline: '2035-04-12', contacted: true, contactTime: '2026-04-12', coop: '合作中', coopTime: '2026-06-10', coopReason: '技术领先，服务优质', cancelTime: '2026-05-30', cancelReason: '合作条款未达一致', recoopTime: '2026-06-10', recoopReason: '条款重新协商一致', portal: true, applyDate: '2026-04-12' },
+];
+
+// 开发者信息审批待审核数据（入驻申请 + 企业信息变更，桂教通超管在 P01a 审批）
+const DEV_APPROVALS = [
+  { id: 1, type: 'enter', source: '邀请注册', vendorName: '南宁智课教育科技有限公司', submitTime: '2026-08-20 14:23', status: '待审核', changes: [],
+    draft: { name: '南宁智课教育科技有限公司', type: '企业', isPublicSea: true, socialCode: '91450100MA5KX8A72Q', legalPerson: '张三', admin: '李四', phone: '13800138001', vatPayer: true, companyPhone: '0771-5718888', businessDeadline: '2046-08-20', registerAddr: '南宁市青秀区民族大道118号', detailAddr: '科技大厦5层', portal: true, intro: '专注中小学智慧课堂与教学大数据分析的教育科技企业。', logo: PH_LOGO, license: PH_LICENSE, products: PH_PRODUCTS } },
+  { id: 2, type: 'info', source: '企业信息变更', vendorName: '南宁智课教育科技有限公司', submitTime: '2026-08-21 09:10', status: '待审核', vendorId: 1,
+    draft: { companyPhone: '0771-5800999', intro: '专注K12智慧教育信息化建设，提供数字校园整体解决方案（2026 版）。' },
+    changes: [
+      { field: '公司电话', old: '0771-5800000', neu: '0771-5800999' },
+      { field: '开发者简介', old: '专注K12智慧教育信息化建设，提供数字校园整体解决方案。', neu: '专注K12智慧教育信息化建设，提供数字校园整体解决方案（2026 版）。' },
+    ] },
 ];
 
 const APIS = [
@@ -211,15 +232,15 @@ const DEV_PASSED_APPS = [
 ];
 
 const API_APPS = [
-  { id: 1, appId: 'app_1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-07-20', reason: '用于家校互通的学生基础信息展示', whiteList: ['https://api.zhike.edu.cn', 'http://dev.zhike.edu.cn'], maxCalls: 10000, rangeTypes: ['教育局'], orgs: '南宁市教育局', includeSub: '是',
+  { id: 1, appId: 'app_1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-07-20', reason: '用于家校互通的学生基础信息展示', whiteList: ['https://api.zhike.edu.cn', 'http://dev.zhike.edu.cn'], maxCalls: 10000, rangeTypes: ['教育局'], orgs: '南宁市教育局', includeSub: '是', deadline: '2029-07-19',
     apis: [ { name: '学生信息查询接口', service: 'student_info_query', apiType: '用户信息', type: '敏感接口', category: '基础服务', maxCalls: 10000 } ] },
-  { id: 2, appId: 'app_1002', vendor: '广西云启', status: '未审批', applyTime: '2026-07-21', reason: '同步课程数据到校内教学平台', whiteList: ['https://open.gxyunqi.com'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第二中学', includeSub: '否',
+  { id: 2, appId: 'app_1002', vendor: '广西云启', status: '未审批', applyTime: '2026-07-21', reason: '同步课程数据到校内教学平台', whiteList: ['https://open.gxyunqi.com'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第二中学', includeSub: '否', deadline: '2029-07-20',
     apis: [ { name: '课程同步接口', service: 'course_sync', apiType: '待办', type: '非敏感接口', category: '业务服务', maxCalls: 10000 } ] },
-  { id: 3, appId: 'app_1003', vendor: '北海海创', status: '已审批', opinion: '通过', approver: '王超管', approveTime: '2026-07-18', authKey: 'gjt_7d2e9a1c4b8f3056', credFiles: [{ name: '授权凭证-1.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-1' }, { name: '授权凭证-2.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-2' }], applyTime: '2026-07-15', reason: '成绩数据上报到局端', whiteList: ['https://bhhaichuang.com'], maxCalls: 50000, rangeTypes: ['教育局'], orgs: '北海市教育局', includeSub: '是',
+  { id: 3, appId: 'app_1003', vendor: '北海海创', status: '已审批', opinion: '通过', approver: '王超管', approveTime: '2026-07-18', authKey: 'gjt_7d2e9a1c4b8f3056', credFiles: [{ name: '授权凭证-1.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-1' }, { name: '授权凭证-2.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-2' }], applyTime: '2026-07-15', reason: '成绩数据上报到局端', whiteList: ['https://bhhaichuang.com'], maxCalls: 50000, rangeTypes: ['教育局'], orgs: '北海市教育局', includeSub: '是', deadline: '2029-07-14',
     apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '用户信息', type: '敏感接口', category: '数据服务', maxCalls: 50000 } ] },
-  { id: 4, appId: 'app_1004', vendor: '个人开发者 王磊', status: '已审批', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-07-19', applyTime: '2026-07-12', reason: '需要考勤数据', whiteList: ['http://wanglei.dev.cn'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第三中学', includeSub: '否',
+  { id: 4, appId: 'app_1004', vendor: '个人开发者 王磊', status: '已审批', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-07-19', applyTime: '2026-07-12', reason: '需要考勤数据', whiteList: ['http://wanglei.dev.cn'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第三中学', includeSub: '否', deadline: '2029-07-11',
     apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '用户信息', type: '非敏感接口', category: '业务服务', maxCalls: 10000 } ] },
-  { id: 5, appId: 'app_1003', vendor: '北海海创', status: '未审批', applyTime: '2026-07-22', reason: '成绩与考勤数据统一管理上报', whiteList: ['https://bhhaichuang.com'], maxCalls: 80000, rangeTypes: ['学校', '教育局'], orgs: '北海市第一中学;北海市教育局', includeSub: '是',
+  { id: 5, appId: 'app_1003', vendor: '北海海创', status: '未审批', applyTime: '2026-07-22', reason: '成绩与考勤数据统一管理上报', whiteList: ['https://bhhaichuang.com'], maxCalls: 80000, rangeTypes: ['学校', '教育局'], orgs: '北海市第一中学;北海市教育局', includeSub: '是', deadline: '2029-07-21',
     apis: [
       { name: '成绩上报接口', service: 'score_report', apiType: '用户信息', type: '敏感接口', category: '数据服务', maxCalls: 50000 },
       { name: '考勤数据接口', service: 'attendance', apiType: '用户信息', type: '非敏感接口', category: '业务服务', maxCalls: 30000 },
@@ -228,13 +249,13 @@ const API_APPS = [
 
 // 接口申请记录（开发者从应用管理「接口申请」提交，桂教通超管审批；通过后可发起数据授权申请）
 const API_REQS = [
-  { id: 101, appId: 'app_1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-08-16', opinion: '', opinionNote: '', approver: '', approveTime: '',
+  { id: 101, appId: 'app_1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-08-16', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-08-15',
     apis: [ { name: '学生信息查询接口', service: 'student_info_query', apiType: '用户信息', type: '敏感接口', category: '基础服务' } ] },
-  { id: 102, appId: 'app_1002', vendor: '广西云启', status: '未审批', applyTime: '2026-08-17', opinion: '', opinionNote: '', approver: '', approveTime: '',
+  { id: 102, appId: 'app_1002', vendor: '广西云启', status: '未审批', applyTime: '2026-08-17', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-08-16',
     apis: [ { name: '课程同步接口', service: 'course_sync', apiType: '待办', type: '非敏感接口', category: '业务服务' } ] },
-  { id: 103, appId: 'app_1003', vendor: '北海海创', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可对该应用发起数据授权申请', approver: '李超管', approveTime: '2026-08-14 15:30', applyTime: '2026-08-12',
+  { id: 103, appId: 'app_1003', vendor: '北海海创', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可对该应用发起数据授权申请', approver: '李超管', approveTime: '2026-08-14 15:30', applyTime: '2026-08-12', deadline: '2029-08-11',
     apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '用户信息', type: '敏感接口', category: '数据服务' } ] },
-  { id: 104, appId: 'app_1004', vendor: '个人开发者 王磊', status: '已驳回', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-08-13 10:20', applyTime: '2026-08-10',
+  { id: 104, appId: 'app_1004', vendor: '个人开发者 王磊', status: '已驳回', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-08-13 10:20', applyTime: '2026-08-10', deadline: '2029-08-09',
     apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '用户信息', type: '非敏感接口', category: '业务服务' } ] },
 ];
 
@@ -268,19 +289,19 @@ const SUBACCOUNTS = [
 
 // 客户端授权关联（桂教通超管维护）
 const CLIENT_AUTH = [
-  { clientId: 'client_a1b2c3', clientSecret: 'sct_8f3a2b1c7d4e5f60', authScopeText: '学校：南宁市第三中学', syncRangeTypes: ['学校'], orgs: '南宁市第三中学', includeSub: '否', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'edu.gxschool.edu.cn' }], remark: '南宁市第三中学统一认证回调' },
-  { clientId: 'client_d4e5f6', clientSecret: 'sct_1c5e8a2b7d3f6a09', authScopeText: '学校：桂林市育才小学', syncRangeTypes: ['学校'], orgs: '桂林市育才小学', includeSub: '否', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: [{ protocol: 'https://', domain: 'ylxx.guilin.edu.cn' }], remark: '桂林市育才小学教务系统' },
-  { clientId: 'client_g7h8i9', clientSecret: 'sct_5b7d9f1c3e5a7b94', authScopeText: '学校：柳州市第十二中学', syncRangeTypes: ['学校'], orgs: '柳州市第十二中学', includeSub: '否', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'lz12.gxedu.edu.cn' }], remark: '柳州市第十二中学门户登录' },
-  { clientId: 'client_j1k2l3', clientSecret: 'sct_3d5f7a9c1b3e5d80', authScopeText: '学校：北海市第一小学', syncRangeTypes: ['学校'], orgs: '北海市第一小学', includeSub: '否', useStatus: '未使用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: [{ protocol: 'https://', domain: 'bohyd.gxedu.edu.cn' }], remark: '北海市第一小学单点登录' },
-  { clientId: 'client_m4n5o6', clientSecret: 'sct_6a8c0e2f4d6b8a03', authScopeText: '学校：梧州市高级中学', syncRangeTypes: ['学校'], orgs: '梧州市高级中学', includeSub: '否', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://wzgx.gxedu.edu.cn/oauth/callback', logoutRedirectUri: 'https://wzgx.gxedu.edu.cn/oauth/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'wzgx.gxedu.edu.cn' }], remark: '梧州市高级中学数据对接' },
-  { clientId: 'client_p7q8r9', clientSecret: 'sct_9b1d3f5a7c9e1f42', authScopeText: '学校：钦州市第二中学', syncRangeTypes: ['学校'], orgs: '钦州市第二中学', includeSub: '否', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://qzez.gxedu.edu.cn/sso/cb', logoutRedirectUri: 'https://qzez.gxedu.edu.cn/sso/lo', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: [{ protocol: 'https://', domain: 'qzez.gxedu.edu.cn' }], remark: '钦州市第二中学教务对接' },
+  { clientId: 'client_a1b2c3', clientSecret: 'sct_8f3a2b1c7d4e5f60', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'edu.gxschool.edu.cn' }], remark: '南宁市第三中学统一认证回调' },
+  { clientId: 'client_d4e5f6', clientSecret: 'sct_1c5e8a2b7d3f6a09', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '桂林市育才小学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：桂林市育才小学', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: [{ protocol: 'https://', domain: 'ylxx.guilin.edu.cn' }], remark: '桂林市育才小学教务系统' },
+  { clientId: 'client_g7h8i9', clientSecret: 'sct_5b7d9f1c3e5a7b94', allData: '是', allApis: '是', syncRangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '全部数据', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'lz12.gxedu.edu.cn' }], remark: '柳州市第十二中学门户登录' },
+  { clientId: 'client_j1k2l3', clientSecret: 'sct_3d5f7a9c1b3e5d80', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '北海市第一小学', orgNames: '', apiIds: [3], deadline: '2029-08-18', authScopeText: '学校：北海市第一小学', useStatus: '未使用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: [{ protocol: 'https://', domain: 'bohyd.gxedu.edu.cn' }], remark: '北海市第一小学单点登录' },
+  { clientId: 'client_m4n5o6', clientSecret: 'sct_6a8c0e2f4d6b8a03', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '梧州市高级中学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：梧州市高级中学', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://wzgx.gxedu.edu.cn/oauth/callback', logoutRedirectUri: 'https://wzgx.gxedu.edu.cn/oauth/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'wzgx.gxedu.edu.cn' }], remark: '梧州市高级中学数据对接' },
+  { clientId: 'client_p7q8r9', clientSecret: 'sct_9b1d3f5a7c9e1f42', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '钦州市第二中学', orgNames: '', apiIds: [2], deadline: '2029-08-18', authScopeText: '学校：钦州市第二中学', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://qzez.gxedu.edu.cn/sso/cb', logoutRedirectUri: 'https://qzez.gxedu.edu.cn/sso/lo', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: [{ protocol: 'https://', domain: 'qzez.gxedu.edu.cn' }], remark: '钦州市第二中学教务对接' },
 ];
 
 // 数据授权管理（桂教通超管维护：为应用配置数据授权范围与授权接口）
 const DATA_AUTH_MGMT = [
-  { id: 1, appId: 'app_1001', rangeTypes: ['学校'], orgs: '南宁市第三中学', apiIds: [1, 4], applyTime: '2026-08-15 10:20', applicant: '张伟', useStatus: '启用' },
-  { id: 2, appId: 'app_1002', rangeTypes: ['学校', '教育局'], orgs: '南宁市教育局;南宁市第三中学', apiIds: [1, 2, 4], applyTime: '2026-08-16 14:05', applicant: '李静', useStatus: '启用' },
-  { id: 3, appId: 'app_1003', rangeTypes: ['学校', '教育局'], orgs: '北海市第一中学;北海市教育局', apiIds: [3, 5], applyTime: '2026-08-17 09:40', applicant: '刘洋', useStatus: '停用' },
+  { id: 1, appId: 'app_1001', rangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], deadline: '2029-08-14', applyTime: '2026-08-15 10:20', applicant: '张伟', useStatus: '启用' },
+  { id: 2, appId: 'app_1002', rangeTypes: ['学校', '教育局'], schoolNames: '南宁市第三中学', orgNames: '南宁市教育局', apiIds: [1, 2, 4], deadline: '2029-08-15', applyTime: '2026-08-16 14:05', applicant: '李静', useStatus: '启用' },
+  { id: 3, appId: 'app_1003', rangeTypes: ['学校', '教育局'], schoolNames: '北海市第一中学', orgNames: '北海市教育局', apiIds: [3, 5], deadline: '2029-08-16', applyTime: '2026-08-17 09:40', applicant: '刘洋', useStatus: '停用' },
 ];
 
 // 数据同步申请（机构管理员提交，桂教通超管审批；机构管理员在 P32 仅见本机构记录，超管在 P33 可见全部）
@@ -292,6 +313,57 @@ const DATA_SYNC_APPS = [
   { id: 5, orgId: 'ORG005', orgName: '南宁市第一中学', applicant: '陈芳', applyTime: '2026-08-14 16:45', sysName: '智慧校园平台', contact: '周涛', phone: '13566667777', whiteList: [{ protocol: 'https://', domain: 'zhxy.nn1z.edu.cn' }], status: '审批中', opinion: '', opinionNote: '' },
   { id: 6, orgId: 'ORG006', orgName: '南宁市第二中学', applicant: '黄明', applyTime: '2026-08-16 10:05', sysName: '教务管理系统', contact: '吴丽', phone: '13344445555', whiteList: [{ protocol: 'https://', domain: 'jw.nn2z.edu.cn' }], status: '草稿', opinion: '', opinionNote: '' },
   { id: 7, orgId: 'ORG007', orgName: '青秀区实验小学', applicant: '林珊', applyTime: '2026-08-11 09:50', sysName: '家校互动平台', contact: '何军', phone: '13233334444', whiteList: [{ protocol: 'http://', domain: 'jx.qx.edu.cn' }], status: '已驳回', opinion: '不通过', opinionNote: '业务系统对接人信息不完整，请补充后重新提交', approver: '王超管', approveTime: '2026-08-12 17:30' },
+];
+
+// 数据回流 — 接口参数字典（用于同步字段多选）
+const API_PARAMS = {
+  student_info_query: [
+    { name: 'studentId', label: '学生学号', type: 'string' },
+    { name: 'name', label: '学生姓名', type: 'string' },
+    { name: 'classId', label: '班级标识', type: 'string' },
+    { name: 'gradeId', label: '年级标识', type: 'string' },
+  ],
+  course_sync: [
+    { name: 'courseId', label: '课程标识', type: 'string' },
+    { name: 'courseName', label: '课程名称', type: 'string' },
+    { name: 'teacherId', label: '教师标识', type: 'string' },
+  ],
+  score_report: [
+    { name: 'studentId', label: '学生学号', type: 'string' },
+    { name: 'subjectId', label: '学科标识', type: 'string' },
+    { name: 'score', label: '成绩', type: 'int32' },
+    { name: 'examId', label: '考试标识', type: 'string' },
+  ],
+  attendance: [
+    { name: 'studentId', label: '学生学号', type: 'string' },
+    { name: 'date', label: '日期', type: 'string' },
+    { name: 'status', label: '考勤状态', type: 'string' },
+  ],
+  teaching_plan: [
+    { name: 'planId', label: '计划标识', type: 'string' },
+    { name: 'gradeId', label: '年级标识', type: 'string' },
+    { name: 'subjectId', label: '学科标识', type: 'string' },
+  ],
+  internal_test: [
+    { name: 'testId', label: '测试标识', type: 'string' },
+  ],
+};
+
+// 数据回流申请（开发者管理员提交，桂教通超管审批/确认，双方共维护同一份数据）
+// 状态机：待审批（开发者提交后）→ 同步中（超管审批通过）→（有接口：超管同步完成）已完成
+//                               ↘（无接口：开发者同步完成→待确认→超管同步确认）已完成
+const DATA_BACKFLOW = [
+  { id: 1, name: '学生学籍回流', appId: 'app_1001', appName: '智慧校园APP', devName: '南宁智课教育科技有限公司', hasApi: '否', scopes: [
+    { apiId: 1, service: 'student_info_query', fields: ['studentId', 'name', 'classId'], status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
+    { apiId: 2, service: 'student_contact_query', fields: ['studentId', 'parentPhone', 'address'], status: '失败', failReason: '接口返回超时（504）', syncTime: '2026-08-22 16:30' }
+  ], syncStatus: '待确认', applyTime: '2026-08-20 10:00' },
+  { id: 2, name: '成绩数据回流', appId: 'app_1002', appName: '家校互动平台', devName: '广西云启科技有限公司', hasApi: '否', scopes: [
+    { apiId: 3, service: 'score_report', fields: ['studentId', 'subjectId', 'score'], status: '失败', failReason: '数据源连接异常', syncTime: '' }
+  ], syncStatus: '同步中', applyTime: '2026-08-21 14:30' },
+  { id: 3, name: '课程文档回流', appId: 'app_1001', appName: '智慧校园APP', devName: '北海海创科技有限公司', hasApi: '是', docs: [
+    { name: '对接文档.pdf', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF' },
+    { name: '接口说明.pptx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PPT' }
+  ], status: '失败', failReason: '接口鉴权失败（401）', syncTime: '2026-08-23 09:00', syncStatus: '已完成', applyTime: '2026-08-18 09:00' },
 ];
 
 
@@ -314,6 +386,14 @@ const app = Vue.createApp({
     roleName() { const r = ROLES.find(x => x.key === this.role); return r ? r.name : ''; },
     scopeLabel() { return this.role === 'dev' ? '本企业' : (this.role === 'super' ? '全平台' : '本机构'); },
     activeTitle() { return PAGE_TITLES[this.page] || this.page; },
+    topMenuLabel() {
+      const tree = MENU_TREE[this.role] || [];
+      for (const m of tree) {
+        if (m.page === this.page) return m.label;
+        if (m.children && m.children.some(c => c.page === this.page)) return m.label;
+      }
+      return '';
+    },
     activeMenu() { return this.page; },
     currentComp() { return this.page; },
   },
@@ -369,7 +449,7 @@ app.component('P01', {
     openCoop(r) { this.coopTarget = r; this.coopForm = { reason: '', time: '' }; this.coopVisible = true; },
     confirmCoop() {
       if (!this.coopForm.reason || !this.coopForm.time) { this.$message.warning('请填写合作原因与合作时间'); return; }
-      this.coopTarget.coop = '合作中'; this.coopVisible = false; this.$message.success('已确认合作，系统自动创建租户');
+      this.coopTarget.coop = '合作中'; this.coopVisible = false; this.$message.success('已确认合作，合作状态已记录');
     },
     openCancel(r) { this.cancelTarget = r; this.coopForm = { reason: '', time: '' }; this.cancelVisible = true; },
     confirmCancel() {
@@ -402,6 +482,8 @@ app.component('P01', {
       <el-button type="primary" @click="$root.go('P02')">新增开发者</el-button>
       <el-button @click="inviteVisible=true">邀请开发者</el-button>
     </div>
+    <el-alert type="info" :closable="false" style="margin-bottom:14px" show-icon
+      title="本列表仅展示审批通过的开发者；新增或邀请开发者提交入驻信息后，需经「开发者信息审批」审批通过，才生成开发者管理员账号并在此展示"/>
     <div class="card">
       <el-table :data="filtered" stripe>
         <el-table-column prop="name" label="开发者名称" min-width="180"></el-table-column>
@@ -442,7 +524,7 @@ app.component('P01', {
         <div style="width:64px;height:64px;border-radius:50%;border:3px solid #409eff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
           <span style="font-size:32px;color:#409eff;font-weight:bold">✓</span>
         </div>
-        <div style="color:#409eff;font-size:15px">邀请链接已复制，可将此链接发给开发商进行注册</div>
+        <div style="color:#409eff;font-size:15px">邀请链接已复制，可将此链接发给开发商进行注册；开发商注册提交的入驻信息需经审批通过后，方可登录开发者平台</div>
       </div>
       <template #footer>
         <el-button @click="inviteVisible=false">我知道了</el-button>
@@ -459,7 +541,7 @@ app.component('P01', {
         </el-form-item>
         <el-form-item label="合作时间" required><el-date-picker v-model="coopForm.time" type="date" placeholder="选择时间"></el-date-picker></el-form-item>
       </el-form>
-      <p style="color:#909399;font-size:12px">确认合作后系统将自动为开发者创建租户，开发者管理员可登录开发者平台。</p>
+      <p style="color:#909399;font-size:12px">确认合作仅记录合作状态（合作原因、合作时间）；开发者登录权限已在入驻审批通过时开通。</p>
       <template #footer>
         <el-button @click="coopVisible=false">取消</el-button>
         <el-button type="primary" @click="confirmCoop">确认合作</el-button>
@@ -515,6 +597,236 @@ app.component('P01', {
 });
 
 /* =====================================================================
+ * P01a 开发者信息审批（桂教通超管）
+ * 入驻申请（新增/邀请注册提交）与企业信息变更（开发者 P16 提交）统一在此审批
+ * 入驻申请审批通过后生成开发者管理员账号，方可登录开发者平台
+ * ===================================================================== */
+app.component('P01a', {
+  data() {
+    return { qType: '' };
+  },
+  computed: {
+    filtered() {
+      const all = [...DEV_APPROVALS];
+      return this.qType ? all.filter(x => x.type === this.qType) : all;
+    },
+  },
+  methods: {
+    view(r) { this.$root.go('P01aView', { id: r.id }); },
+    approve(r) { this.$root.go('P01aApprove', { id: r.id }); },
+  },
+  template: `
+  <div>
+    <div class="toolbar">
+      <div>
+        <span class="label">申请类型</span>
+        <el-select v-model="qType" style="width:160px">
+          <el-option label="全部" value=""/>
+          <el-option label="入驻申请" value="enter"/>
+          <el-option label="企业信息变更" value="info"/>
+        </el-select>
+      </div>
+      <el-button type="primary" @click="qType=qType">查询</el-button>
+      <el-button @click="qType=''">重置</el-button>
+    </div>
+    <el-alert type="info" :closable="false" style="margin-bottom:14px" show-icon
+      title="新增开发者或邀请注册提交的入驻信息、开发者修改企业信息提交的变更申请，均在此审批；入驻申请审批通过后生成开发者管理员账号，方可登录开发者平台"/>
+    <el-card>
+      <el-table :data="filtered" stripe>
+        <el-table-column label="开发者名称" min-width="200">
+          <template #default="s"><span>{{ s.row.vendorName }}</span></template>
+        </el-table-column>
+        <el-table-column label="申请类型" width="130">
+          <template #default="s">
+            <el-tag :type="s.row.type==='enter' ? '' : 'warning'" size="small">{{ s.row.type==='enter' ? '入驻申请' : '企业信息变更' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="提交时间" width="160">
+          <template #default="s"><span>{{ s.row.submitTime }}</span></template>
+        </el-table-column>
+        <el-table-column label="申请来源" width="130">
+          <template #default="s"><span>{{ s.row.source }}</span></template>
+        </el-table-column>
+        <el-table-column label="状态" width="90">
+          <template #default="s"><el-tag type="danger" size="small">{{ s.row.status }}</el-tag></template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" align="center">
+          <template #default="s">
+            <el-button type="primary" link @click="view(s.row)">查看</el-button>
+            <el-button type="success" link @click="approve(s.row)">审批</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+  </div>`,
+});
+
+/* =====================================================================
+ * P01aView 厂商信息查看（开发者信息审批 - 查看）
+ * 单开厂商信息界面，展示内容同开发者管理的查看界面（P03 只读）
+ * 入驻申请展示提交的入驻信息（draft）；企业信息变更展示当前（变更前）厂商信息
+ * ===================================================================== */
+app.component('P01aView', {
+  props: ['ctx'],
+  data() {
+    const row = DEV_APPROVALS.find(x => x.id === (this.ctx && this.ctx.id)) || DEV_APPROVALS[0];
+    return { row };
+  },
+  computed: {
+    vendor() {
+      if (this.row.type === 'enter') return this.row.draft;
+      const v = VENDORS.find(x => x.id === this.row.vendorId);
+      return v || {};
+    },
+  },
+  methods: {
+    back() { this.$root.go('P01a'); },
+  },
+  template: `
+  <div>
+    <div class="card" style="max-width:none">
+      <div style="font-weight:600;margin:8px 0 12px">厂商信息（{{ row.type === 'enter' ? '入驻申请提交信息' : '当前企业信息' }}）</div>
+      <el-form label-width="120px">
+        <el-row :gutter="16">
+          <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ vendor.name }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="开发者类型"><div class="ro-text">{{ vendor.type }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="是否归属公海"><div class="ro-text">{{ vendor.isPublicSea ? '是' : '否' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="统一社会信用代码"><div class="ro-text">{{ vendor.socialCode }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="法人代表"><div class="ro-text">{{ vendor.legalPerson }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="管理员"><div class="ro-text">{{ vendor.admin }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="管理员手机号"><div class="ro-text">{{ vendor.phone }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="公司电话"><div class="ro-text">{{ vendor.companyPhone }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="营业期限"><div class="ro-text">{{ vendor.businessDeadline }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="是否在门户展示"><div class="ro-text">{{ vendor.portal ? '是' : '否' }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="工商注册地址"><div class="ro-text">{{ vendor.registerAddr }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="详细地址"><div class="ro-text">{{ vendor.detailAddr }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="开发者简介"><div class="ro-text">{{ vendor.intro }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="营业执照">
+            <div style="display:flex;flex-wrap:wrap;gap:14px">
+              <div v-for="(im, i) in (vendor.license || [])" :key="i" style="text-align:center">
+                <el-image :src="im.url" :preview-src-list="(vendor.license||[]).map(x=>x.url)" style="width:180px;height:120px;border-radius:4px"/>
+                <div style="font-size:12px;color:#909399;margin-top:4px">{{ im.name }}</div>
+              </div>
+            </div>
+          </el-form-item></el-col>
+        </el-row>
+      </el-form>
+      <div style="text-align:center;margin-top:18px">
+        <el-button type="primary" @click="back">返回</el-button>
+      </div>
+      <div style="color:#909399;font-size:12px;line-height:1.5;margin-top:12px">此处仅查看厂商信息；如需处理该{{ row.type === 'enter' ? '入驻申请' : '企业信息变更' }}，请返回列表点击「审批」。</div>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * P01aApprove 开发者信息审批（开发者信息审批 - 审批）
+ * 界面布局参考「接口申请审批」（P09）：
+ * 申请信息 + 厂商信息（入驻申请）或变更前后记录（企业信息变更）+ 审批意见（通过/不通过）
+ * 入驻申请审批通过后生成开发者管理员账号（可登录开发者平台）并进入开发者列表
+ * 企业信息变更审批通过后修改生效；审批不通过则驳回，申请人可重新提交
+ * ===================================================================== */
+app.component('P01aApprove', {
+  props: ['ctx'],
+  data() {
+    const row = DEV_APPROVALS.find(x => x.id === (this.ctx && this.ctx.id)) || DEV_APPROVALS[0];
+    return { row, opinion: '通过', note: '' };
+  },
+  methods: {
+    submit() {
+      if (this.opinion === '不通过' && !this.note) { this.$message.warning('不通过时审批说明必填'); return; }
+      const r = this.row;
+      if (this.opinion === '通过') {
+        if (r.type === 'enter') {
+          const d = r.draft;
+          VENDORS.push({
+            id: Math.max(0, ...VENDORS.map(v => v.id)) + 1,
+            name: d.name, type: d.type, legalPerson: d.legalPerson, admin: d.admin, phone: d.phone,
+            isPublicSea: d.isPublicSea, socialCode: d.socialCode, logo: d.logo, products: d.products,
+            license: d.license, registerAddr: d.registerAddr, detailAddr: d.detailAddr, vatPayer: d.vatPayer,
+            intro: d.intro, companyPhone: d.companyPhone, businessDeadline: d.businessDeadline,
+            portal: d.portal, contacted: false, contactTime: '', coop: '未合作', coopTime: '', coopReason: '',
+            cancelTime: '', cancelReason: '', recoopTime: '', applyDate: r.submitTime.slice(0, 10),
+          });
+          this.$message.success('审批通过，开发者管理员账号已生成，可登录开发者平台');
+        } else {
+          const v = VENDORS.find(x => x.id === r.vendorId);
+          if (v && r.draft) Object.assign(v, r.draft);
+          this.$message.success('审批通过，企业信息修改已生效');
+        }
+      } else {
+        this.$message.warning('已审批不通过，入驻/修改不生效，申请人可重新提交');
+      }
+      const idx = DEV_APPROVALS.findIndex(x => x.id === r.id);
+      if (idx > -1) DEV_APPROVALS.splice(idx, 1);
+      this.$root.go('P01a');
+    },
+  },
+  template: `
+  <div>
+    <div class="card" style="max-width:none">
+      <div style="font-weight:600;margin:8px 0 12px">申请信息</div>
+      <el-form label-width="120px" style="margin-bottom:18px">
+        <el-row :gutter="16">
+          <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.vendorName }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="申请类型"><div class="ro-text">{{ row.type === 'enter' ? '入驻申请' : '企业信息变更' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="申请来源"><div class="ro-text">{{ row.source }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="提交时间"><div class="ro-text">{{ row.submitTime }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="审批状态"><div class="ro-text">{{ row.status }}</div></el-form-item></el-col>
+        </el-row>
+      </el-form>
+      <template v-if="row.type === 'enter'">
+        <div style="font-weight:600;margin:8px 0 12px">厂商信息（入驻申请提交）</div>
+        <el-form label-width="120px">
+          <el-row :gutter="16">
+            <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.draft.name }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="开发者类型"><div class="ro-text">{{ row.draft.type }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="是否归属公海"><div class="ro-text">{{ row.draft.isPublicSea ? '是' : '否' }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="统一社会信用代码"><div class="ro-text">{{ row.draft.socialCode }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="法人代表"><div class="ro-text">{{ row.draft.legalPerson }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="管理员"><div class="ro-text">{{ row.draft.admin }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="管理员手机号"><div class="ro-text">{{ row.draft.phone }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="公司电话"><div class="ro-text">{{ row.draft.companyPhone }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="营业期限"><div class="ro-text">{{ row.draft.businessDeadline }}</div></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="是否在门户展示"><div class="ro-text">{{ row.draft.portal ? '是' : '否' }}</div></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="工商注册地址"><div class="ro-text">{{ row.draft.registerAddr }}</div></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="详细地址"><div class="ro-text">{{ row.draft.detailAddr }}</div></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="开发者简介"><div class="ro-text">{{ row.draft.intro }}</div></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="营业执照">
+              <div style="display:flex;flex-wrap:wrap;gap:14px">
+                <div v-for="(im, i) in (row.draft.license || [])" :key="i" style="text-align:center">
+                  <el-image :src="im.url" :preview-src-list="(row.draft.license||[]).map(x=>x.url)" style="width:180px;height:120px;border-radius:4px"/>
+                  <div style="font-size:12px;color:#909399;margin-top:4px">{{ im.name }}</div>
+                </div>
+              </div>
+            </el-form-item></el-col>
+          </el-row>
+        </el-form>
+      </template>
+      <template v-else>
+        <div style="font-weight:600;margin:8px 0 12px">修改前后记录</div>
+        <el-table :data="row.changes" border size="small">
+          <el-table-column label="变更字段" prop="field" width="150"></el-table-column>
+          <el-table-column label="原值" prop="old"></el-table-column>
+          <el-table-column label="新值" prop="neu"></el-table-column>
+        </el-table>
+      </template>
+      <el-form label-width="90px" style="margin-top:18px">
+        <el-form-item label="审批意见" required>
+          <el-radio-group v-model="opinion"><el-radio value="通过">通过</el-radio><el-radio value="不通过">不通过</el-radio></el-radio-group>
+        </el-form-item>
+        <el-form-item label="审批说明"><el-input type="textarea" :rows="3" maxlength="500" show-word-limit v-model="note"></el-input></el-form-item>
+      </el-form>
+      <div style="text-align:center;margin-top:18px">
+        <el-button @click="$root.go('P01a')">取消</el-button>
+        <el-button type="primary" @click="submit">提交审批</el-button>
+      </div>
+      <div style="color:#909399;font-size:12px;line-height:1.5;margin-top:12px">入驻申请由桂教通超管审批；审批通过后生成开发者管理员账号（可登录开发者平台）并进入开发者列表；企业信息变更审批通过后修改生效；审批不通过时审批说明必填，驳回后申请人可重新提交。</div>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
  * P02 新增/编辑开发者
  * 三段可折叠区：基础信息（必填集中）/ 财务信息（选填）/ 开票信息（选填）
  * ===================================================================== */
@@ -564,7 +876,34 @@ app.component('P02', {
       if (missing.length) { this.$message.warning('请填写必填项：' + missing.join('、')); return; }
       if (!/^\d{11}$/.test(b.adminPhone)) { this.$message.warning('管理员手机号格式不正确'); return; }
       if (b.socialCode.length !== 18) { this.$message.warning('统一社会信用代码需 18 位'); return; }
-      if (this.$root.standalone) { this.showSuccess = true; } else { this.$message.success('已保存'); this.$root.go('P01'); }
+      // 编辑模式（已审批通过的开发者信息）：直接保存
+      if (this.ctx && this.ctx.vendorId) {
+        const v = VENDORS.find(x => x.id === this.ctx.vendorId);
+        if (v) { v.name = b.name; v.admin = b.admin; v.phone = b.adminPhone; v.portal = b.portal; }
+        this.$message.success('已保存');
+        this.$root.go('P01');
+        return;
+      }
+      // 新增 / 邀请注册：生成入驻申请待审核数据，审批通过后才生成开发者管理员账号
+      DEV_APPROVALS.push({
+        id: Math.max(0, ...DEV_APPROVALS.map(x => x.id)) + 1,
+        type: 'enter',
+        source: this.$root.standalone ? '邀请注册' : '超管新增',
+        vendorName: b.name,
+        submitTime: new Date().toLocaleString('zh-CN', { hour12: false }),
+        status: '待审核',
+        changes: [],
+        draft: {
+          name: b.name, type: b.type, isPublicSea: b.isPublicSea, socialCode: b.socialCode,
+          legalPerson: b.legalPerson, admin: b.admin, phone: b.adminPhone, vatPayer: b.vatPayer,
+          companyPhone: b.companyPhone, businessDeadline: b.businessDeadline, registerAddr: b.registerAddr,
+          detailAddr: b.detailAddr, portal: b.portal, intro: b.intro,
+          logo: b.logo.map(x => ({ url: x.url || x.raw || '', name: x.name || '' })),
+          license: b.license.map(x => ({ url: x.url || x.raw || '', name: x.name || '' })),
+          products: b.products,
+        },
+      });
+      if (this.$root.standalone) { this.showSuccess = true; } else { this.$message.success('已提交入驻申请，待桂教通超管审批通过后生成开发者账号'); this.$root.go('P01'); }
     },
     goBack() {
       if (this.$root.standalone) { window.close(); } else { this.$root.go('P01'); }
@@ -572,6 +911,8 @@ app.component('P02', {
   },
   template: `
   <div>
+    <el-alert v-if="!$root.standalone && !(ctx && ctx.vendorId)" type="info" :closable="false" style="margin-bottom:14px" show-icon
+      title="提交的入驻信息将生成待审核数据，经桂教通超管在「开发者信息审批」中审批通过后，才生成开发者管理员账号并展示在开发者列表"/>
     <div v-if="showSuccess" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;padding:60px 20px">
       <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;margin-bottom:32px;box-shadow:0 8px 24px rgba(102,126,234,0.3)">
         <svg style="width:64px;height:64px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -579,7 +920,7 @@ app.component('P02', {
         </svg>
       </div>
       <div style="font-size:22px;font-weight:600;color:#303133;margin-bottom:12px;text-align:center;line-height:1.7;max-width:520px">
-        恭喜您已申请加入{{ $root.standalone ? '桂教通' : '本机构' }}，麻烦您耐心等待{{ $root.standalone ? '桂教通' : '本机构' }}审批。
+        恭喜您已提交入驻申请，麻烦您耐心等待桂教通超管审批，审批通过后即可登录开发者平台。
       </div>
     </div>
     <el-collapse v-else v-model="activeCollapse">
@@ -708,7 +1049,7 @@ app.component('P03', {
     maskPhone(p) { return p.slice(0,3)+'****'+p.slice(7); },
     maskName(n) { return n.length>1 ? n[0]+'**' : n+'**'; },
     open(which) { this.form={reason:'',time:''}; this[which]=true; },
-    doCoop(){ if(!this.form.reason||!this.form.time){this.$message.warning('请填写原因与时间');return;} this.row.coop='合作中'; this.mCoop=false; this.$message.success('已确认合作，系统自动创建租户'); },
+    doCoop(){ if(!this.form.reason||!this.form.time){this.$message.warning('请填写原因与时间');return;} this.row.coop='合作中'; this.mCoop=false; this.$message.success('已确认合作，合作状态已记录'); },
     doReCoop(){ if(!this.form.reason||!this.form.time){this.$message.warning('请填写原因与时间');return;} this.row.coop='合作中'; this.mReCoop=false; this.$message.success('已重新合作'); },
   },
   template: `
@@ -1720,6 +2061,7 @@ app.component('P08', {
           <template #default="s"><span>{{ apiNames(s.row) }}</span></template>
         </el-table-column>
         <el-table-column prop="applyTime" label="申请时间" width="110"></el-table-column>
+        <el-table-column label="授权截止时间" width="110"><template #default="s"><span>{{ s.row.deadline || '—' }}</span></template></el-table-column>
         <el-table-column label="审批状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
         <el-table-column label="操作" min-width="150" fixed="right">
           <template #default="s">
@@ -1795,6 +2137,7 @@ app.component('P08Auth', {
               <template #default="s"><span>{{ s.row.reason || '—' }}</span></template>
             </el-table-column>
             <el-table-column prop="applyTime" label="申请时间" width="110"></el-table-column>
+            <el-table-column label="授权截止时间" width="110"><template #default="s"><span>{{ s.row.deadline || '—' }}</span></template></el-table-column>
             <el-table-column label="审批状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
             <el-table-column label="操作" min-width="160" fixed="right">
               <template #default="s">
@@ -1820,6 +2163,7 @@ app.component('P08Auth', {
               <template #default="s"><span>{{ s.row.reason || '—' }}</span></template>
             </el-table-column>
             <el-table-column prop="approveTime" label="审批时间" width="110"></el-table-column>
+            <el-table-column label="授权截止时间" width="110"><template #default="s"><span>{{ s.row.deadline || '—' }}</span></template></el-table-column>
             <el-table-column label="审批状态" width="90"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
             <el-table-column label="操作" min-width="90" fixed="right">
               <template #default="s">
@@ -1874,6 +2218,7 @@ app.component('P09', {
           <el-col :span="12"><el-form-item label="应用名称"><div class="ro-text">{{ appNameOf(row) }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.vendor }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="申请时间"><div class="ro-text">{{ row.applyTime }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="授权截止时间"><div class="ro-text">{{ row.deadline || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="审批状态"><div class="ro-text">{{ row.status }}</div></el-form-item></el-col>
         </el-row>
       </el-form>
@@ -1967,6 +2312,7 @@ app.component('P09Auth', {
           <el-col :span="12"><el-form-item label="同步范围类型"><div class="ro-text">{{ (row.rangeTypes||[]).join('、') || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="机构名称"><div class="ro-text">{{ row.orgs || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="是否包含下级"><div class="ro-text">{{ row.includeSub || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="授权截止时间"><div class="ro-text">{{ row.deadline || '—' }}</div></el-form-item></el-col>
           <el-col :span="24"><el-form-item label="申请理由"><div class="ro-text">{{ row.reason }}</div></el-form-item></el-col>
           <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (row.whiteList||[]).join('、') || '—' }}</div></el-form-item></el-col>
         </el-row>
@@ -2194,6 +2540,7 @@ app.component('P10', {
           <el-col :span="12"><el-form-item label="应用名称"><div class="ro-text">{{ appNameOf(row) }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.vendor }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="申请时间"><div class="ro-text">{{ row.applyTime }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="授权截止时间"><div class="ro-text">{{ row.deadline || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="审批状态"><div class="ro-text">{{ row.status }}</div></el-form-item></el-col>
         </el-row>
       </el-form>
@@ -2274,6 +2621,7 @@ app.component('P10Auth', {
           <el-col :span="12"><el-form-item label="同步范围类型"><div class="ro-text">{{ (row.rangeTypes||[]).join('、') || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="机构名称"><div class="ro-text">{{ row.orgs || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="是否包含下级"><div class="ro-text">{{ row.includeSub || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="授权截止时间"><div class="ro-text">{{ row.deadline || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="申请时间"><div class="ro-text">{{ row.applyTime }}</div></el-form-item></el-col>
           <el-col :span="24"><el-form-item label="申请理由"><div class="ro-text">{{ row.reason }}</div></el-form-item></el-col>
           <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (row.whiteList||[]).join('、') || '—' }}</div></el-form-item></el-col>
@@ -2812,7 +3160,6 @@ app.component('P16', {
     const v = VENDORS[0];
     return {
       edit: false,
-      pending: null,
       form: {
         // 基础信息
         name: v.name, type: v.type, isPublicSea: v.isPublicSea, socialCode: v.socialCode,
@@ -2827,6 +3174,12 @@ app.component('P16', {
         logo: v.logo || [], license: v.license || [],
       },
     };
+  },
+  computed: {
+    // 是否存在待桂教通超管审批的企业信息变更申请
+    pendingInfo() {
+      return DEV_APPROVALS.find(x => x.type === 'info' && x.vendorId === VENDORS[0].id && x.status === '待审核');
+    },
   },
   methods: {
     save() {
@@ -2846,28 +3199,37 @@ app.component('P16', {
       if (!/^\d{11}$/.test(f.adminPhone)) { this.$message.warning('管理员手机号格式不正确'); return; }
       if (f.socialCode.length !== 18) { this.$message.warning('统一社会信用代码需 18 位'); return; }
       const v = VENDORS[0];
-      const draft = {
-        name: f.name, type: f.type, isPublicSea: f.isPublicSea, socialCode: f.socialCode,
-        legalPerson: f.legalPerson, admin: f.admin, phone: f.adminPhone, registerAddr: f.registerAddr,
-        detailAddr: f.detailAddr, vatPayer: f.vatPayer, intro: f.intro, companyPhone: f.companyPhone,
-        businessDeadline: f.businessDeadline, portal: f.portal,
-        f_bankType: f.f_bankType, f_bankName: f.f_bankName, f_bankAccount: f.f_bankAccount, f_accountPurpose: f.f_accountPurpose,
-        i_addr: f.i_addr, i_taxNo: f.i_taxNo, i_phone: f.i_phone, i_bank: f.i_bank, i_bankAcc: f.i_bankAcc, i_bankLine: f.i_bankLine,
-        logo: f.logo, license: f.license,
-      };
-      this.pending = draft;
+      // 生成企业信息变更待办，待桂教通超管在「开发者信息审批」中审批
+      const changes = [];
+      [
+        ['公司电话', v.companyPhone, f.companyPhone],
+        ['开发者简介', v.intro, f.intro],
+        ['营业期限', v.businessDeadline, f.businessDeadline],
+        ['详细地址', v.detailAddr, f.detailAddr],
+      ].forEach(([field, old, neu]) => {
+        if ((old || '') !== (neu || '')) changes.push({ field, old: old || '—', neu: neu || '—' });
+      });
+      DEV_APPROVALS.push({
+        id: Math.max(0, ...DEV_APPROVALS.map(x => x.id)) + 1,
+        type: 'info',
+        source: '企业信息变更',
+        vendorName: v.name,
+        vendorId: v.id,
+        submitTime: new Date().toLocaleString('zh-CN', { hour12: false }),
+        status: '待审核',
+        changes: changes.length ? changes : [{ field: '企业信息', old: '原值', neu: '新值' }],
+        draft: {
+          name: f.name, type: f.type, isPublicSea: f.isPublicSea, socialCode: f.socialCode,
+          legalPerson: f.legalPerson, admin: f.admin, phone: f.adminPhone, registerAddr: f.registerAddr,
+          detailAddr: f.detailAddr, vatPayer: f.vatPayer, intro: f.intro, companyPhone: f.companyPhone,
+          businessDeadline: f.businessDeadline, portal: f.portal,
+          f_bankType: f.f_bankType, f_bankName: f.f_bankName, f_bankAccount: f.f_bankAccount, f_accountPurpose: f.f_accountPurpose,
+          i_addr: f.i_addr, i_taxNo: f.i_taxNo, i_phone: f.i_phone, i_bank: f.i_bank, i_bankAcc: f.i_bankAcc, i_bankLine: f.i_bankLine,
+          logo: f.logo, license: f.license,
+        },
+      });
       this.edit = false;
-      this.$message.success('编辑已提交，待桂教通超级管理员审批通过后生效');
-    },
-    approve(pass) {
-      const v = VENDORS[0];
-      if (pass) {
-        Object.assign(v, this.pending);
-        this.$message.success('桂教通超级管理员已审批通过，企业信息已生效');
-      } else {
-        this.$message.info('审批未通过，本次编辑不生效，企业信息维持原状');
-      }
-      this.pending = null;
+      this.$message.success('编辑已提交，待桂教通超管在「开发者信息审批」中审批通过后生效');
     },
   },
   template: `
@@ -2879,13 +3241,6 @@ app.component('P16', {
           <el-form-item label="企业LOGO">
             <el-image v-for="(img,i) in form.logo" :key="i" :src="img.url" style="width:80px;height:80px;margin-right:10px;border:1px solid #ebeef5;border-radius:6px" fit="contain"></el-image>
             <span v-if="!form.logo.length" class="ro-text">—</span>
-          </el-form-item>
-          <el-form-item label="营业执照">
-            <div v-for="(img,i) in form.license" :key="i" style="display:inline-block;margin-right:14px;margin-bottom:8px;text-align:center">
-              <el-image :src="img.url" style="width:180px;height:120px;border:1px solid #ebeef5;border-radius:6px" fit="contain"></el-image>
-              <div style="font-size:12px;color:#909399;margin-top:4px">{{ img.name }}</div>
-            </div>
-            <span v-if="!form.license.length" class="ro-text">—</span>
           </el-form-item>
           <el-row :gutter="20">
             <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ form.name }}</div></el-form-item></el-col>
@@ -2902,6 +3257,15 @@ app.component('P16', {
             <el-col :span="12"><el-form-item label="详细地址"><div class="ro-text">{{ form.detailAddr }}</div></el-form-item></el-col>
             <el-col :span="12"><el-form-item label="是否在门户展示"><div class="ro-text">{{ form.portal ? '是' : '否' }}</div></el-form-item></el-col>
             <el-col :span="24"><el-form-item label="开发者简介"><div class="ro-text" style="white-space:pre-wrap">{{ form.intro }}</div></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="营业执照">
+              <div style="display:flex;flex-wrap:wrap;gap:14px">
+                <div v-for="(img,i) in form.license" :key="i" style="text-align:center">
+                  <el-image :src="img.url" style="width:180px;height:120px;border:1px solid #ebeef5;border-radius:6px" fit="contain"></el-image>
+                  <div style="font-size:12px;color:#909399;margin-top:4px">{{ img.name }}</div>
+                </div>
+                <span v-if="!form.license.length" class="ro-text">—</span>
+              </div>
+            </el-form-item></el-col>
           </el-row>
         </el-form>
         <div style="font-weight:600;margin:16px 0 12px">财务信息</div>
@@ -2924,16 +3288,10 @@ app.component('P16', {
             <el-col :span="12"><el-form-item label="联行号"><div class="ro-text">{{ form.i_bankLine }}</div></el-form-item></el-col>
           </el-row>
         </el-form>
-        <el-button type="primary" style="margin-top:8px" @click="edit=true">编辑</el-button>
-        <el-alert v-if="pending" type="warning" :closable="false" style="margin-top:12px;max-width:760px"
-          title="存在待桂教通超级管理员审批的编辑申请" description="审批通过后才生效，不通过则维持原企业信息。"></el-alert>
-        <template v-if="pending">
-          <div style="margin-top:12px;max-width:760px">
-            <span style="margin-right:10px">桂教通超级管理员审批：</span>
-            <el-button type="success" size="small" @click="approve(true)">审批通过</el-button>
-            <el-button type="danger" size="small" @click="approve(false)">审批不通过</el-button>
-          </div>
-        </template>
+        <el-button type="primary" style="margin-top:8px" :disabled="!!pendingInfo" @click="edit=true">编辑</el-button>
+        <el-alert v-if="pendingInfo" type="warning" :closable="false" style="margin-top:12px;max-width:760px"
+          title="存在待桂教通超管审批的企业信息修改申请"
+          description="审批通过后才生效，审批不通过则维持原企业信息；请在提交前确认信息完整，审批处理后可再次编辑。"></el-alert>
       </template>
       <template v-else>
         <el-form label-width="140px" style="max-width:760px">
@@ -2941,11 +3299,6 @@ app.component('P16', {
           <el-form-item label="企业LOGO">
             <el-upload action="#" :auto-upload="false" list-type="picture-card" :file-list="form.logo.map(x=>({name:x.name,url:x.url}))" :on-change="(f,fl)=>form.logo=fl.map(o=>({name:(o.response&&o.response.name)||o.name,url:o.url}))">
               <div style="font-size:28px;line-height:1;color:#8c939d">+</div>
-            </el-upload>
-          </el-form-item>
-          <el-form-item label="营业执照">
-            <el-upload action="#" :auto-upload="false" list-type="picture" :file-list="form.license.map(x=>({name:x.name,url:x.url}))" :on-change="(f,fl)=>form.license=fl.map(o=>({name:(o.response&&o.response.name)||o.name,url:o.url}))">
-              <el-button type="primary">上传营业执照</el-button>
             </el-upload>
           </el-form-item>
           <el-row :gutter="20">
@@ -2963,6 +3316,11 @@ app.component('P16', {
             <el-col :span="12"><el-form-item label="详细地址" required><el-input type="textarea" :rows="2" v-model="form.detailAddr"></el-input></el-form-item></el-col>
             <el-col :span="12"><el-form-item label="是否在门户展示"><el-radio-group v-model="form.portal"><el-radio :value="true">是</el-radio><el-radio :value="false">否</el-radio></el-radio-group></el-form-item></el-col>
             <el-col :span="24"><el-form-item label="开发者简介" required><el-input type="textarea" :rows="3" v-model="form.intro"></el-input></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="营业执照">
+              <el-upload action="#" :auto-upload="false" list-type="picture" :file-list="form.license.map(x=>({name:x.name,url:x.url}))" :on-change="(f,fl)=>form.license=fl.map(o=>({name:(o.response&&o.response.name)||o.name,url:o.url}))">
+                <el-button type="primary">上传营业执照</el-button>
+              </el-upload>
+            </el-form-item></el-col>
           </el-row>
           <div style="font-weight:600;margin:12px 0">财务信息</div>
           <el-row :gutter="20">
@@ -3665,19 +4023,23 @@ app.component('P28Apply', {
       apiPageSize: 5,
       form: {
         syncRangeTypes: ['学校'],
-        orgs: '',
+        schoolNames: '',
+        orgNames: '',
+        deadline: '',
         includeSub: '是',
         reason: '',
         agreeDisclaimer: false,
       },
       rangeTypeOptions: ['学校', '教育局'],
-      declText: `一、调用范围\n1. 您仅可在本平台授权的接口范围内，为指定应用调用相关 API，不得超出审批同意的接口清单、调用频率及数据范围。\n2. 您应确保调用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对通过接口获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将接口数据用于与申请用途无关的场景，不得向第三方提供、出售或交换接口数据。\n\n三、保密义务\n您对在接入与调用过程中知悉的平台技术信息、接口规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过接口安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰接口正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您调用接口处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
+      declText: `一、使用范围\n1. 您仅可在本平台授权及审批同意的数据范围内使用相关数据，不得超出审批同意的数据类型、用途及处理方式。\n2. 您应确保数据使用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将数据用于与申请用途无关的场景，不得向第三方提供、出售或交换数据。\n\n三、保密义务\n您对在接入与使用过程中知悉的平台技术信息、数据规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过平台安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰平台正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
     };
   },
   computed: {
     chosenApis() { return APIS.filter(a => this.chosenApiIds.includes(a.id)); },
     visibleApis() { return APIS.filter(a => a.visible && a.needAuth); },
     showIncludeSub() { return false; },
+    showSchool() { return this.form.syncRangeTypes.includes('学校'); },
+    showOrg() { return this.form.syncRangeTypes.includes('教育局'); },
     pagedChosen() { return this.chosenApis.slice((this.apiPage - 1) * this.apiPageSize, this.apiPage * this.apiPageSize); },
   },
   methods: {
@@ -3691,11 +4053,18 @@ app.component('P28Apply', {
       if (!this.showIncludeSub) { this.form.includeSub = ''; }
       else if (!this.form.includeSub) { this.form.includeSub = '是'; }
     },
+    disabledDate(time) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
+      return time.getTime() < today.getTime() || time.getTime() > max.getTime();
+    },
     submit() {
       if (!this.chosenApiIds.length) { this.$message.warning('请至少选择一个授权接口'); return; }
       const badQuota = this.chosenApis.find(a => !this.apiMaxCalls[a.id] || !Number.isInteger(this.apiMaxCalls[a.id]) || this.apiMaxCalls[a.id] <= 0);
       if (badQuota) { this.$message.warning('请为每个授权接口填写正整数的最大调用量/日'); return; }
-      if (this.form.syncRangeTypes.length && !this.form.orgs.trim()) { this.$message.warning('请填写机构名称'); return; }
+      if (!this.form.deadline) { this.$message.warning('请选择授权截止时间'); return; }
+      if (this.form.syncRangeTypes.includes('学校') && !this.form.schoolNames.trim()) { this.$message.warning('请填写学校名称'); return; }
+      if (this.form.syncRangeTypes.includes('教育局') && !this.form.orgNames.trim()) { this.$message.warning('请填写机构名称'); return; }
       if (!this.form.agreeDisclaimer) { this.$message.warning('请阅读并同意免责声明'); return; }
       this.$msgbox.confirm('确认提交该应用的数据授权申请？提交后将由机构管理员审批。', '提交申请', { type: 'info', confirmButtonText: '确认提交', cancelButtonText: '取消' })
         .then(() => { this.$message.success('数据授权申请已提交，等待机构管理员审批'); this.$root.go('P28'); })
@@ -3735,6 +4104,10 @@ app.component('P28Apply', {
             </div>
           </div>
         </el-form-item>
+        <el-form-item label="授权截止时间" required>
+          <el-date-picker v-model="form.deadline" type="date" placeholder="请选择授权截止时间" :disabled-date="disabledDate" value-format="YYYY-MM-DD" style="width:65%"></el-date-picker>
+         
+        </el-form-item>
         <el-form-item label="同步范围类型" required>
           <el-checkbox-group v-model="form.syncRangeTypes" @change="onRangeChange">
             <el-checkbox v-for="t in rangeTypeOptions" :key="t" :label="t"></el-checkbox>
@@ -3743,10 +4116,13 @@ app.component('P28Apply', {
             可多选；勾选【教育局】时，默认同步教育局的下属机构
           </div>
         </el-form-item>
-        <el-form-item label="机构名称" required v-if="form.syncRangeTypes.length">
-          <el-input v-model="form.orgs" placeholder="请输入完整机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学" style="width:65%"></el-input>
+        <el-form-item label="学校名称" required v-if="showSchool">
+          <el-input type="textarea" :rows="3" v-model="form.schoolNames" placeholder="请输入学校名称，多个学校用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学" style="width:65%"></el-input>
+        </el-form-item>
+        <el-form-item label="机构名称" required v-if="showOrg">
+          <el-input type="textarea" :rows="3" v-model="form.orgNames" placeholder="请输入机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;桂林市教育局" style="width:65%"></el-input>
           <div style="color:#909399;font-size:12px;margin-top:4px">
-            按机构名称精确匹配其机构管理员；提交后审批仅推送给所列机构管理员；勾选【教育局】时，数据范围默认同步其下属机构
+            必填；按机构名称精确匹配其机构管理员；提交后审批仅推送给所列机构管理员；勾选【教育局】时，数据范围默认同步其下属机构
           </div>
         </el-form-item>
         <el-form-item label="申请理由" required>
@@ -3754,7 +4130,7 @@ app.component('P28Apply', {
         </el-form-item>
         <el-form-item label="免责声明" required>
           <el-checkbox v-model="form.agreeDisclaimer">我已阅读并同意
-            <span style="color:#409eff;cursor:pointer" @click.stop="declVisible=true">《API接口调用免责声明》</span>
+            <span style="color:#409eff;cursor:pointer" @click.stop="declVisible=true">《数据使用免责申明》</span>
           </el-checkbox>
         </el-form-item>
       </el-form>
@@ -3778,7 +4154,7 @@ app.component('P28Apply', {
       </template>
     </el-dialog>
 
-    <el-dialog title="API接口调用免责声明" v-model="declVisible" width="720px">
+    <el-dialog title="数据使用免责申明" v-model="declVisible" width="720px">
       <div style="white-space:pre-wrap;line-height:1.9;font-size:14px;color:#303133;max-height:60vh;overflow:auto">{{ declText }}</div>
       <template #footer>
         <el-button @click="declVisible=false">关闭</el-button>
@@ -3804,6 +4180,10 @@ app.component('P28ApplyApi', {
       chosenApiIds: ids.slice(),
       apiPage: 1,
       apiPageSize: 5,
+      deadline: '',
+      agreeDisclaimer: false,
+      declVisible: false,
+      declText: `一、调用范围\n1. 您仅可在本平台授权的接口范围内，为指定应用调用相关 API，不得超出审批同意的接口清单、调用频率及数据范围。\n2. 您应确保调用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对通过接口获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将接口数据用于与申请用途无关的场景，不得向第三方提供、出售或交换接口数据。\n\n三、保密义务\n您对在接入与调用过程中知悉的平台技术信息、接口规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过接口安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰接口正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您调用接口处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
     };
   },
   computed: {
@@ -3815,8 +4195,15 @@ app.component('P28ApplyApi', {
     openApiDialog() { this.apiDialog = true; },
     onApiChange(rows) { this.chosenApiIds = rows.map(r => r.id); },
     removeApi(id) { this.chosenApiIds = this.chosenApiIds.filter(x => x !== id); },
+    disabledDate(time) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
+      return time.getTime() < today.getTime() || time.getTime() > max.getTime();
+    },
     submit() {
       if (!this.chosenApiIds.length) { this.$message.warning('请至少选择一个授权接口'); return; }
+      if (!this.deadline) { this.$message.warning('请选择授权截止时间'); return; }
+      if (!this.agreeDisclaimer) { this.$message.warning('请阅读并同意免责声明'); return; }
       this.$msgbox.confirm('确认提交该应用的接口申请？提交后将由桂教通超管审批。', '提交申请', { type: 'info', confirmButtonText: '确认提交', cancelButtonText: '取消' })
         .then(() => { this.$message.success('接口申请已提交，等待桂教通超管审批'); this.$root.go('P28'); })
         .catch(() => {});
@@ -3848,6 +4235,14 @@ app.component('P28ApplyApi', {
             </div>
           </div>
         </el-form-item>
+        <el-form-item label="授权截止时间" required>
+          <el-date-picker v-model="deadline" type="date" placeholder="请选择授权截止时间" :disabled-date="disabledDate" value-format="YYYY-MM-DD" style="width:65%"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="免责声明" required>
+          <el-checkbox v-model="agreeDisclaimer">我已阅读并同意
+            <span style="color:#409eff;cursor:pointer" @click.stop="declVisible=true">《API接口调用免责声明》</span>
+          </el-checkbox>
+        </el-form-item>
       </el-form>
       <div style="text-align:center;margin:18px 0 12px">
         <el-button @click="$root.go('P28')">取消</el-button>
@@ -3868,6 +4263,14 @@ app.component('P28ApplyApi', {
         <el-button type="primary" @click="apiDialog=false">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog title="API接口调用免责声明" v-model="declVisible" width="720px">
+      <div style="white-space:pre-wrap;line-height:1.9;font-size:14px;color:#303133;max-height:60vh;overflow:auto">{{ declText }}</div>
+      <template #footer>
+        <el-button @click="declVisible=false">关闭</el-button>
+        <el-button type="primary" @click="declVisible=false; agreeDisclaimer=true">我已阅读并同意</el-button>
+      </template>
+    </el-dialog>
   </div>`,
 });
 
@@ -3875,8 +4278,9 @@ app.component('P28ApplyApi', {
  * P30 客户端授权关联（桂教通超管）
  * 列表：客户端ID / 客户端秘钥 / 授权范围 / 使用状态（使用中/未使用）
  *     / 授权类型 / 回调地址 / 登出后回调地址 / 访问令牌有效期(秒)
- *     / 刷新令牌有效期(秒) / 操作（编辑、启用、停用）
- * P31 新增/编辑（弹窗，不含使用状态、授权范围与客户端ID/授权秘钥，提交时自动生成；含白名单/备注，除备注外必填；授权范围规则同 API 申请）
+ *     / 刷新令牌有效期(秒) / 操作（编辑、启用、停用、授权、信息查看）
+ * P31 授权配置（新开表单页）：是否全部数据/是否全部接口/同步范围类型
+ *     /学校名称/机构名称/授权接口/授权截止时间（删除是否包含下级）
  * ===================================================================== */
 app.component('P30', {
   data() {
@@ -3891,11 +4295,6 @@ app.component('P30', {
         authType: 'authorization_code', redirectUri: '', logoutRedirectUri: '',
         accessTokenExp: 7200, refreshTokenExp: 2592000,
         whiteList: [{ protocol: 'https://', domain: '' }], remark: '',
-      },
-      authDialog: false,
-      authTarget: null,
-      authForm: {
-        syncRangeTypes: ['学校'], orgs: '', includeSub: '是',
       },
       viewDialog: false,
       viewRow: null,
@@ -3916,8 +4315,7 @@ app.component('P30', {
         (!this.q.authType || r.authType === this.q.authType)
       );
     },
-    showIncludeSub() { return (this.authForm.syncRangeTypes || []).includes('学校'); },
-    hasAuthInfo() { return this.viewRow && Array.isArray(this.viewRow.syncRangeTypes) && this.viewRow.syncRangeTypes.length > 0; },
+    hasAuthInfo() { return this.viewRow && (this.viewRow.allData === '是' || (Array.isArray(this.viewRow.syncRangeTypes) && this.viewRow.syncRangeTypes.length > 0)); },
   },
   methods: {
     resetQ() { this.q = { clientId: '', useStatus: '', authType: '' }; },
@@ -3932,17 +4330,21 @@ app.component('P30', {
       this.showSecret = next;
     },
     scopeText(r) {
-      const types = (r.syncRangeTypes || []);
-      if (!types.length) return r.authScopeText || '—';
-      const parts = types.map(t => {
-        const sub = t === '教育局' ? (r.includeSub === '是' ? '（含下属机构）' : '（仅本级）') : '';
-        return t + '：' + (r.orgs || '') + sub;
-      });
+      const parts = [];
+      if (r.allData === '是') { parts.push('全部数据'); }
+      else {
+        const types = (r.syncRangeTypes || []);
+        if (!types.length) parts.push(r.authScopeText || '—');
+        else parts.push(types.map(t => t + '：' + (t === '学校' ? (r.schoolNames || '') : (r.orgNames || ''))).join('；'));
+      }
+      if (r.allApis === '是') parts.push('接口：全部');
       return parts.join('；');
     },
-    onRangeChange() {
-      if (!(this.authForm.syncRangeTypes || []).includes('学校')) { this.authForm.includeSub = ''; }
-      else if (!this.authForm.includeSub) { this.authForm.includeSub = '是'; }
+    apiNamesText(r) {
+      if (r.allApis === '是') return '全部接口';
+      const ids = r.apiIds || [];
+      if (!ids.length) return '—';
+      return ids.map(id => { const a = APIS.find(x => x.id === id); return a ? a.name : id; }).join('、');
     },
     genId() { return 'client_' + Math.random().toString(36).slice(2, 8); },
     genSecret() { return 'sct_' + Math.random().toString(36).slice(2, 18); },
@@ -3962,28 +4364,6 @@ app.component('P30', {
       this.editingId = row.clientId;
       this.form = { ...row, whiteList: (row.whiteList || []).length ? row.whiteList.map(w => ({ ...w })) : [{ protocol: 'https://', domain: '' }], remark: row.remark || '' };
       this.dialog = true;
-    },
-    openAuth(row) {
-      this.authTarget = row;
-      this.authForm = {
-        syncRangeTypes: (row.syncRangeTypes || []).slice(),
-        orgs: row.orgs || '',
-        includeSub: row.includeSub || '是',
-      };
-      this.authDialog = true;
-    },
-    saveAuth() {
-      if (!this.authForm.syncRangeTypes.length) { this.$message.warning('请选择同步范围类型'); return; }
-      if (!this.authForm.orgs.trim()) { this.$message.warning('请填写机构名称'); return; }
-      if (this.showIncludeSub && !this.authForm.includeSub) { this.$message.warning('请选择是否包含下级'); return; }
-      const row = this.authTarget;
-      if (row) {
-        row.syncRangeTypes = this.authForm.syncRangeTypes.slice();
-        row.orgs = this.authForm.orgs;
-        row.includeSub = this.authForm.includeSub;
-      }
-      this.authDialog = false;
-      this.$message.success('授权信息已保存');
     },
     openView(row) {
       this.viewRow = row;
@@ -4046,6 +4426,7 @@ app.component('P30', {
       <el-table-column label="授权范围" min-width="220">
         <template #default="{row}"><span>{{ scopeText(row) }}</span></template>
       </el-table-column>
+      <el-table-column label="授权截止时间" width="110" align="center"><template #default="{row}"><span>{{ row.deadline || '—' }}</span></template></el-table-column>
       <el-table-column label="使用状态" width="100" align="center">
         <template #default="{row}"><st-tag :v="row.useStatus"></st-tag></template>
       </el-table-column>
@@ -4058,7 +4439,7 @@ app.component('P30', {
         <template #default="{row}">
           <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
           <el-button link :type="row.useStatus==='使用中'?'warning':'primary'" @click="toggleStatus(row)">{{ row.useStatus==='使用中'?'停用':'启用' }}</el-button>
-          <el-button link type="primary" @click="openAuth(row)">授权</el-button>
+          <el-button link type="primary" @click="$root.go('P31', { clientId: row.clientId })">授权</el-button>
           <el-button link type="primary" @click="openView(row)">信息查看</el-button>
         </template>
       </el-table-column>
@@ -4107,34 +4488,6 @@ app.component('P30', {
       </template>
     </el-dialog>
 
-    <el-dialog title="授权" v-model="authDialog" width="640px">
-      <el-form label-width="140px" style="width:100%" v-if="authTarget">
-        <el-form-item label="客户端ID">
-          <div class="ro-text">{{ authTarget.clientId }}</div>
-        </el-form-item>
-        <el-form-item label="客户端密钥">
-          <div class="ro-text">{{ authTarget.clientSecret }}</div>
-        </el-form-item>
-        <el-form-item label="同步范围类型" required>
-          <el-checkbox-group v-model="authForm.syncRangeTypes" @change="onRangeChange">
-            <el-checkbox v-for="t in rangeTypeOptions" :key="t" :value="t">{{ t }}</el-checkbox>
-          </el-checkbox-group>
-          <div style="color:#909399;font-size:12px;line-height:1.5">可多选；勾选「教育局」时，默认同步教育局的下属机构</div>
-        </el-form-item>
-        <el-form-item label="机构名称" required>
-          <el-input v-model="authForm.orgs" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入完整机构名称，多个机构用英文分号（;）隔开"></el-input>
-        </el-form-item>
-        <el-form-item v-if="showIncludeSub" label="是否包含下级" required>
-          <el-radio-group v-model="authForm.includeSub"><el-radio value="是">是</el-radio><el-radio value="否">否</el-radio></el-radio-group>
-          <div style="color:#909399;font-size:12px;line-height:1.5">勾选「学校」时默认同步该学校的下属单位；选择「否」则仅同步该学校本级。勾选「教育局」时不展示本项，默认同步教育局的下属机构</div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="authDialog=false">取消</el-button>
-        <el-button type="primary" @click="saveAuth">保存</el-button>
-      </template>
-    </el-dialog>
-
     <el-dialog title="客户端信息" v-model="viewDialog" width="640px">
       <template v-if="viewRow">
         <el-form label-width="150px">
@@ -4156,12 +4509,163 @@ app.component('P30', {
           <div style="font-weight:600;margin:16px 0 8px">授权信息</div>
           <el-form label-width="150px">
             <el-row :gutter="16">
-              <el-col :span="12"><el-form-item label="同步范围类型"><div class="ro-text">{{ (viewRow.syncRangeTypes||[]).join('、') }}</div></el-form-item></el-col>
-              <el-col :span="12"><el-form-item label="是否包含下级"><div class="ro-text">{{ viewRow.includeSub }}</div></el-form-item></el-col>
-              <el-col :span="24"><el-form-item label="机构名称"><div class="ro-text">{{ viewRow.orgs }}</div></el-form-item></el-col>
+              <el-col :span="12"><el-form-item label="是否全部数据"><div class="ro-text">{{ viewRow.allData || '—' }}</div></el-form-item></el-col>
+              <el-col :span="12"><el-form-item label="是否全部接口"><div class="ro-text">{{ viewRow.allApis || '—' }}</div></el-form-item></el-col>
+              <el-col :span="12"><el-form-item label="同步范围类型"><div class="ro-text">{{ (viewRow.syncRangeTypes||[]).join('、') || '—' }}</div></el-form-item></el-col>
+              <el-col :span="12"><el-form-item label="授权截止时间"><div class="ro-text">{{ viewRow.deadline || '—' }}</div></el-form-item></el-col>
+              <el-col :span="24"><el-form-item label="学校名称"><div class="ro-text">{{ viewRow.schoolNames || '—' }}</div></el-form-item></el-col>
+              <el-col :span="24"><el-form-item label="机构名称"><div class="ro-text">{{ viewRow.orgNames || '—' }}</div></el-form-item></el-col>
+              <el-col :span="24"><el-form-item label="授权接口"><div class="ro-text">{{ apiNamesText(viewRow) }}</div></el-form-item></el-col>
             </el-row>
           </el-form>
         </template>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P31 授权配置（桂教通超管，新开表单页）
+ * 是否全部数据（是→全区数据，不展示同步范围类型/学校名称/机构名称）
+ * 是否全部接口（是→全部接口，不展示授权接口）
+ * 同步范围类型（学校→学校名称；教育局→机构名称）
+ * 授权接口（弹窗多选）、授权截止时间（不可选今天之前，最长三年）
+ * 删除是否包含下级
+ * ===================================================================== */
+app.component('P31', {
+  props: ['ctx'],
+  data() {
+    const c = CLIENT_AUTH.find(x => x.clientId === (this.ctx && this.ctx.clientId));
+    const row = c || CLIENT_AUTH[0];
+    return {
+      row,
+      form: {
+        allData: row.allData || '否',
+        allApis: row.allApis || '否',
+        syncRangeTypes: (row.syncRangeTypes || []).slice(),
+        schoolNames: row.schoolNames || '',
+        orgNames: row.orgNames || '',
+        apiIds: row.apiIds ? [...row.apiIds] : [],
+        deadline: row.deadline || '',
+      },
+      apiDialog: false,
+      tempApiIds: [],
+      apiKeyword: '',
+      rangeTypeOptions: ['学校', '教育局'],
+    };
+  },
+  computed: {
+    visibleApis() { return APIS.filter(a => a.visible && a.needAuth); },
+    filterApis() {
+      const kw = (this.apiKeyword || '').trim().toLowerCase();
+      return this.visibleApis.filter(a => !kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw));
+    },
+    chosenApis() { return APIS.filter(a => this.form.apiIds.includes(a.id)); },
+    showDataScope() { return this.form.allData === '否'; },
+    showApiScope() { return this.form.allApis === '否'; },
+    showSchool() { return this.showDataScope && this.form.syncRangeTypes.includes('学校'); },
+    showOrg() { return this.showDataScope && this.form.syncRangeTypes.includes('教育局'); },
+  },
+  methods: {
+    disabledDate(time) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
+      return time.getTime() < today.getTime() || time.getTime() > max.getTime();
+    },
+    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiDialog = true; },
+    onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
+    saveApiDialog() { this.form.apiIds = [...this.tempApiIds]; this.apiDialog = false; },
+    removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); },
+    submit() {
+      if (!this.form.deadline) { this.$message.warning('请选择授权截止时间'); return; }
+      if (this.form.allData === '否') {
+        if (!this.form.syncRangeTypes.length) { this.$message.warning('请选择同步范围类型'); return; }
+        if (this.form.syncRangeTypes.includes('学校') && !this.form.schoolNames.trim()) { this.$message.warning('请填写学校名称'); return; }
+        if (this.form.syncRangeTypes.includes('教育局') && !this.form.orgNames.trim()) { this.$message.warning('请填写机构名称'); return; }
+      }
+      if (this.form.allApis === '否' && !this.form.apiIds.length) { this.$message.warning('请至少选择一个授权接口'); return; }
+      const row = this.row;
+      row.allData = this.form.allData;
+      row.allApis = this.form.allApis;
+      row.syncRangeTypes = this.form.syncRangeTypes.slice();
+      row.schoolNames = this.form.schoolNames;
+      row.orgNames = this.form.orgNames;
+      row.apiIds = [...this.form.apiIds];
+      row.deadline = this.form.deadline;
+      this.$message.success('授权配置已保存');
+      this.$root.go('P30');
+    },
+  },
+  template: `
+  <div>
+    <div class="card" style="max-width:960px">
+      <div style="font-weight:600;margin:8px 0 12px">授权配置</div>
+      <el-form label-width="140px" style="width:100%">
+        <el-row :gutter="16">
+          <el-col :span="12"><el-form-item label="客户端ID"><div class="ro-text">{{ row.clientId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="客户端密钥"><div class="ro-text">{{ row.clientSecret }}</div></el-form-item></el-col>
+        </el-row>
+        <el-form-item label="是否全部数据" required>
+          <el-radio-group v-model="form.allData">
+            <el-radio value="是">是</el-radio>
+            <el-radio value="否">否</el-radio>
+          </el-radio-group>
+          <div style="color:#909399;font-size:12px;line-height:1.5">选择「是」时授权数据为全区数据，不展示同步范围类型、学校名称与机构名称</div>
+        </el-form-item>
+        <template v-if="showDataScope">
+          <el-form-item label="同步范围类型" required>
+            <el-checkbox-group v-model="form.syncRangeTypes">
+              <el-checkbox v-for="t in rangeTypeOptions" :key="t" :value="t">{{ t }}</el-checkbox>
+            </el-checkbox-group>
+            <div style="color:#909399;font-size:12px;line-height:1.5">可多选；勾选「学校」时展示学校名称，勾选「教育局」时展示机构名称</div>
+          </el-form-item>
+          <el-form-item v-if="showSchool" label="学校名称" required>
+            <el-input v-model="form.schoolNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入学校名称，多个学校用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学"></el-input>
+          </el-form-item>
+          <el-form-item v-if="showOrg" label="机构名称" required>
+            <el-input v-model="form.orgNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;桂林市教育局"></el-input>
+          </el-form-item>
+        </template>
+        <el-form-item label="是否全部接口" required>
+          <el-radio-group v-model="form.allApis">
+            <el-radio value="是">是</el-radio>
+            <el-radio value="否">否</el-radio>
+          </el-radio-group>
+          <div style="color:#909399;font-size:12px;line-height:1.5">选择「是」时授权的是全部接口，不展示授权接口</div>
+        </el-form-item>
+        <el-form-item v-if="showApiScope" label="授权接口" required>
+          <div style="width:100%">
+            <el-button type="primary" plain @click="openApiDialog">选择授权接口</el-button>
+            <div v-if="chosenApis.length" style="margin-top:8px">
+              <el-tag v-for="a in chosenApis" :key="a.id" closable @close="removeApi(a.id)" style="margin:0 8px 8px 0">{{ a.name }}</el-tag>
+            </div>
+            <div v-else style="color:#c0c4cc;font-size:12px;margin-top:8px">尚未选择授权接口</div>
+          </div>
+        </el-form-item>
+        <el-form-item label="授权截止时间" required>
+          <el-date-picker v-model="form.deadline" type="date" placeholder="请选择授权截止时间" :disabled-date="disabledDate" value-format="YYYY-MM-DD" style="width:100%"></el-date-picker>
+          <div style="color:#909399;font-size:12px;line-height:1.5">必填；不可选择当前时间之前的时间，只能选择当前时间的三年内的时间</div>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:center;margin-top:18px">
+        <el-button @click="$root.go('P30')">取消</el-button>
+        <el-button type="primary" @click="submit">保存</el-button>
+      </div>
+    </div>
+
+    <el-dialog title="选择授权接口" v-model="apiDialog" width="760px">
+      <div style="margin-bottom:10px">
+        <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:260px"></el-input>
+      </div>
+      <el-table :data="filterApis" border size="small" @selection-change="onApiChange" :row-key="r => r.id">
+        <el-table-column type="selection" :reserve-selection="true" width="45"></el-table-column>
+        <el-table-column prop="name" label="接口名称" min-width="150"></el-table-column>
+        <el-table-column prop="service" label="接口服务名" min-width="140"></el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
+      </el-table>
+      <template #footer>
+        <el-button @click="apiDialog=false">取消</el-button>
+        <el-button type="primary" @click="saveApiDialog">确定</el-button>
       </template>
     </el-dialog>
   </div>`,
@@ -4456,6 +4960,8 @@ app.component('P33', {
 
 /* =====================================================================
  * P34 数据授权管理（桂教通超管：为应用配置数据授权范围与授权接口）
+ * 新增/编辑 → 新开表单页 P34Form（同步范围类型拆分学校名称/机构名称、
+ * 授权截止时间必填，不可选今天之前、最长三年）
  * ===================================================================== */
 app.component('P34', {
   props: ['ctx'],
@@ -4470,7 +4976,7 @@ app.component('P34', {
       </el-select>
       <el-button @click="reset">重置</el-button>
       <div style="flex:1"></div>
-      <el-button type="primary" @click="openAdd">新增数据授权</el-button>
+      <el-button type="primary" @click="$root.go('P34Form')">新增数据授权</el-button>
     </div>
     <el-table :data="filtered" border size="small">
       <el-table-column label="应用名称" min-width="140"><template #default="s">{{ appNameOf(s.row.appId) }}</template></el-table-column>
@@ -4478,46 +4984,177 @@ app.component('P34', {
       <el-table-column label="机构名称" min-width="220"><template #default="s">{{ orgsComma(s.row) }}</template></el-table-column>
       <el-table-column label="授权的接口" min-width="230"><template #default="s">{{ apiNamesOf(s.row) }}</template></el-table-column>
       <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
+      <el-table-column label="授权截止时间" width="110"><template #default="s"><span>{{ s.row.deadline || '—' }}</span></template></el-table-column>
       <el-table-column prop="applicant" label="申请人" width="100"></el-table-column>
       <el-table-column label="状态" width="90"><template #default="s"><st-tag :v="s.row.useStatus"/></template></el-table-column>
       <el-table-column label="操作" width="150" fixed="right">
         <template #default="s">
-          <el-button link type="primary" @click="openEdit(s.row)">编辑</el-button>
+          <el-button link type="primary" @click="$root.go('P34Form', { id: s.row.id })">编辑</el-button>
           <el-button link :type="s.row.useStatus==='启用'?'warning':'primary'" @click="toggleStatus(s.row)">{{ s.row.useStatus==='启用'?'停用':'启用' }}</el-button>
         </template>
       </el-table-column>
     </el-table>
+  </div>`,
+  data() {
+    return {
+      rows: DATA_AUTH_MGMT,
+      q: { appName: '', useStatus: '' },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.appName || this.appNameOf(r.appId).includes(this.q.appName)) &&
+        (!this.q.useStatus || r.useStatus === this.q.useStatus));
+    },
+  },
+  methods: {
+    appNameOf(id) { const a = APP_LIST.find(x => x.appId === id); return a ? a.appName : (id || '—'); },
+    apiNameOf(id) { const a = APIS.find(x => x.id === id); return a ? a.name : ''; },
+    orgsComma(row) {
+      const parts = [];
+      if (row.schoolNames) parts.push(row.schoolNames);
+      if (row.orgNames) parts.push(row.orgNames);
+      return parts.join(';');
+    },
+    apiNamesOf(row) { return (row.apiIds || []).map(id => this.apiNameOf(id)).filter(Boolean).join(','); },
+    reset() { this.q = { appName: '', useStatus: '' }; },
+    toggleStatus(row) {
+      const next = row.useStatus === '启用' ? '停用' : '启用';
+      ElMessageBox.confirm(`确认${next}应用"${this.appNameOf(row.appId)}"的数据授权？`, '提示', { type: 'warning' }).then(() => {
+        row.useStatus = next;
+        this.$message.success(`已${next}`);
+      }).catch(() => {});
+    },
+  },
+});
 
-    <el-dialog :title="dlg.title" v-model="dlg.visible" width="640px">
-      <el-form :model="dlg.form" label-width="120px">
+/* =====================================================================
+ * P34Form 新增/编辑数据授权（桂教通超管，新开表单页）
+ * 应用名称（新增时模糊搜索选择，编辑时只读）
+ * 同步范围类型（学校→学校名称；教育局→机构名称）
+ * 授权接口（弹窗多选）、授权截止时间（不可选今天之前，最长三年）
+ * ===================================================================== */
+app.component('P34Form', {
+  props: ['ctx'],
+  data() {
+    const editId = this.ctx && this.ctx.id;
+    const src = editId ? DATA_AUTH_MGMT.find(x => x.id === editId) : null;
+    return {
+      editId: editId || 0,
+      f: src
+        ? { appId: src.appId, rangeTypes: [...(src.rangeTypes || [])], schoolNames: src.schoolNames || '', orgNames: src.orgNames || '', apiIds: [...(src.apiIds || [])], deadline: src.deadline || '' }
+        : { appId: '', rangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], deadline: '' },
+      appOptions: APP_LIST.slice(0, 30),
+      appLoading: false,
+      apiDialog: { visible: false, keyword: '' },
+      tempApiIds: [],
+    };
+  },
+  computed: {
+    showSchool() { return this.f.rangeTypes.includes('学校'); },
+    showOrg() { return this.f.rangeTypes.includes('教育局'); },
+    filteredApis() {
+      const kw = (this.apiDialog.keyword || '').trim();
+      return APIS.filter(a => a.visible !== false && (!kw || a.name.includes(kw)));
+    },
+  },
+  methods: {
+    disabledDate(time) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
+      return time.getTime() < today.getTime() || time.getTime() > max.getTime();
+    },
+    appNameOf(id) { const a = APP_LIST.find(x => x.appId === id); return a ? a.appName : (id || '—'); },
+    apiNameOf(id) { const a = APIS.find(x => x.id === id); return a ? a.name : ''; },
+    searchApps(keyword) {
+      this.appLoading = true;
+      setTimeout(() => {
+        const kw = (keyword || '').trim();
+        this.appOptions = APP_LIST.filter(a => !kw || a.appName.includes(kw)).slice(0, 30);
+        this.appLoading = false;
+      }, 200);
+    },
+    openApiDialog() {
+      this.apiDialog.visible = true;
+      this.apiDialog.keyword = '';
+      this.tempApiIds = [...this.f.apiIds];
+      this.$nextTick(() => {
+        if (this.$refs.apiTable) {
+          this.filteredApis.forEach(r => { if (this.tempApiIds.includes(r.id)) this.$refs.apiTable.toggleRowSelection(r, true); });
+        }
+      });
+    },
+    onApiSelect(sel) { this.tempApiIds = sel.map(r => r.id); },
+    confirmApis() { this.f.apiIds = [...this.tempApiIds]; this.apiDialog.visible = false; },
+    removeApi(id) { this.f.apiIds = this.f.apiIds.filter(x => x !== id); },
+    save() {
+      const f = this.f;
+      if (!f.appId) { this.$message.warning('请选择应用名称'); return; }
+      if (!f.rangeTypes.length) { this.$message.warning('请选择同步范围类型'); return; }
+      if (f.rangeTypes.includes('学校') && !f.schoolNames.trim()) { this.$message.warning('请填写学校名称'); return; }
+      if (f.rangeTypes.includes('教育局') && !f.orgNames.trim()) { this.$message.warning('请填写机构名称'); return; }
+      if (!f.apiIds.length) { this.$message.warning('请选择授权接口'); return; }
+      if (!f.deadline) { this.$message.warning('请选择授权截止时间'); return; }
+      if (this.editId) {
+        const r = DATA_AUTH_MGMT.find(x => x.id === this.editId);
+        if (r) Object.assign(r, { appId: f.appId, rangeTypes: [...f.rangeTypes], schoolNames: f.schoolNames.trim(), orgNames: f.orgNames.trim(), apiIds: [...f.apiIds], deadline: f.deadline });
+        this.$message.success('已保存');
+      } else {
+        DATA_AUTH_MGMT.unshift({ id: Date.now(), appId: f.appId, rangeTypes: [...f.rangeTypes], schoolNames: f.schoolNames.trim(), orgNames: f.orgNames.trim(), apiIds: [...f.apiIds], deadline: f.deadline, applicant: '李超管', applyTime: this.nowStr(), useStatus: '启用' });
+        this.$message.success('已新增');
+      }
+      this.$root.go('P34');
+    },
+    nowStr() {
+      const d = new Date(), p = n => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    },
+  },
+  template: `
+  <div>
+    <div class="card" style="max-width:960px">
+      <div style="font-weight:600;margin:8px 0 12px">{{ editId ? '编辑数据授权' : '新增数据授权' }}</div>
+      <el-form :model="f" label-width="130px" style="width:100%">
         <el-form-item label="应用名称" required>
-          <el-select v-model="dlg.form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%">
+          <template v-if="editId">
+            <div class="ro-text">{{ appNameOf(f.appId) }}</div>
+          </template>
+          <el-select v-else v-model="f.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%">
             <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="同步范围类型" required>
-          <el-checkbox-group v-model="dlg.form.rangeTypes">
-            <el-checkbox label="学校"></el-checkbox>
-            <el-checkbox label="教育局"></el-checkbox>
+          <el-checkbox-group v-model="f.rangeTypes">
+            <el-checkbox value="学校">学校</el-checkbox>
+            <el-checkbox value="教育局">教育局</el-checkbox>
           </el-checkbox-group>
+          <div style="color:#909399;font-size:12px;line-height:1.5">可多选；勾选「学校」时展示学校名称，勾选「教育局」时展示机构名称</div>
         </el-form-item>
-        <el-form-item label="机构名称" required>
-          <el-input v-model="dlg.form.orgs" type="textarea" :rows="3" placeholder="多个机构用英文分号(;)隔开，如：南宁市教育局;南宁市第三中学"></el-input>
+        <el-form-item v-if="showSchool" label="学校名称" required>
+          <el-input v-model="f.schoolNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入学校名称，多个学校用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学"></el-input>
+        </el-form-item>
+        <el-form-item v-if="showOrg" label="机构名称" required>
+          <el-input v-model="f.orgNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;桂林市教育局"></el-input>
         </el-form-item>
         <el-form-item label="授权接口" required>
-          <div>
-            <el-button type="primary" plain @click="openApiDialog">选择接口（已选 {{ dlg.form.apiIds.length }} 个）</el-button>
-            <div v-if="dlg.form.apiIds.length" style="margin-top:8px">
-              <el-tag v-for="id in dlg.form.apiIds" :key="id" closable @close="removeApi(id)" style="margin:2px 8px 2px 0">{{ apiNameOf(id) }}</el-tag>
+          <div style="width:100%">
+            <el-button type="primary" plain @click="openApiDialog">选择接口（已选 {{ f.apiIds.length }} 个）</el-button>
+            <div v-if="f.apiIds.length" style="margin-top:8px">
+              <el-tag v-for="id in f.apiIds" :key="id" closable @close="removeApi(id)" style="margin:2px 8px 2px 0">{{ apiNameOf(id) }}</el-tag>
             </div>
           </div>
         </el-form-item>
+        <el-form-item label="授权截止时间" required>
+          <el-date-picker v-model="f.deadline" type="date" placeholder="请选择授权截止时间" :disabled-date="disabledDate" value-format="YYYY-MM-DD" style="width:100%"></el-date-picker>
+          <div style="color:#909399;font-size:12px;line-height:1.5">必填；不可选择当前时间之前的时间，只能选择当前时间的三年内的时间</div>
+        </el-form-item>
       </el-form>
       <div style="text-align:center;margin-top:18px">
-        <el-button @click="dlg.visible=false">取消</el-button>
+        <el-button @click="$root.go('P34')">取消</el-button>
         <el-button type="primary" @click="save">保存</el-button>
       </div>
-    </el-dialog>
+    </div>
 
     <el-dialog title="选择授权接口" v-model="apiDialog.visible" width="720px">
       <div class="toolbar">
@@ -4539,93 +5176,637 @@ app.component('P34', {
       </div>
     </el-dialog>
   </div>`,
+});
+
+app.component('P36', {
   data() {
     return {
-      rows: DATA_AUTH_MGMT,
-      q: { appName: '', useStatus: '' },
-      appOptions: APP_LIST.slice(0, 30),
-      appLoading: false,
-      dlg: { visible: false, title: '', form: this.emptyForm() },
-      apiDialog: { visible: false, keyword: '' },
-      tempApiIds: [],
+      rows: DATA_BACKFLOW.map(x => ({ ...x })),
+      q: { name: '', syncStatus: '' },
+      preview: { visible: false, doc: null },
     };
   },
   computed: {
     filtered() {
       return this.rows.filter(r =>
-        (!this.q.appName || this.appNameOf(r.appId).includes(this.q.appName)) &&
-        (!this.q.useStatus || r.useStatus === this.q.useStatus));
-    },
-    filteredApis() {
-      const kw = (this.apiDialog.keyword || '').trim();
-      return APIS.filter(a => a.visible !== false && (!kw || a.name.includes(kw)));
+        (!this.q.name || r.name.includes(this.q.name)) &&
+        (!this.q.syncStatus || r.syncStatus === this.q.syncStatus)
+      );
     },
   },
   methods: {
-    emptyForm() { return { id: 0, appId: '', rangeTypes: [], orgs: '', apiIds: [] }; },
-    appNameOf(id) { const a = APP_LIST.find(x => x.appId === id); return a ? a.appName : (id || '—'); },
-    apiNameOf(id) { const a = APIS.find(x => x.id === id); return a ? a.name : ''; },
-    orgsComma(row) { return (row.orgs || '').split(';').filter(Boolean).join(','); },
-    apiNamesOf(row) { return (row.apiIds || []).map(id => this.apiNameOf(id)).filter(Boolean).join(','); },
-    reset() { this.q = { appName: '', useStatus: '' }; },
-    searchApps(keyword) {
-      this.appLoading = true;
-      setTimeout(() => {
-        const kw = (keyword || '').trim();
-        this.appOptions = APP_LIST.filter(a => !kw || a.appName.includes(kw)).slice(0, 30);
-        this.appLoading = false;
-      }, 200);
+    resetQ() { this.q = { name: '', syncStatus: '' }; },
+    scopeText(r) {
+      if (r.hasApi === '是') return '—'; // 有接口的对接文档独立成列展示
+      const scopes = r.scopes || [];
+      if (!scopes.length) return '—';
+      return scopes.map(s => {
+        const api = APIS.find(a => a.id === s.apiId);
+        const apiName = api ? api.name : s.service;
+        const params = (s.fields || []).map(f => {
+          const pm = API_PARAMS[s.service] || [];
+          const p = pm.find(x => x.name === f);
+          return p ? p.label + '（' + p.name + '）' : f;
+        });
+        return apiName + '（' + params.join('、') + '）';
+      }).join('；');
+    },
+    previewDoc(doc) { this.preview = { visible: true, doc }; },
+    syncDone(row) {
+      this.$confirm('确认将该数据回流标记为「同步完成」？同步完成后将由桂教通超管确认。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => {
+          row.syncStatus = '待确认';
+          this.$message.success('已标记同步完成，等待超管确认');
+        }).catch(() => {});
+    },
+    view(row) {
+      this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36' });
     },
     openAdd() {
-      this.dlg = { visible: true, title: '新增数据授权', form: this.emptyForm() };
+      this.$root.go('P36Form', { view: false });
     },
-    openEdit(row) {
-      this.dlg = { visible: true, title: '编辑数据授权', form: { id: row.id, appId: row.appId, rangeTypes: [...row.rangeTypes], orgs: row.orgs, apiIds: [...row.apiIds] } };
+  },
+  template: `
+  <div>
+    <div class="toolbar">
+      <span class="q-label">名称</span><el-input v-model="q.name" placeholder="请输入" clearable style="width:180px"></el-input>
+      <span class="q-label">同步状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
+        <el-option label="待审批" value="待审批"></el-option>
+        <el-option label="同步中" value="同步中"></el-option>
+        <el-option label="待确认" value="待确认"></el-option>
+        <el-option label="已完成" value="已完成"></el-option>
+      </el-select>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增申请</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="filtered" stripe style="width:100%">
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="name" label="名称" min-width="150"></el-table-column>
+        <el-table-column prop="hasApi" label="是否有接口" width="100" align="center"></el-table-column>
+        <el-table-column label="范围" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
+        <el-table-column label="对接文档" min-width="160">
+          <template #default="{row}">
+            <template v-if="row.hasApi === '是'">
+              <div v-for="(d,i) in (row.docs||[])" :key="i">
+                <el-link type="primary" @click="previewDoc(d)">{{ d.name }}</el-link>
+              </div>
+            </template>
+            <span v-else>—</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="syncStatus" label="同步状态" width="100" align="center">
+          <template #default="{row}"><st-tag :v="row.syncStatus"></st-tag></template>
+        </el-table-column>
+        <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
+        <el-table-column label="操作" width="120" align="center" fixed="right">
+          <template #default="{row}">
+            <el-button v-if="row.hasApi === '否' && row.syncStatus === '同步中'" link type="primary" @click="syncDone(row)">同步完成</el-button>
+            <el-button link type="primary" @click="view(row)">查看</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+    <el-dialog title="对接文档预览" v-model="preview.visible" width="640px">
+      <div v-if="preview.doc" style="text-align:center">
+        <div style="font-weight:600;margin-bottom:10px">{{ preview.doc.name }}</div>
+        <img :src="preview.doc.url" style="max-width:100%;max-height:56vh;border:1px solid #e4e7ed;border-radius:4px"/>
+      </div>
+      <template #footer>
+        <el-button @click="preview.visible=false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+app.component('P36Form', {
+  props: ['ctx'],
+  data() {
+    const isView = this.ctx && this.ctx.view;
+    const id = this.ctx && this.ctx.id;
+    const row = id ? DATA_BACKFLOW.find(x => x.id === id) : null;
+    return {
+      isView: !!isView,
+      isSuper: this.ctx && this.ctx.from === 'P36Admin', // 桂教通超管新增数据回流申请（需选择开发者）
+      form: {
+        name: row ? row.name : '',
+        appId: row ? (row.appId || '') : '',
+        appName: row ? (row.appName || '') : '',
+        devName: row ? (row.devName || '') : '',
+        hasApi: row ? row.hasApi : '否',
+        docs: row ? (row.docs || []).map(d => ({ ...d })) : [],
+        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ apiId: '', service: '', fields: [] }],
+        reason: row ? (row.reason || '') : '',
+        disclaimer: row ? true : false,
+      },
+      appOptions: APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30),
+      appLoading: false,
+      devOptions: VENDORS.slice(0, 30),
+      devLoading: false,
+      declVisible: false,
+      declText: `一、使用范围\n1. 您仅可在本平台授权及审批同意的数据范围内使用相关数据，不得超出审批同意的数据类型、用途及处理方式。\n2. 您应确保数据使用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将数据用于与申请用途无关的场景，不得向第三方提供、出售或交换数据。\n\n三、保密义务\n您对在接入与使用过程中知悉的平台技术信息、数据规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过平台安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰平台正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
+    };
+  },
+  computed: {
+    syncApis() {
+      return APIS.filter(a => a.visible && a.source === 'platform');
     },
-    save() {
-      const f = this.dlg.form;
-      if (!f.appId) { this.$message.warning('请选择应用名称'); return; }
-      if (!f.rangeTypes.length) { this.$message.warning('请选择同步范围类型'); return; }
-      if (!f.orgs.trim()) { this.$message.warning('请填写机构名称'); return; }
-      if (!f.apiIds.length) { this.$message.warning('请选择授权接口'); return; }
-      if (f.id) {
-        const r = this.rows.find(x => x.id === f.id);
-        Object.assign(r, { appId: f.appId, rangeTypes: [...f.rangeTypes], orgs: f.orgs.trim(), apiIds: [...f.apiIds] });
-        this.$message.success('已保存');
-      } else {
-        this.rows.unshift({ id: Date.now(), appId: f.appId, rangeTypes: [...f.rangeTypes], orgs: f.orgs.trim(), apiIds: [...f.apiIds], applicant: '李超管', applyTime: this.nowStr(), useStatus: '启用' });
-        this.$message.success('已新增');
+  },
+  methods: {
+    apiParams(service) {
+      return API_PARAMS[service] || [];
+    },
+    apiById(id) {
+      return APIS.find(a => a.id === id);
+    },
+    onApiChange(index, apiId) {
+      const api = this.apiById(apiId);
+      if (api) {
+        this.form.scopes[index].service = api.service;
+        this.form.scopes[index].fields = [];
       }
-      this.dlg.visible = false;
     },
-    toggleStatus(row) {
-      const next = row.useStatus === '启用' ? '停用' : '启用';
-      ElMessageBox.confirm(`确认${next}应用"${this.appNameOf(row.appId)}"的数据授权？`, '提示', { type: 'warning' }).then(() => {
-        row.useStatus = next;
-        this.$message.success(`已${next}`);
-      }).catch(() => {});
+    addScope() {
+      this.form.scopes.push({ apiId: '', service: '', fields: [] });
     },
-    openApiDialog() {
-      this.apiDialog.visible = true;
-      this.apiDialog.keyword = '';
-      this.tempApiIds = [...this.dlg.form.apiIds];
-      this.$nextTick(() => {
-        if (this.$refs.apiTable) {
-          this.filteredApis.forEach(r => { if (this.tempApiIds.includes(r.id)) this.$refs.apiTable.toggleRowSelection(r, true); });
-        }
+    removeScope(index) {
+      this.form.scopes.splice(index, 1);
+      if (!this.form.scopes.length) this.form.scopes.push({ apiId: '', service: '', fields: [] });
+    },
+    addDoc() {
+      const idx = this.form.docs.length + 1;
+      this.form.docs.push({
+        name: '对接文档' + idx + '.pdf',
+        url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF',
       });
     },
-    onApiSelect(sel) { this.tempApiIds = sel.map(r => r.id); },
-    confirmApis() { this.dlg.form.apiIds = [...this.tempApiIds]; this.apiDialog.visible = false; },
-    removeApi(id) {
-      this.dlg.form.apiIds = this.dlg.form.apiIds.filter(x => x !== id);
-      this.tempApiIds = [...this.dlg.form.apiIds];
+    removeDoc(index) {
+      this.form.docs.splice(index, 1);
+    },
+    searchApps(q) {
+      this.appLoading = true;
+      setTimeout(() => {
+        this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用' && (!q || a.appName.includes(q))).slice(0, 30);
+        this.appLoading = false;
+      }, 300);
+    },
+    searchDevs(q) {
+      this.devLoading = true;
+      setTimeout(() => {
+        this.devOptions = VENDORS.filter(v => !q || v.name.includes(q)).slice(0, 30);
+        this.devLoading = false;
+      }, 300);
+    },
+    submit() {
+      if (!this.form.name.trim()) { this.$message.warning('请输入名称'); return; }
+      if (!this.form.appId) { this.$message.warning('请选择应用名称'); return; }
+      if (this.isSuper && !this.form.devName) { this.$message.warning('请选择开发者'); return; }
+      if (this.form.hasApi === '是') {
+        if (!this.form.docs.length) { this.$message.warning('请上传至少一个对接文档'); return; }
+      } else {
+        const valid = this.form.scopes.every(s => s.apiId && s.fields.length);
+        if (!valid) { this.$message.warning('请选择 API 接口并至少选择一个同步字段'); return; }
+      }
+      if (!this.form.reason.trim()) { this.$message.warning('请填写申请理由'); return; }
+      if (!this.form.disclaimer) { this.$message.warning('请同意免责声明'); return; }
+      const now = new Date();
+      const p = n => String(n).padStart(2, '0');
+      const timeStr = now.getFullYear() + '-' + p(now.getMonth() + 1) + '-' + p(now.getDate()) + ' ' + p(now.getHours()) + ':' + p(now.getMinutes());
+      const app = APP_LIST.find(a => a.appId === this.form.appId);
+      const data = {
+        id: Date.now(),
+        name: this.form.name,
+        appId: this.form.appId,
+        appName: app ? app.appName : this.form.appName,
+        devName: this.isSuper ? this.form.devName : (VENDORS[0] ? VENDORS[0].name : '南宁智课教育科技有限公司'),
+        hasApi: this.form.hasApi,
+        docs: this.form.hasApi === '是' ? this.form.docs.map(d => ({ ...d })) : [],
+        scopes: this.form.hasApi === '否' ? this.form.scopes.map(s => ({ ...s })) : [],
+        reason: this.form.reason,
+        syncStatus: '待审批',
+        applyTime: timeStr,
+      };
+      DATA_BACKFLOW.unshift(data);
+      this.$message.success(this.isSuper ? '数据回流申请已提交，等待审批' : '数据回流申请已提交，等待桂教通超管审批');
+      this.$root.go((this.ctx && this.ctx.backPage) || 'P36');
+    },
+    back() {
+      this.$root.go((this.ctx && this.ctx.backPage) || 'P36');
+    },
+  },
+  template: `
+  <div>
+    <div class="card" style="max-width:960px">
+      <div style="font-weight:600;margin:8px 0 12px">{{ isView ? '查看数据回流申请' : '新增数据回流申请' }}</div>
+      <el-form label-width="120px" style="width:100%">
+        <el-form-item label="名称" required>
+          <el-input v-if="!isView" v-model="form.name" placeholder="请输入数据回流名称" maxlength="50"></el-input>
+          <div v-else class="ro-text">{{ form.name }}</div>
+        </el-form-item>
+        <el-form-item label="应用名称" required>
+          <template v-if="!isView">
+            <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%">
+              <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
+            </el-select>
+            <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用</div>
+          </template>
+          <div v-else class="ro-text">{{ form.appName || '—' }}</div>
+        </el-form-item>
+        <el-form-item v-if="isSuper && !isView" label="开发者" required>
+          <el-select v-model="form.devName" filterable remote :remote-method="searchDevs" :loading="devLoading" placeholder="请输入开发者名称模糊匹配" style="width:100%">
+            <el-option v-for="v in devOptions" :key="v.id" :label="v.name" :value="v.name"></el-option>
+          </el-select>
+          <div style="color:#909399;font-size:12px;line-height:1.5">根据开发者名称模糊匹配，最多展示 30 个</div>
+        </el-form-item>
+        <el-form-item v-else-if="isView" label="开发者名称">
+          <div class="ro-text">{{ form.devName || '—' }}</div>
+        </el-form-item>
+        <el-form-item label="是否有接口" required>
+          <el-radio-group v-if="!isView" v-model="form.hasApi">
+            <el-radio value="是">是</el-radio>
+            <el-radio value="否">否</el-radio>
+          </el-radio-group>
+          <div v-else class="ro-text">{{ form.hasApi }}</div>
+        </el-form-item>
+
+        <template v-if="form.hasApi === '是'">
+          <el-form-item label="对接文档" required>
+            <template v-if="!isView">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+                <div v-for="(doc, i) in form.docs" :key="i" style="display:flex;align-items:center;gap:6px;background:#f5f7fa;padding:6px 12px;border-radius:4px">
+                  <span style="font-size:13px">{{ doc.name }}</span>
+                  <el-button link type="danger" size="small" @click="removeDoc(i)">删除</el-button>
+                </div>
+              </div>
+              <el-button type="primary" plain @click="addDoc">+ 上传对接文档</el-button>
+              <div style="color:#909399;font-size:12px;margin-top:6px">支持格式：PDF、PPT、Word 及照片（jpg/png）</div>
+            </template>
+            <template v-else>
+              <div v-if="form.docs.length" style="display:flex;flex-wrap:wrap;gap:10px">
+                <div v-for="(doc, i) in form.docs" :key="i" style="background:#f5f7fa;padding:6px 12px;border-radius:4px">
+                  <span style="font-size:13px">{{ doc.name }}</span>
+                </div>
+              </div>
+              <div v-else class="ro-text">—</div>
+            </template>
+          </el-form-item>
+        </template>
+
+        <template v-if="form.hasApi === '否'">
+          <el-form-item label="同步范围" required>
+            <div style="width:100%">
+              <div v-for="(scope, i) in form.scopes" :key="i" style="border:1px solid #e4e7ed;border-radius:6px;padding:14px 16px;margin-bottom:12px;background:#fafbfc">
+                <div style="display:flex;justify-content:end;align-items:center;margin-bottom:10px">
+                  <el-button v-if="!isView && form.scopes.length > 1" link type="danger" size="small" @click="removeScope(i)">删除</el-button>
+                </div>
+                <el-form-item label="API接口" required :label-width="90" style="margin-bottom:10px">
+                  <el-select v-if="!isView" v-model="scope.apiId" placeholder="请选择API接口" @change="onApiChange(i, $event)" style="width:100%">
+                    <el-option v-for="a in syncApis" :key="a.id" :label="a.name" :value="a.id"></el-option>
+                  </el-select>
+                  <div v-else class="ro-text">{{ (apiById(scope.apiId)||{}).name || '—' }}</div>
+                </el-form-item>
+                <el-form-item label="同步字段" required :label-width="90" style="margin-bottom:0">
+                  <template v-if="!isView">
+                    <el-checkbox-group v-model="scope.fields">
+                      <el-checkbox v-for="p in apiParams(scope.service)" :key="p.name" :value="p.name">{{ p.label }}（{{ p.name }}）</el-checkbox>
+                    </el-checkbox-group>
+                  </template>
+                  <div v-else class="ro-text">{{ (scope.fields||[]).map(f => { const pm=(apiParams(scope.service)||[]); const p=pm.find(x=>x.name===f); return p?p.label+'（'+p.name+'）':f; }).join('、') || '—' }}</div>
+                </el-form-item>
+              </div>
+              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加接口</el-button>
+            </div>
+          </el-form-item>
+        </template>
+
+        <el-form-item label="申请理由" required>
+          <el-input v-if="!isView" v-model="form.reason" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入申请理由"></el-input>
+          <div v-else class="ro-text">{{ form.reason || '—' }}</div>
+        </el-form-item>
+
+        <el-form-item label="免责声明" required>
+          <template v-if="!isView">
+            <el-checkbox v-model="form.disclaimer">我已阅读并同意
+              <span style="color:#409eff;cursor:pointer" @click.stop="declVisible=true">《数据使用免责申明》</span>
+            </el-checkbox>
+          </template>
+          <div v-else class="ro-text">已同意免责声明</div>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:center;margin-top:18px">
+        <el-button @click="back">{{ isView ? '返回' : '取消' }}</el-button>
+        <el-button v-if="!isView" type="primary" @click="submit">提交申请</el-button>
+      </div>
+    </div>
+
+    <el-dialog title="数据使用免责申明" v-model="declVisible" width="720px">
+      <div style="white-space:pre-wrap;line-height:1.9;font-size:14px;color:#303133;max-height:60vh;overflow:auto">{{ declText }}</div>
+      <template #footer>
+        <el-button @click="declVisible=false">关闭</el-button>
+        <el-button type="primary" @click="declVisible=false; form.disclaimer=true">我已阅读并同意</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P36Admin 数据回流管理（桂教通超管·授权管理）
+ * 与开发者数据回流（P36）共享同一份数据源 DATA_BACKFLOW：开发者提交后
+ * 状态为「待审批」并出现在本列表；超管审批通过后进入「同步中」；
+ * 有接口：超管「同步完成」→ 已完成；无接口：开发者「同步完成」→「待确认」，
+ * 超管核实同步成功后「同步确认」→ 已完成。
+ * ===================================================================== */
+app.component('P36Admin', {
+  props: ['ctx'],
+  data() {
+    return {
+      rows: DATA_BACKFLOW.map(x => ({ ...x })),
+      q: { name: '', devName: '', syncStatus: '' },
+      audit: { visible: false, row: null, opinion: '通过', note: '' },
+      preview: { visible: false, doc: null },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.name || r.name.includes(this.q.name)) &&
+        (!this.q.devName || (r.devName || '').includes(this.q.devName)) &&
+        (!this.q.syncStatus || r.syncStatus === this.q.syncStatus)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { name: '', devName: '', syncStatus: '' }; },
+    openAudit(row) { this.audit = { visible: true, row, opinion: '通过', note: '' }; },
+    submitAudit() {
+      const a = this.audit;
+      if (a.opinion === '驳回' && !a.note.trim()) { this.$message.warning('驳回时请填写审批说明'); return; }
+      a.row.syncStatus = a.opinion === '通过' ? '同步中' : '已驳回';
+      a.row.approver = '王超管';
+      a.row.opinion = a.opinion;
+      a.row.opinionNote = a.note;
+      a.row.approveTime = this.nowStr();
+      this.audit.visible = false;
+      this.$message.success(a.opinion === '通过' ? '已审批通过，数据回流进入同步中' : '已驳回该申请');
+    },
+    syncDone(row) {
+      this.$confirm('确认将该数据回流标记为「同步完成」？', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => {
+          row.syncStatus = '已完成';
+          this.$message.success('已标记同步完成');
+        }).catch(() => {});
+    },
+    syncConfirm(row) {
+      this.$confirm('请确认该数据回流已同步成功？确认后状态将改为「已完成」。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => {
+          row.syncStatus = '已完成';
+          this.$message.success('已确认同步成功');
+        }).catch(() => {});
+    },
+    previewDoc(doc) { this.preview = { visible: true, doc }; },
+    scopeText(r) {
+      if (r.hasApi === '是') return '—'; // 有接口的对接文档独立成列展示
+      const scopes = r.scopes || [];
+      if (!scopes.length) return '—';
+      return scopes.map(s => {
+        const api = APIS.find(a => a.id === s.apiId);
+        const apiName = api ? api.name : s.service;
+        const params = (s.fields || []).map(f => {
+          const pm = API_PARAMS[s.service] || [];
+          const p = pm.find(x => x.name === f);
+          return p ? p.label + '（' + p.name + '）' : f;
+        });
+        return apiName + '（' + params.join('、') + '）';
+      }).join('；');
+    },
+    view(row) {
+      this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Admin' });
+    },
+    openAdd() {
+      this.$root.go('P36Form', { view: false, from: 'P36Admin', backPage: 'P36Admin' });
     },
     nowStr() {
       const d = new Date(), p = n => String(n).padStart(2, '0');
       return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
     },
   },
+  template: `
+  <div>
+    <div class="toolbar">
+      <span class="q-label">名称</span><el-input v-model="q.name" placeholder="请输入" clearable style="width:180px"></el-input>
+      <span class="q-label">开发者名称</span><el-input v-model="q.devName" placeholder="请输入" clearable style="width:180px"></el-input>
+      <span class="q-label">同步状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
+        <el-option label="待审批" value="待审批"></el-option>
+        <el-option label="同步中" value="同步中"></el-option>
+        <el-option label="待确认" value="待确认"></el-option>
+        <el-option label="已完成" value="已完成"></el-option>
+      </el-select>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增申请</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="filtered" stripe style="width:100%">
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="name" label="名称" min-width="140"></el-table-column>
+        <el-table-column prop="devName" label="开发者名称" min-width="180"></el-table-column>
+        <el-table-column prop="hasApi" label="是否有接口" width="100" align="center"></el-table-column>
+        <el-table-column label="范围" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
+        <el-table-column label="对接文档" min-width="160">
+          <template #default="{row}">
+            <template v-if="row.hasApi === '是'">
+              <div v-for="(d,i) in (row.docs||[])" :key="i">
+                <el-link type="primary" @click="previewDoc(d)">{{ d.name }}</el-link>
+              </div>
+            </template>
+            <span v-else>—</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="syncStatus" label="同步状态" width="100" align="center">
+          <template #default="{row}"><st-tag :v="row.syncStatus"></st-tag></template>
+        </el-table-column>
+        <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
+        <el-table-column label="操作" width="180" align="center" fixed="right">
+          <template #default="{row}">
+            <el-button v-if="row.syncStatus === '待审批'" link type="primary" @click="openAudit(row)">审批</el-button>
+            <el-button v-if="row.syncStatus === '同步中' && row.hasApi === '是'" link type="primary" @click="syncDone(row)">同步完成</el-button>
+            <el-button v-if="row.syncStatus === '待确认'" link type="primary" @click="syncConfirm(row)">同步确认</el-button>
+            <el-button link type="primary" @click="view(row)">查看</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <el-dialog title="审批数据回流申请" v-model="audit.visible" width="520px">
+      <el-form label-width="90px" label-position="left">
+        <el-form-item label="申请名称"><span>{{ audit.row && audit.row.name }}</span></el-form-item>
+        <el-form-item label="开发者名称"><span>{{ audit.row && audit.row.devName }}</span></el-form-item>
+        <el-form-item label="是否有接口"><span>{{ audit.row && audit.row.hasApi }}</span></el-form-item>
+        <el-form-item label="审批结果">
+          <el-radio-group v-model="audit.opinion">
+            <el-radio label="通过">通过</el-radio>
+            <el-radio label="驳回">驳回</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="审批说明">
+          <el-input v-model="audit.note" type="textarea" :rows="3" placeholder="驳回时必填，通过时可留空"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="audit.visible=false">取消</el-button>
+        <el-button type="primary" @click="submitAudit">确认</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog title="对接文档预览" v-model="preview.visible" width="640px">
+      <div v-if="preview.doc" style="text-align:center">
+        <div style="font-weight:600;margin-bottom:10px">{{ preview.doc.name }}</div>
+        <img :src="preview.doc.url" style="max-width:100%;max-height:56vh;border:1px solid #e4e7ed;border-radius:4px"/>
+      </div>
+      <template #footer>
+        <el-button @click="preview.visible=false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P36Detail 数据回流明细（桂教通超管·授权管理）
+ * 台账式汇总记录各开发者回流数据的明细：开发者、应用、回流数据名称、
+ * 回流明细（同步接口与字段/对接文档）、同步状态、申请时间、最近同步时间。
+ * 与 P36 / P36Admin 共享同一份数据源 DATA_BACKFLOW，只读展示。
+ * ===================================================================== */
+/* 数据回流明细：按接口维度展开为一行一条记录 */
+function buildBackflowDetailRows(list) {
+  const out = [];
+  list.forEach(r => {
+    if (r.hasApi === '是') {
+      out.push({
+        key: r.id + '_api', id: r.id, devName: r.devName, appName: r.appName, name: r.name,
+        hasApi: '是', apiName: '平台接口回流（对接文档）', docs: r.docs || [], fields: [],
+        status: r.status || '成功', failReason: r.failReason || '', syncTime: r.syncTime || '',
+      });
+    } else {
+      (r.scopes || []).forEach((s, idx) => {
+        const api = APIS.find(a => a.id === s.apiId);
+        const pm = API_PARAMS[s.service] || [];
+        const fields = (s.fields || []).map(f => {
+          const p = pm.find(x => x.name === f);
+          return p ? p.label + '（' + p.name + '）' : f;
+        });
+        out.push({
+          key: r.id + '_scope_' + idx, id: r.id, devName: r.devName, appName: r.appName, name: r.name,
+          hasApi: '否', apiName: api ? api.name : s.service, docs: [], fields,
+          status: s.status || '成功', failReason: s.failReason || '', syncTime: s.syncTime || '',
+        });
+      });
+    }
+  });
+  return out;
+}
+
+app.component('P36Detail', {
+  props: ['ctx'],
+  data() {
+    return {
+      rows: buildBackflowDetailRows(DATA_BACKFLOW),
+      q: { devName: '', appName: '', status: '' },
+      preview: { visible: false, doc: null },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.devName || (r.devName || '').includes(this.q.devName)) &&
+        (!this.q.appName || (r.appName || '').includes(this.q.appName)) &&
+        (!this.q.status || r.status === this.q.status)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { devName: '', appName: '', status: '' }; },
+    syncTimeText(r) { return r.syncTime || '—'; },
+    previewDoc(doc) { this.preview = { visible: true, doc }; },
+    view(row) {
+      this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Detail' });
+    },
+    manualSync(row) {
+      this.$confirm('将手动调用接口拉取回流数据，是否继续？', '手动同步', {
+        confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning',
+      }).then(() => {
+        row.status = '成功';
+        row.failReason = '';
+        row.syncTime = this.nowStr();
+        this.$message.success('接口调用成功，回流数据已拉取');
+      }).catch(() => {});
+    },
+    nowStr() {
+      const p = n => String(n).padStart(2, '0');
+      const d = new Date();
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    },
+  },
+  template: `
+  <div>
+    <div class="toolbar">
+      <span class="q-label">开发者名称</span><el-input v-model="q.devName" placeholder="请输入" clearable style="width:180px"></el-input>
+      <span class="q-label">应用名称</span><el-input v-model="q.appName" placeholder="请输入" clearable style="width:180px"></el-input>
+      <span class="q-label">回流状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:130px">
+        <el-option label="成功" value="成功"></el-option>
+        <el-option label="失败" value="失败"></el-option>
+      </el-select>
+      <el-button @click="resetQ">重置</el-button>
+      <span style="color:#909399;font-size:12px">按接口维度记录各开发者回流数据的明细与回流结果</span>
+    </div>
+    <div class="card">
+      <el-table :data="filtered" stripe style="width:100%">
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="devName" label="开发者名称" min-width="160"></el-table-column>
+        <el-table-column prop="appName" label="应用名称" min-width="140"></el-table-column>
+        <el-table-column prop="name" label="回流数据名称" min-width="130"></el-table-column>
+        <el-table-column prop="apiName" label="接口名称" min-width="170"></el-table-column>
+        <el-table-column label="回流明细" min-width="220">
+          <template #default="{row}">
+            <template v-if="row.hasApi === '是'">
+              <div v-for="(d,i) in (row.docs||[])" :key="i">
+                <el-link type="primary" @click="previewDoc(d)">{{ d.name }}</el-link>
+              </div>
+            </template>
+            <template v-else>
+              <el-tag v-for="(f,j) in row.fields" :key="j" size="small" style="margin:2px 4px 2px 0">{{ f }}</el-tag>
+              <span v-if="!row.fields.length">—</span>
+            </template>
+          </template>
+        </el-table-column>
+        <el-table-column label="回流状态" width="100" align="center">
+          <template #default="{row}"><st-tag :v="row.status"></st-tag></template>
+        </el-table-column>
+        <el-table-column label="失败原因" min-width="180">
+          <template #default="{row}"><span :style="row.status==='失败'?'color:#f56c6c':'color:#909399'">{{ row.failReason || '—' }}</span></template>
+        </el-table-column>
+        <el-table-column label="最近同步时间" width="150">
+          <template #default="{row}"><span>{{ syncTimeText(row) }}</span></template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" align="center" fixed="right">
+          <template #default="{row}">
+            <el-button v-if="row.hasApi === '是' && row.status === '失败'" link type="primary" @click="manualSync(row)">手动同步</el-button>
+            <el-button link type="primary" @click="view(row)">查看</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <el-dialog title="对接文档预览" v-model="preview.visible" width="640px">
+      <div v-if="preview.doc" style="text-align:center">
+        <div style="font-weight:600;margin-bottom:10px">{{ preview.doc.name }}</div>
+        <img :src="preview.doc.url" style="max-width:100%;max-height:56vh;border:1px solid #e4e7ed;border-radius:4px"/>
+      </div>
+      <template #footer>
+        <el-button @click="preview.visible=false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
 });
 
 app.mount('#app');
