@@ -328,8 +328,10 @@ flowchart TD
 <li>有接口场景由超管「同步完成」（二次确认）直接进入"已完成"；无接口场景由开发者「同步完成」进入"待确认"，超管核实数据已同步成功后「同步确认」进入"已完成"。</li>
 <li>回流执行结果按接口维度记录在数据回流明细（P36Detail）：成功记录最近同步时间，失败记录失败原因；有接口回流失败时明细页操作列出现「手动同步」，超管二次确认后重新调用接口拉取数据。</li>
 </ol>
-<pre class="mermaid">
-flowchart TD
+<img src="backflow-flow.svg" alt="数据回流流程" style="max-width:100%;height:auto;">
+<details>
+<summary>流程图源码（mermaid）</summary>
+<pre><code>flowchart TD
     A[开发者管理员: P36「新增申请」] --> B[配置应用名称 / 是否有接口 / 对接文档或同步范围]
     B --> C[提交申请, 状态: 待审批]
     C --> D[同步生成记录到超管列表 P36Admin]
@@ -351,7 +353,8 @@ flowchart TD
     Q --> R[操作列「手动同步」二次确认重新调接口拉取]
     R -- 拉取成功 --> P
     R -- 仍失败 --> Q
-</pre>
+</code></pre>
+</details>
 
 <h2>四、详细需求说明</h2>
 <h3>（一）开发者入驻与合作</h3>
