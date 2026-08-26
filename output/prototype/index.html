@@ -10,6 +10,8 @@
   <script src="https://unpkg.com/element-plus/dist/locale/zh-cn.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/@wangeditor/editor@5.1.23/dist/css/style.css">
   <script src="https://unpkg.com/@wangeditor/editor@5.1.23/dist/index.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jsoneditor@9.10.2/dist/jsoneditor.min.css">
+  <script src="https://unpkg.com/jsoneditor@9.10.2/dist/jsoneditor.min.js"></script>
   <style>
     html, body { height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
     #app { height: 100%; }
@@ -144,6 +146,7 @@ const MENU_TREE = {
       { label: '数据授权记录', page: 'P08Auth' },
     ]},
     { label: '数据回流管理', children: [
+      { label: '数据表管理', page: 'P36Table' },
       { label: '数据回流管理', page: 'P36' },
     ]},
   ],
@@ -167,7 +170,7 @@ const PAGE_TITLES = {
   P30: '客户端授权管理', P31: '授权配置',
   P32: '数据同步申请', P33: '数据同步审批',
   P34: '数据授权管理', P34Form: '新增/编辑数据授权',
-  P36: '数据回流管理', P36Form: '新增数据回流申请', P36Admin: '数据回流管理', P36Detail: '数据回流明细',
+  P36: '数据回流管理', P36Form: '数据回流申请', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看', P36Table: '数据表管理', P36TableForm: '新增/编辑数据表',
 };
 
 /* ---------------- 共享演示数据 ---------------- */
@@ -176,13 +179,13 @@ const PH_PRODUCTS = [{ name: '产品白皮书.pdf' }, { name: '合作案例介�
 const PH_LICENSE = [{ name: '营业执照1.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E8%90%A5%E4%B8%9A%E6%89%A7%E7%85%A7' }, { name: '营业执照2.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E8%90%A5%E4%B8%9A%E6%89%A7%E7%85%A7' }];
 
 const VENDORS = [
-  { id: 1, name: '南宁智课教育科技有限公司', type: '企业', legalPerson: '张建国', admin: '张伟', phone: '13800002211', isPublicSea: false, socialCode: '91450100MA5KX8A72Q', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市青秀区民族大道118号', detailAddr: '青秀万达广场A座15层', vatPayer: true, intro: '专注K12智慧教育信息化建设，提供数字校园整体解决方案。', companyPhone: '0771-5800000', businessDeadline: '2036-06-30', contacted: true, contactTime: '2026-06-18', coop: '合作中', coopTime: '2026-06-20', coopReason: '能力互补，资源共享', cancelTime: '', cancelReason: '', recoopTime: '', portal: true, applyDate: '2026-06-15',
+  { id: 1, name: '南宁智课教育科技有限公司', type: '企业', legalPerson: '张建国', admin: '张伟', phone: '13800002211', isPublicSea: false, socialCode: '91450100MA5KX8A72Q', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市青秀区民族大道118号', detailAddr: '青秀万达广场A座15层', vatPayer: true, intro: '专注K12智慧教育信息化建设，提供数字校园整体解决方案。', companyPhone: '0771-5800000', businessDeadline: '2036-06-30', coop: '合作中', coopTime: '2026-06-20', coopReason: '能力互补，资源共享', cancelTime: '', cancelReason: '', recoopTime: '', portal: true, status: '启用', applyDate: '2026-06-15',
     f_bankType: '基本户', f_bankName: '中国工商银行南宁民族支行', f_bankAccount: '2102103009200123456', f_accountPurpose: '日常结算及接口服务收款',
     i_addr: '南宁市青秀区民族大道118号青秀万达广场A座15层', i_taxNo: '91450100MA5KX8A72Q', i_phone: '0771-5800000', i_bank: '中国工商银行南宁民族支行', i_bankAcc: '2102103009200123456', i_bankLine: '102611000123' },
-  { id: 2, name: '广西云启信息科技有限公司', type: '企业', legalPerson: '李国华', admin: '李静', phone: '13900003344', isPublicSea: false, socialCode: '91450100MA5L7C2D9F', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市良庆区五象大道399号', detailAddr: '五象总部基地1号楼', vatPayer: true, intro: '教育云服务与数据中台建设服务商。', companyPhone: '0771-5600222', businessDeadline: '2033-03-15', contacted: true, contactTime: '2026-07-12', coop: '未合作', coopTime: '', coopReason: '', cancelTime: '', cancelReason: '', recoopTime: '', portal: false, applyDate: '2026-07-10' },
-  { id: 3, name: '个人开发者 王磊', type: '个人', legalPerson: '王磊', admin: '王磊', phone: '13600005566', isPublicSea: true, socialCode: '45010319900512001X', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市西乡塘区大学路100号', detailAddr: '广西大学创业园', vatPayer: false, intro: '独立开发者，擅长校园信息化工具开发。', companyPhone: '', businessDeadline: '2031-01-01', contacted: false, contactTime: '', coop: '未合作', coopTime: '', coopReason: '', cancelTime: '', cancelReason: '', recoopTime: '', portal: false, applyDate: '2026-07-18' },
-  { id: 4, name: '桂林育才软件有限公司', type: '企业', legalPerson: '陈志远', admin: '陈曦', phone: '13700007788', isPublicSea: false, socialCode: '91450300MA5N8E1B3G', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '桂林市七星区漓江路20号', detailAddr: '创意产业园3栋', vatPayer: false, intro: '专注教育信息化软件研发与系统集成。', companyPhone: '0773-2800111', businessDeadline: '2030-12-31', contacted: true, contactTime: '2026-05-22', coop: '已取消', coopTime: '2026-05-28', coopReason: '共同拓展市场', cancelTime: '2026-06-28', cancelReason: '业务方向调整', recoopTime: '', portal: false, applyDate: '2026-05-20' },
-  { id: 5, name: '北海海创科技有限公司', type: '企业', legalPerson: '刘海峰', admin: '刘洋', phone: '13500009900', isPublicSea: false, socialCode: '91450500MA5Q4H6A2P', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '北海市海城区北海大道168号', detailAddr: '高新区软件园B座', vatPayer: true, intro: '智慧校园与大数据分析解决方案提供商。', companyPhone: '0779-3060333', businessDeadline: '2035-04-12', contacted: true, contactTime: '2026-04-12', coop: '合作中', coopTime: '2026-06-10', coopReason: '技术领先，服务优质', cancelTime: '2026-05-30', cancelReason: '合作条款未达一致', recoopTime: '2026-06-10', recoopReason: '条款重新协商一致', portal: true, applyDate: '2026-04-12' },
+  { id: 2, name: '广西云启信息科技有限公司', type: '企业', legalPerson: '李国华', admin: '李静', phone: '13900003344', isPublicSea: false, socialCode: '91450100MA5L7C2D9F', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市良庆区五象大道399号', detailAddr: '五象总部基地1号楼', vatPayer: true, intro: '教育云服务与数据中台建设服务商。', companyPhone: '0771-5600222', businessDeadline: '2033-03-15', coop: '未合作', coopTime: '', coopReason: '', cancelTime: '', cancelReason: '', recoopTime: '', portal: false, status: '启用', applyDate: '2026-07-10' },
+  { id: 3, name: '个人开发者 王磊', type: '个人', legalPerson: '王磊', admin: '王磊', phone: '13600005566', isPublicSea: true, socialCode: '45010319900512001X', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '南宁市西乡塘区大学路100号', detailAddr: '广西大学创业园', vatPayer: false, intro: '独立开发者，擅长校园信息化工具开发。', companyPhone: '', businessDeadline: '2031-01-01', coop: '未合作', coopTime: '', coopReason: '', cancelTime: '', cancelReason: '', recoopTime: '', portal: false, status: '停用', applyDate: '2026-07-18' },
+  { id: 4, name: '桂林育才软件有限公司', type: '企业', legalPerson: '陈志远', admin: '陈曦', phone: '13700007788', isPublicSea: false, socialCode: '91450300MA5N8E1B3G', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '桂林市七星区漓江路20号', detailAddr: '创意产业园3栋', vatPayer: false, intro: '专注教育信息化软件研发与系统集成。', companyPhone: '0773-2800111', businessDeadline: '2030-12-31', coop: '已取消', coopTime: '2026-05-28', coopReason: '共同拓展市场', cancelTime: '2026-06-28', cancelReason: '业务方向调整', recoopTime: '', portal: false, status: '启用', applyDate: '2026-05-20' },
+  { id: 5, name: '北海海创科技有限公司', type: '企业', legalPerson: '刘海峰', admin: '刘洋', phone: '13500009900', isPublicSea: false, socialCode: '91450500MA5Q4H6A2P', logo: PH_LOGO, products: PH_PRODUCTS, license: PH_LICENSE, registerAddr: '北海市海城区北海大道168号', detailAddr: '高新区软件园B座', vatPayer: true, intro: '智慧校园与大数据分析解决方案提供商。', companyPhone: '0779-3060333', businessDeadline: '2035-04-12', coop: '合作中', coopTime: '2026-06-10', coopReason: '技术领先，服务优质', cancelTime: '2026-05-30', cancelReason: '合作条款未达一致', recoopTime: '2026-06-10', recoopReason: '条款重新协商一致', portal: true, status: '启用', applyDate: '2026-04-12' },
 ];
 
 // 开发者信息审批待审核数据（入驻申请 + 企业信息变更，桂教通超管在 P01a 审批）
@@ -282,9 +285,9 @@ const CAPABILITY_LIST = [
 ];
 
 const SUBACCOUNTS = [
-  { id: 1, name: '张伟', phone: '13800002211', create: '2026-07-01', expire: '2027-07-01', status: '正常' },
-  { id: 2, name: '李静', phone: '13900003344', create: '2026-07-03', expire: '2026-12-31', status: '已过期' },
-  { id: 3, name: '王磊', phone: '13600005566', create: '2026-07-05', expire: '2027-01-15', status: '正常' },
+  { id: 1, name: '张伟', phone: '13800002211', create: '2026-07-01', status: '启用' },
+  { id: 2, name: '李静', phone: '13900003344', create: '2026-07-03', status: '停用' },
+  { id: 3, name: '王磊', phone: '13600005566', create: '2026-07-05', status: '启用' },
 ];
 
 // 客户端授权关联（桂教通超管维护）
@@ -354,11 +357,11 @@ const API_PARAMS = {
 //                               ↘（无接口：开发者同步完成→待确认→超管同步确认）已完成
 const DATA_BACKFLOW = [
   { id: 1, name: '学生学籍回流', appId: 'app_1001', appName: '智慧校园APP', devName: '南宁智课教育科技有限公司', hasApi: '否', scopes: [
-    { apiId: 1, service: 'student_info_query', fields: ['studentId', 'name', 'classId'], status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
-    { apiId: 2, service: 'student_contact_query', fields: ['studentId', 'parentPhone', 'address'], status: '失败', failReason: '接口返回超时（504）', syncTime: '2026-08-22 16:30' }
+    { tableId: 1, tableName: '学生基础信息表', tableKey: 'tbl_student_base', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', fields: ['studentId', 'name', 'classId'], status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
+    { tableId: 2, tableName: '成绩明细表', tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', fields: ['studentId', 'subjectId', 'score'], status: '失败', failReason: '数据同步失败（超时504）', syncTime: '2026-08-22 16:30' }
   ], syncStatus: '待确认', applyTime: '2026-08-20 10:00' },
   { id: 2, name: '成绩数据回流', appId: 'app_1002', appName: '家校互动平台', devName: '广西云启科技有限公司', hasApi: '否', scopes: [
-    { apiId: 3, service: 'score_report', fields: ['studentId', 'subjectId', 'score'], status: '失败', failReason: '数据源连接异常', syncTime: '' }
+    { tableId: 2, tableName: '成绩明细表', tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', fields: ['studentId', 'subjectId', 'score'], status: '失败', failReason: '数据源连接异常', syncTime: '' }
   ], syncStatus: '同步中', applyTime: '2026-08-21 14:30' },
   { id: 3, name: '课程文档回流', appId: 'app_1001', appName: '智慧校园APP', devName: '北海海创科技有限公司', hasApi: '是', docs: [
     { name: '对接文档.pdf', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF' },
@@ -366,8 +369,25 @@ const DATA_BACKFLOW = [
   ], status: '失败', failReason: '接口鉴权失败（401）', syncTime: '2026-08-23 09:00', syncStatus: '已完成', applyTime: '2026-08-18 09:00' },
 ];
 
+// 数据回流管理——开发者数据表管理（数据表台账，供无接口回流选择同步数据表）
+// useStatus: 使用中 / 未使用；status(状态): 上架 / 下架；used 表示是否被回流申请引用（被引用则不可编辑/不可删除）
+const DATA_TABLES = [
+  { id: 1, name: '学生基础信息表', tableKey: 'tbl_student_base', json: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', useStatus: '使用中', remark: '对接学籍系统学生主档', status: '已上架', used: true },
+  { id: 2, name: '成绩明细表', tableKey: 'tbl_score', json: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', useStatus: '使用中', remark: '期中/期末考试成绩', status: '已上架', used: true },
+  { id: 3, name: '考勤记录表', tableKey: 'tbl_attendance', json: '{\n  "studentId": "学号",\n  "date": "日期",\n  "status": "考勤状态"\n}', useStatus: '未使用', remark: '待接入门禁系统', status: '未上架', used: false },
+  { id: 4, name: '课程安排表', tableKey: 'tbl_course', json: '{\n  "courseId": "课程标识",\n  "courseName": "课程名称",\n  "teacherId": "教师标识"\n}', useStatus: '未使用', remark: '', status: '已上架', used: false },
+];
 
-const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '同步中':'primary', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已联系':'success', '未联系':'info', '已过期':'danger', '展示':'success', '审批通过':'success', '待联调':'warning', '待确认联调':'primary', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
+// 租户管理数据源（P14 租户列表 / P15 新增编辑租户）
+const TENANTS = [
+  { id: 'T001', name: '南宁市教育局', tenantType: '教育局', orgs: '广西壮族自治区教育厅 / 南宁市教育局', status: '启用', create: '2026-03-12' },
+  { id: 'T002', name: '桂林市第一中学', tenantType: '学校', orgs: '桂林市教育局 / 桂林市第一中学', status: '启用', create: '2026-04-08' },
+  { id: 'T003', name: '柳州市教育云平台', tenantType: '平台', orgs: '柳州市教育局', status: '停用', create: '2026-02-20' },
+  { id: 'T004', name: '北海市海城区第二小学', tenantType: '学校', orgs: '北海市教育局 / 海城区第二小学', status: '启用', create: '2026-05-15' },
+  { id: 'T005', name: '玉林市博白县中学', tenantType: '学校', orgs: '玉林市教育局 / 博白县中学', status: '停用', create: '2026-01-30' },
+];
+
+const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '同步中':'primary', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '待联调':'warning', '待确认联调':'primary', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
 
 const app = Vue.createApp({
   data() {
@@ -420,7 +440,7 @@ app.component('st-tag', {
 
 /* =====================================================================
  * P01 开发者列表（开发者管理）
- * 功能点：开发者信息列表及查询 / 新增开发者信息 / 邀请开发者 / 编辑开发者 / 查看开发者信息 / 确认联系 / 确认合作 / 取消合作 / 重新合作
+ * 功能点：开发者信息列表及查询 / 新增开发者信息 / 邀请开发者 / 编辑开发者 / 查看开发者信息 / 确认合作 / 取消合作 / 重新合作
  * ===================================================================== */
 app.component('P01', {
   props: ['ctx'],
@@ -468,6 +488,14 @@ app.component('P01', {
       this.$message.success(`已为"${this.assignTarget.name}"分配 ${this.assignSelected.length} 个应用`);
       this.assignVisible = false;
     },
+    toggleStatus(r) {
+      const to = r.status === '启用' ? '停用' : '启用';
+      const tip = to === '停用'
+        ? '确认停用该开发者？停用后其开发者管理员及对应子账号均不可登录开发者平台（取消合作不影响登录）。'
+        : '确认启用该开发者？';
+      this.$confirm(tip, to === '停用' ? '停用' : '启用', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => { r.status = to; this.$message.success('已' + to); }).catch(() => {});
+    },
   },
   template: `
   <div>
@@ -483,7 +511,7 @@ app.component('P01', {
       <el-button @click="inviteVisible=true">邀请开发者</el-button>
     </div>
     <el-alert type="info" :closable="false" style="margin-bottom:14px" show-icon
-      title="本列表仅展示审批通过的开发者；新增或邀请开发者提交入驻信息后，需经「开发者信息审批」审批通过，才生成开发者管理员账号并在此展示"/>
+      title="本列表展示审批通过的开发者（审批通过即上架/启用，可登录开发者平台）；停用后其开发者管理员及对应子账号均不可登录，取消合作不影响登录。"/>
     <div class="card">
       <el-table :data="filtered" stripe>
         <el-table-column prop="name" label="开发者名称" min-width="180"></el-table-column>
@@ -500,18 +528,18 @@ app.component('P01', {
             <el-button link @click="s.row.showPhone=!s.row.showPhone">{{ s.row.showPhone ? '隐藏' : '👁' }}</el-button>
           </template>
         </el-table-column>
-        <el-table-column label="是否已联系" width="100"><template #default="s"><st-tag :v="s.row.contacted?'已联系':'未联系'"/></template></el-table-column>
         <el-table-column label="合作状态" width="100"><template #default="s"><st-tag :v="s.row.coop"/></template></el-table-column>
+        <el-table-column label="状态" width="100"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
         <el-table-column prop="portal" label="门户展示" width="80"><template #default="s">{{ s.row.portal?'展示':'—' }}</template></el-table-column>
         <el-table-column prop="applyDate" label="申请日期" width="110"></el-table-column>
-        <el-table-column label="操作" min-width="260" fixed="right">
+        <el-table-column label="操作" min-width="300" fixed="right">
           <template #default="s">
             <el-button link @click="$root.go('P03',{vendorId:s.row.id})">查看</el-button>
-            <el-button link :disabled="s.row.contacted" @click="$root.go('P02',{vendorId:s.row.id})">编辑</el-button>
-            <el-button v-if="!s.row.contacted" link @click="s.row.contacted=true;this.$message.success('已确认联系')">确认联系</el-button>
-            <el-button v-if="s.row.contacted && s.row.coop==='未合作'" link type="primary" @click="openCoop(s.row)">确认合作</el-button>
-            <el-button v-if="s.row.contacted && s.row.coop==='合作中'" link type="primary" @click="openAssign(s.row)">分配应用</el-button>
-            <el-button v-if="s.row.contacted && s.row.coop==='合作中'" link type="danger" @click="openCancel(s.row)">取消合作</el-button>
+            <el-button link @click="$root.go('P02',{vendorId:s.row.id})">编辑</el-button>
+            <el-button link :type="s.row.status === '启用' ? 'warning' : 'success'" @click="toggleStatus(s.row)">{{ s.row.status === '启用' ? '停用' : '启用' }}</el-button>
+            <el-button v-if="s.row.coop==='未合作'" link type="primary" @click="openCoop(s.row)">确认合作</el-button>
+            <el-button v-if="s.row.coop==='合作中'" link type="primary" @click="openAssign(s.row)">分配应用</el-button>
+            <el-button v-if="s.row.coop==='合作中'" link type="danger" @click="openCancel(s.row)">取消合作</el-button>
             <el-button v-if="s.row.coop==='已取消'" link @click="openRecoop(s.row)">重新合作</el-button>
           </template>
         </el-table-column>
@@ -745,8 +773,8 @@ app.component('P01aApprove', {
             isPublicSea: d.isPublicSea, socialCode: d.socialCode, logo: d.logo, products: d.products,
             license: d.license, registerAddr: d.registerAddr, detailAddr: d.detailAddr, vatPayer: d.vatPayer,
             intro: d.intro, companyPhone: d.companyPhone, businessDeadline: d.businessDeadline,
-            portal: d.portal, contacted: false, contactTime: '', coop: '未合作', coopTime: '', coopReason: '',
-            cancelTime: '', cancelReason: '', recoopTime: '', applyDate: r.submitTime.slice(0, 10),
+            portal: d.portal, coop: '未合作', coopTime: '', coopReason: '',
+            cancelTime: '', cancelReason: '', recoopTime: '', status: '启用', applyDate: r.submitTime.slice(0, 10),
           });
           this.$message.success('审批通过，开发者管理员账号已生成，可登录开发者平台');
         } else {
@@ -1158,14 +1186,6 @@ app.component('P03', {
           <el-form label-width="140px">
             <el-row :gutter="20">
               <el-col :span="12">
-                <el-form-item label="是否已联系"><div class="ro-text">{{ row.contacted?'已联系':'未联系' }}</div></el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="联系时间"><div class="ro-text">{{ row.contactTime||'—' }}</div></el-form-item>
-              </el-col>
-            </el-row>
-            <el-row :gutter="20">
-              <el-col :span="12">
                 <el-form-item label="合作状态">
                   <div style="display:flex;align-items:center"><st-tag :v="row.coop"/></div>
                 </el-form-item>
@@ -1190,8 +1210,7 @@ app.component('P03', {
       </el-collapse>
 
       <div style="display:flex;justify-content:center;gap:8px;margin-top:20px">
-        <el-button v-if="!row.contacted" @click="row.contacted=true;this.$message.success('已确认联系')">确认联系</el-button>
-        <el-button v-if="row.contacted && row.coop==='未合作'" type="primary" @click="open('mCoop')">确认合作</el-button>
+        <el-button v-if="row.coop==='未合作'" type="primary" @click="open('mCoop')">确认合作</el-button>
         <el-button v-if="row.coop==='已取消'" @click="open('mReCoop')">重新合作</el-button>
         <el-button @click="$root.go('P01')">返回</el-button>
       </div>
@@ -3356,7 +3375,7 @@ app.component('P17', {
       q: { name: '', status: '' },
       rows: SUBACCOUNTS.map(x=>({...x,mDel:false})),
       addVisible: false,
-      addForm: { name: '', phone: '', expire: '' },
+      addForm: { name: '', phone: '' },
     };
   },
   computed: {
@@ -3367,45 +3386,60 @@ app.component('P17', {
     },
   },
   methods: {
-    openAdd(){ this.addForm = { name:'', phone:'', expire:'' }; this.addVisible = true; },
+    openAdd(){ this.addForm = { name:'', phone:'' }; this.addVisible = true; },
     add(){
       const f = this.addForm;
       if(!f.name){ this.$message.warning('请填写员工姓名'); return; }
       if(!f.phone){ this.$message.warning('请填写员工手机号'); return; }
       if(!/^\d{11}$/.test(f.phone)){ this.$message.warning('员工手机号格式不正确'); return; }
-      if(!f.expire){ this.$message.warning('请选择到期时间'); return; }
       const id = this.rows.length ? Math.max(...this.rows.map(x=>x.id)) + 1 : 1;
-      this.rows.push({ id, name: f.name, phone: f.phone, create: new Date().toISOString().slice(0,10), expire: f.expire, status: '正常', mDel:false });
-      this.addVisible = false; this.$message.success('已新增子账号');
+      this.rows.push({ id, name: f.name, phone: f.phone, create: new Date().toISOString().slice(0,10), status: '启用', mDel:false });
+      this.addVisible = false; this.$message.success('已新增子账号（默认启用）');
     },
-    del(r){ this.rows = this.rows.filter(x=>x.id!==r.id); this.$message.success('已删除子账号'); },
+    toggle(r){
+      const to = r.status === '启用' ? '停用' : '启用';
+      const tip = to === '停用'
+        ? '确认停用该子账号？停用后该账号不可登录开发者平台。'
+        : '确认启用该子账号？';
+      this.$confirm(tip, to === '停用' ? '停用' : '启用', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => { r.status = to; this.$message.success('已' + to); }).catch(() => {});
+    },
+    del(r){
+      if (r.status === '启用') { this.$message.warning('启用状态的子账号不可删除，请先停用'); return; }
+      this.rows = this.rows.filter(x=>x.id!==r.id); this.$message.success('已删除子账号');
+    },
   },
   template: `
   <div>
     <div class="toolbar">
       <span class="q-label">员工姓名</span><el-input v-model="q.name" placeholder="请输入员工姓名" clearable style="width:160px"></el-input>
       <span class="q-label">状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:120px">
-        <el-option label="正常" value="正常"></el-option>
-        <el-option label="已过期" value="已过期"></el-option>
+        <el-option label="启用" value="启用"></el-option>
+        <el-option label="停用" value="停用"></el-option>
       </el-select>
       <div style="flex:1"></div>
       <el-button type="primary" @click="openAdd">新增子账号</el-button>
     </div>
+    <el-alert type="info" :closable="false" style="margin-bottom:14px" show-icon
+      title="停用状态的子账号不可登录开发者平台；启用状态不可删除，需先停用。"></el-alert>
     <div class="card">
       <el-table :data="filtered" stripe>
         <el-table-column prop="name" label="员工姓名" min-width="120"></el-table-column>
         <el-table-column prop="phone" label="员工手机号" min-width="140"></el-table-column>
         <el-table-column prop="create" label="添加时间" width="120"></el-table-column>
-        <el-table-column prop="expire" label="到期时间" width="120"></el-table-column>
         <el-table-column label="状态" width="100"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
-        <el-table-column label="操作" width="90"><template #default="s"><el-button link type="danger" @click="s.row.mDel=true">删除</el-button></template></el-table-column>
+        <el-table-column label="操作" width="170">
+          <template #default="s">
+            <el-button link :type="s.row.status === '启用' ? 'warning' : 'success'" @click="toggle(s.row)">{{ s.row.status === '启用' ? '停用' : '启用' }}</el-button>
+            <el-button link type="danger" :disabled="s.row.status === '启用'" @click="s.row.mDel=true">删除</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
     <el-dialog v-model="addVisible" title="新增子账号" width="480px" append-to-body>
       <el-form label-width="110px" style="max-width:420px">
         <el-form-item label="员工姓名" required><el-input v-model="addForm.name" placeholder="请输入员工姓名" maxlength="50"></el-input></el-form-item>
         <el-form-item label="员工手机号" required><el-input v-model="addForm.phone" placeholder="请输入11位手机号" maxlength="11"></el-input></el-form-item>
-        <el-form-item label="到期时间" required><el-date-picker v-model="addForm.expire" type="date" style="width:100%" placeholder="请选择到期时间"></el-date-picker></el-form-item>
       </el-form>
       <template #footer><el-button @click="addVisible=false">取消</el-button><el-button type="primary" @click="add">保存</el-button></template>
     </el-dialog>
@@ -5178,6 +5212,244 @@ app.component('P34Form', {
   </div>`,
 });
 
+app.component('P36Table', {
+  props: ['ctx'],
+  data() {
+    return {
+      rows: DATA_TABLES.map(x => ({ ...x })),
+      q: { tableKey: '', useStatus: '', status: '' },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.tableKey || (r.tableKey || '').includes(this.q.tableKey)) &&
+        (!this.q.useStatus || r.useStatus === this.q.useStatus) &&
+        (!this.q.status || r.status === this.q.status)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { tableKey: '', useStatus: '', status: '' }; },
+    openAdd() { this.$root.go('P36TableForm'); },
+    openEdit(row) {
+      if (row.used) return;
+      this.$root.go('P36TableForm', { id: row.id });
+    },
+    up(row) {
+      this.$confirm('确认将该数据表上架？上架后可用于数据回流申请。', '上架', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => { row.status = '已上架'; this.$message.success('已上架'); }).catch(() => {});
+    },
+    down(row) {
+      this.$confirm('确认将该数据表下架？下架后将不可用于数据回流申请。', '下架', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => { row.status = '未上架'; this.$message.success('已下架'); }).catch(() => {});
+    },
+    del(row) {
+      this.$confirm('确认删除该数据表？删除后不可恢复。', '删除', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+        .then(() => {
+          const i = this.rows.findIndex(x => x.id === row.id);
+          if (i >= 0) this.rows.splice(i, 1);
+          this.$message.success('已删除');
+        }).catch(() => {});
+    },
+  },
+  template: `
+  <div>
+    <div class="toolbar">
+      <span class="q-label">表key</span><el-input v-model="q.tableKey" placeholder="请输入" clearable style="width:180px"></el-input>
+      <span class="q-label">使用状态</span><el-select v-model="q.useStatus" placeholder="请选择" clearable style="width:130px">
+        <el-option label="使用中" value="使用中"></el-option>
+        <el-option label="未使用" value="未使用"></el-option>
+      </el-select>
+      <span class="q-label">状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:130px">
+        <el-option label="已上架" value="已上架"></el-option>
+        <el-option label="未上架" value="未上架"></el-option>
+      </el-select>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="filtered" stripe style="width:100%">
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="name" label="表名称" min-width="160"></el-table-column>
+        <el-table-column prop="tableKey" label="表key" min-width="150"></el-table-column>
+        <el-table-column label="表json" min-width="220">
+          <template #default="{row}">
+            <el-tooltip :content="row.json" placement="top" :disabled="!(row.json && row.json.split('\\n').length > 2)">
+              <span style="display:block;max-height:42px;overflow:hidden;white-space:pre-wrap;line-height:1.4">{{ row.json }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="useStatus" label="使用状态" width="100" align="center">
+          <template #default="{row}"><st-tag :v="row.useStatus"></st-tag></template>
+        </el-table-column>
+        <el-table-column label="备注" min-width="160"><template #default="{row}"><span :title="row.remark">{{ row.remark || '—' }}</span></template></el-table-column>
+        <el-table-column prop="status" label="状态" width="90" align="center">
+          <template #default="{row}"><st-tag :v="row.status === '已上架' ? '展示' : '未展示'"></st-tag></template>
+        </el-table-column>
+        <el-table-column label="操作" width="220" align="center" fixed="right">
+          <template #default="{row}">
+            <el-button v-if="row.status === '未上架'" link type="primary" @click="up(row)">上架</el-button>
+            <el-button v-if="row.status === '已上架' && !row.used" link type="primary" @click="down(row)">下架</el-button>
+            <el-button v-if="!row.used" link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button v-if="!row.used" link type="danger" @click="del(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </div>`,
+});
+
+/* ---------- P36TableForm：新增/编辑数据表（独立页面，含 JSON Editor） ---------- */
+app.component('P36TableForm', {
+  props: ['ctx'],
+  data() {
+    return {
+      isEdit: false,
+      editId: null,
+      form: { name: '', tableKey: '', json: '', remark: '' },
+      editor: null,
+      previewText: '',
+      previewError: false,
+    };
+  },
+  mounted() {
+    const params = this.ctx.params || {};
+    this.isEdit = !!params.id;
+    if (this.isEdit) {
+      this.editId = params.id;
+      const row = DATA_TABLES.find(t => t.id === params.id);
+      if (row) {
+        this.form = { name: row.name, tableKey: row.tableKey, json: row.json, remark: row.remark || '' };
+      }
+    } else {
+      this.form = { name: '', tableKey: '', json: '{\\n}', remark: '' };
+    }
+    this.$nextTick(() => this.initEditors());
+  },
+  beforeUnmount() {
+    if (this.editor) { this.editor.destroy(); this.editor = null; }
+  },
+  methods: {
+    initEditors() {
+      var container = document.getElementById('p36table-json-editor');
+      if (!container) return;
+
+      var defaultJson = {};
+      try { defaultJson = JSON.parse(this.form.json || '{}'); } catch(e) { defaultJson = {}; }
+
+      var self = this;
+      this.editor = new JSONEditor(container, {
+        mode: 'code',
+        modes: ['code', 'tree', 'table'],
+        theme: 'jse-theme-default',
+        mainMenuBar: [
+          { text: '格式化', className: 'jsoneditor-menu-btn', title: '格式化 JSON 并输出到预览框', click: function() { self.formatJson(); } },
+          { text: '清空', className: 'jsoneditor-menu-btn', title: '清空内容', click: function() { self.clearJson(); } },
+          { text: '复制结果', className: 'jsoneditor-menu-btn', title: '复制 JSON 到剪贴板', click: function() { self.copyJson(); } },
+        ],
+        statusBar: true,
+        search: true,
+      });
+
+      try { this.editor.set(defaultJson); } catch(e) {}
+      this.formatJson();
+    },
+    getJsonText() {
+      if (!this.editor) return this.form.json || '';
+      try { return this.editor.getText(); } catch(e) { return ''; }
+    },
+    /* 格式化：将编辑框文本解析为标准 JSON 格式并输出到预览框；校验失败则在预览框提示 */
+    formatJson() {
+      var raw = this.getJsonText();
+      if (!raw || !raw.trim()) {
+        this.previewText = '';
+        this.previewError = false;
+        return;
+      }
+      try {
+        var val = JSON.parse(raw);
+        this.previewText = JSON.stringify(val, null, 2);
+        this.previewError = false;
+      } catch (e) {
+        this.previewError = true;
+        this.previewText = 'JSON 格式校验未通过：\n' + (e && e.message ? e.message : String(e));
+      }
+    },
+    clearJson() {
+      if (this.editor) { try { this.editor.setText('{}'); } catch(e) {} }
+      this.previewText = '';
+      this.previewError = false;
+    },
+    copyJson() {
+      var txt = this.getJsonText();
+      navigator.clipboard.writeText(txt).then(() => this.$message.success('已复制')).catch(() => this.$message.error('复制失败'));
+    },
+    goBack() {
+      this.$root.goBack();
+    },
+    save() {
+      var name = this.form.name.trim();
+      var tableKey = this.form.tableKey.trim();
+      var remark = this.form.remark;
+
+      if (!name) { this.$message.warning('请输入表名称'); return; }
+      if (name.length > 20) { this.$message.warning('表名称长度不超过20个字符'); return; }
+      if (!tableKey) { this.$message.warning('请输入表key'); return; }
+
+      var jsonStr = this.getJsonText();
+      if (!jsonStr || !jsonStr.trim()) { this.$message.warning('请输入表json'); return; }
+
+      var parsed = null;
+      try { parsed = JSON.parse(jsonStr); } catch(e) { this.$message.warning('表json格式不正确，请输入合法 JSON'); return; }
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) { this.$message.warning('表json必须是一个 JSON 对象'); return; }
+      if (remark.length > 200) { this.$message.warning('备注长度不超过200个字符'); return; }
+
+      if (this.isEdit) {
+        var row = DATA_TABLES.find(t => t.id === this.editId);
+        if (row) Object.assign(row, { name: name, tableKey: tableKey, json: jsonStr, remark: remark });
+        this.$message.success('已保存');
+      } else {
+        DATA_TABLES.unshift({ id: Date.now(), name: name, tableKey: tableKey, json: jsonStr, remark: remark, useStatus: '未使用', status: '未上架', used: false });
+        this.$message.success('已新增，状态默认为未上架');
+      }
+      this.$root.goBack();
+    },
+  },
+  template: `
+  <div>
+    <div class="page-header">
+      <h2>{{ isEdit ? '编辑数据表' : '新增数据表' }}</h2>
+      <div>
+        <el-button @click="goBack">返回列表</el-button>
+        <el-button type="primary" @click="save">保存</el-button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <el-form label-width="110px" style="max-width:900px">
+        <el-form-item label="表名称" required>
+          <el-input v-model="form.name" placeholder="请输入表名称" maxlength="20" show-word-limit></el-input>
+        </el-form-item>
+        <el-form-item label="表key" required>
+          <el-input v-model="form.tableKey" placeholder="请输入表key"></el-input>
+        </el-form-item>
+        <el-form-item label="表json" required>
+          <div id="p36table-json-editor" style="border:1px solid #dcdfe6;border-radius:4px;height:360px;width:100%"></div>
+        </el-form-item>
+        <el-form-item label="输出预览（只读）">
+          <pre :style="{ border:'1px solid ' + (previewError ? '#f56c6c' : '#e4e7ed'), borderRadius:'4px', background: previewError ? '#fef0f0' : '#fafafa', color: previewError ? '#f56c6c' : '#303133', margin:0, padding:'10px 12px', minHeight:'160px', maxHeight:'320px', width:'100%', overflow:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', fontSize:'13px', lineHeight:'1.6' }">{{ previewText || '（点击「格式化」按钮后将在此展示标准 JSON 格式）' }}</pre>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="form.remark" type="textarea" :rows="3" maxlength="200" show-word-limit placeholder="请输入备注（选填）"></el-input>
+        </el-form-item>
+        <div v-if="isEdit" style="color:#e6a23c;font-size:12px;margin:-6px 0 12px 110px">该数据表未被使用，可编辑；若已被使用则不可修改。</div>
+      </el-form>
+    </div>
+  </div>`,
+});
+
 app.component('P36', {
   data() {
     return {
@@ -5197,19 +5469,10 @@ app.component('P36', {
   methods: {
     resetQ() { this.q = { name: '', syncStatus: '' }; },
     scopeText(r) {
-      if (r.hasApi === '是') return '—'; // 有接口的对接文档独立成列展示
+      if (r.hasApi === '是') return '接口对接'; // 有接口的对接文档独立成列展示
       const scopes = r.scopes || [];
       if (!scopes.length) return '—';
-      return scopes.map(s => {
-        const api = APIS.find(a => a.id === s.apiId);
-        const apiName = api ? api.name : s.service;
-        const params = (s.fields || []).map(f => {
-          const pm = API_PARAMS[s.service] || [];
-          const p = pm.find(x => x.name === f);
-          return p ? p.label + '（' + p.name + '）' : f;
-        });
-        return apiName + '（' + params.join('、') + '）';
-      }).join('；');
+      return scopes.map(s => (s.tableName || s.tableKey || '未指定数据表')).join(',');
     },
     previewDoc(doc) { this.preview = { visible: true, doc }; },
     syncDone(row) {
@@ -5244,8 +5507,9 @@ app.component('P36', {
       <el-table :data="filtered" stripe style="width:100%">
         <el-table-column type="index" label="序号" width="60"></el-table-column>
         <el-table-column prop="name" label="名称" min-width="150"></el-table-column>
+        <el-table-column prop="appName" label="应用名称" min-width="150"></el-table-column>
         <el-table-column prop="hasApi" label="是否有接口" width="100" align="center"></el-table-column>
-        <el-table-column label="范围" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
+        <el-table-column label="数据表" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
         <el-table-column label="对接文档" min-width="160">
           <template #default="{row}">
             <template v-if="row.hasApi === '是'">
@@ -5288,7 +5552,7 @@ app.component('P36Form', {
     const row = id ? DATA_BACKFLOW.find(x => x.id === id) : null;
     return {
       isView: !!isView,
-      isSuper: this.ctx && this.ctx.from === 'P36Admin', // 桂教通超管新增数据回流申请（需选择开发者）
+      isSuper: this.ctx && this.ctx.from === 'P36Admin', // 桂教通超管数据回流申请（需选择开发者）
       form: {
         name: row ? row.name : '',
         appId: row ? (row.appId || '') : '',
@@ -5296,7 +5560,9 @@ app.component('P36Form', {
         devName: row ? (row.devName || '') : '',
         hasApi: row ? row.hasApi : '否',
         docs: row ? (row.docs || []).map(d => ({ ...d })) : [],
-        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ apiId: '', service: '', fields: [] }],
+        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ tableId: '', tableName: '', tableKey: '', tableJson: '', fields: [] }],
+        authKey: row ? (row.authKey || '') : '',
+        domain: row ? (row.domain || '') : '',
         reason: row ? (row.reason || '') : '',
         disclaimer: row ? true : false,
       },
@@ -5306,6 +5572,7 @@ app.component('P36Form', {
       devLoading: false,
       declVisible: false,
       declText: `一、使用范围\n1. 您仅可在本平台授权及审批同意的数据范围内使用相关数据，不得超出审批同意的数据类型、用途及处理方式。\n2. 您应确保数据使用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将数据用于与申请用途无关的场景，不得向第三方提供、出售或交换数据。\n\n三、保密义务\n您对在接入与使用过程中知悉的平台技术信息、数据规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过平台安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰平台正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
+      availableTables: DATA_TABLES.filter(x => x.status === '已上架'),
     };
   },
   computed: {
@@ -5320,19 +5587,27 @@ app.component('P36Form', {
     apiById(id) {
       return APIS.find(a => a.id === id);
     },
-    onApiChange(index, apiId) {
-      const api = this.apiById(apiId);
-      if (api) {
-        this.form.scopes[index].service = api.service;
+    onTableChange(index, tableId) {
+      const t = DATA_TABLES.find(x => x.id === tableId);
+      if (t) {
+        this.form.scopes[index].tableName = t.name;
+        this.form.scopes[index].tableKey = t.tableKey;
+        this.form.scopes[index].tableJson = t.json; // 带出只读 json
         this.form.scopes[index].fields = [];
       }
     },
+    tableJsonPreview(json) {
+      if (!json) return '—';
+      const lines = json.split('\n');
+      const shown = lines.slice(0, 2).join('\n');
+      return lines.length > 2 ? shown + '\n…' : shown;
+    },
     addScope() {
-      this.form.scopes.push({ apiId: '', service: '', fields: [] });
+      this.form.scopes.push({ tableId: '', tableName: '', tableKey: '', tableJson: '', fields: [] });
     },
     removeScope(index) {
       this.form.scopes.splice(index, 1);
-      if (!this.form.scopes.length) this.form.scopes.push({ apiId: '', service: '', fields: [] });
+      if (!this.form.scopes.length) this.form.scopes.push({ tableId: '', tableName: '', tableKey: '', tableJson: '', fields: [] });
     },
     addDoc() {
       const idx = this.form.docs.length + 1;
@@ -5364,9 +5639,11 @@ app.component('P36Form', {
       if (this.isSuper && !this.form.devName) { this.$message.warning('请选择开发者'); return; }
       if (this.form.hasApi === '是') {
         if (!this.form.docs.length) { this.$message.warning('请上传至少一个对接文档'); return; }
+        if (!this.form.authKey.trim()) { this.$message.warning('请输入认证key'); return; }
+        if (this.form.domain && !/^https?:\/\//i.test(this.form.domain.trim())) { this.$message.warning('对接域名需以 http:// 或 https:// 开头'); return; }
       } else {
-        const valid = this.form.scopes.every(s => s.apiId && s.fields.length);
-        if (!valid) { this.$message.warning('请选择 API 接口并至少选择一个同步字段'); return; }
+        const valid = this.form.scopes.every(s => s.tableId);
+        if (!valid) { this.$message.warning('请为每条同步范围选择数据表'); return; }
       }
       if (!this.form.reason.trim()) { this.$message.warning('请填写申请理由'); return; }
       if (!this.form.disclaimer) { this.$message.warning('请同意免责声明'); return; }
@@ -5383,6 +5660,8 @@ app.component('P36Form', {
         hasApi: this.form.hasApi,
         docs: this.form.hasApi === '是' ? this.form.docs.map(d => ({ ...d })) : [],
         scopes: this.form.hasApi === '否' ? this.form.scopes.map(s => ({ ...s })) : [],
+        authKey: this.form.hasApi === '是' ? this.form.authKey : '',
+        domain: this.form.hasApi === '是' ? this.form.domain.trim() : '',
         reason: this.form.reason,
         syncStatus: '待审批',
         applyTime: timeStr,
@@ -5398,7 +5677,7 @@ app.component('P36Form', {
   template: `
   <div>
     <div class="card" style="max-width:960px">
-      <div style="font-weight:600;margin:8px 0 12px">{{ isView ? '查看数据回流申请' : '新增数据回流申请' }}</div>
+      <div style="font-weight:600;margin:8px 0 12px">{{ isView ? '查看数据回流申请' : '数据回流申请' }}</div>
       <el-form label-width="120px" style="width:100%">
         <el-form-item label="名称" required>
           <el-input v-if="!isView" v-model="form.name" placeholder="请输入数据回流名称" maxlength="50"></el-input>
@@ -5451,31 +5730,42 @@ app.component('P36Form', {
               <div v-else class="ro-text">—</div>
             </template>
           </el-form-item>
+          <el-form-item label="认证key" required>
+            <el-input v-if="!isView" v-model="form.authKey" placeholder="请输入认证key（数据存储加密处理）" style="width:100%"></el-input>
+            <div v-else class="ro-text">{{ form.authKey ? '••••••（已加密）' : '—' }}</div>
+            <div v-if="!isView" style="color:#909399;font-size:12px;line-height:1.5">必填；提交后该字段以加密方式存储</div>
+          </el-form-item>
+          <el-form-item label="对接域名">
+            <el-input v-if="!isView" v-model="form.domain" placeholder="选填，如 https://api.example.com" style="width:100%"></el-input>
+            <div v-else class="ro-text">{{ form.domain || '—' }}</div>
+            <div v-if="!isView" style="color:#909399;font-size:12px;line-height:1.5">选填；需以 http:// 或 https:// 开头</div>
+          </el-form-item>
         </template>
 
         <template v-if="form.hasApi === '否'">
-          <el-form-item label="同步范围" required>
+          <el-form-item label="同步数据表" required>
             <div style="width:100%">
               <div v-for="(scope, i) in form.scopes" :key="i" style="border:1px solid #e4e7ed;border-radius:6px;padding:14px 16px;margin-bottom:12px;background:#fafbfc">
-                <div style="display:flex;justify-content:end;align-items:center;margin-bottom:10px">
+                <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:10px">
                   <el-button v-if="!isView && form.scopes.length > 1" link type="danger" size="small" @click="removeScope(i)">删除</el-button>
                 </div>
-                <el-form-item label="API接口" required :label-width="90" style="margin-bottom:10px">
-                  <el-select v-if="!isView" v-model="scope.apiId" placeholder="请选择API接口" @change="onApiChange(i, $event)" style="width:100%">
-                    <el-option v-for="a in syncApis" :key="a.id" :label="a.name" :value="a.id"></el-option>
+                <el-form-item label="数据表" required :label-width="90" style="margin-bottom:10px">
+                  <el-select v-if="!isView" v-model="scope.tableId" placeholder="请选择数据表" @change="onTableChange(i, $event)" style="width:100%" filterable>
+                    <el-option v-for="t in availableTables" :key="t.id" :label="t.name + '（' + t.tableKey + '）'" :value="t.id"></el-option>
                   </el-select>
-                  <div v-else class="ro-text">{{ (apiById(scope.apiId)||{}).name || '—' }}</div>
+                  <div v-else class="ro-text">{{ (scope.tableName || '—') + (scope.tableKey ? '（' + scope.tableKey + '）' : '') }}</div>
                 </el-form-item>
-                <el-form-item label="同步字段" required :label-width="90" style="margin-bottom:0">
+                <el-form-item label="数据json" :label-width="90" style="margin-bottom:0">
                   <template v-if="!isView">
-                    <el-checkbox-group v-model="scope.fields">
-                      <el-checkbox v-for="p in apiParams(scope.service)" :key="p.name" :value="p.name">{{ p.label }}（{{ p.name }}）</el-checkbox>
-                    </el-checkbox-group>
+                    <el-tooltip :content="scope.tableJson" placement="top" :disabled="!(scope.tableJson && scope.tableJson.split('\\n').length > 2)">
+                      <div style="border:1px solid #e4e7ed;background:#f5f7fa;border-radius:4px;padding:8px 12px;max-height:48px;overflow:hidden;white-space:pre-wrap;line-height:1.5;color:#606266">{{ tableJsonPreview(scope.tableJson) }}</div>
+                    </el-tooltip>
+                    <div style="color:#909399;font-size:12px;line-height:1.5">选择数据表后自动带出对应 JSON（只读）</div>
                   </template>
-                  <div v-else class="ro-text">{{ (scope.fields||[]).map(f => { const pm=(apiParams(scope.service)||[]); const p=pm.find(x=>x.name===f); return p?p.label+'（'+p.name+'）':f; }).join('、') || '—' }}</div>
+                  <div v-else class="ro-text" style="white-space:pre-wrap">{{ scope.tableJson || '—' }}</div>
                 </el-form-item>
               </div>
-              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加接口</el-button>
+              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加数据表</el-button>
             </div>
           </el-form-item>
         </template>
@@ -5566,25 +5856,13 @@ app.component('P36Admin', {
     },
     previewDoc(doc) { this.preview = { visible: true, doc }; },
     scopeText(r) {
-      if (r.hasApi === '是') return '—'; // 有接口的对接文档独立成列展示
+      if (r.hasApi === '是') return '接口对接'; // 有接口的对接文档独立成列展示
       const scopes = r.scopes || [];
       if (!scopes.length) return '—';
-      return scopes.map(s => {
-        const api = APIS.find(a => a.id === s.apiId);
-        const apiName = api ? api.name : s.service;
-        const params = (s.fields || []).map(f => {
-          const pm = API_PARAMS[s.service] || [];
-          const p = pm.find(x => x.name === f);
-          return p ? p.label + '（' + p.name + '）' : f;
-        });
-        return apiName + '（' + params.join('、') + '）';
-      }).join('；');
+      return scopes.map(s => (s.tableKey || s.tableName || '未指定数据表')).join(',');
     },
     view(row) {
       this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Admin' });
-    },
-    openAdd() {
-      this.$root.go('P36Form', { view: false, from: 'P36Admin', backPage: 'P36Admin' });
     },
     nowStr() {
       const d = new Date(), p = n => String(n).padStart(2, '0');
@@ -5604,15 +5882,15 @@ app.component('P36Admin', {
       </el-select>
       <el-button @click="resetQ">重置</el-button>
       <div style="flex:1"></div>
-      <el-button type="primary" @click="openAdd">新增申请</el-button>
     </div>
     <div class="card">
       <el-table :data="filtered" stripe style="width:100%">
         <el-table-column type="index" label="序号" width="60"></el-table-column>
         <el-table-column prop="name" label="名称" min-width="140"></el-table-column>
+        <el-table-column prop="appName" label="应用名称" min-width="150"></el-table-column>
         <el-table-column prop="devName" label="开发者名称" min-width="180"></el-table-column>
         <el-table-column prop="hasApi" label="是否有接口" width="100" align="center"></el-table-column>
-        <el-table-column label="范围" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
+        <el-table-column label="数据表" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
         <el-table-column label="对接文档" min-width="160">
           <template #default="{row}">
             <template v-if="row.hasApi === '是'">
@@ -5680,11 +5958,13 @@ app.component('P36Admin', {
 /* 数据回流明细：按接口维度展开为一行一条记录 */
 function buildBackflowDetailRows(list) {
   const out = [];
+  let vi = 0;
   list.forEach(r => {
     if (r.hasApi === '是') {
       out.push({
-        key: r.id + '_api', id: r.id, devName: r.devName, appName: r.appName, name: r.name,
-        hasApi: '是', apiName: '平台接口回流（对接文档）', docs: r.docs || [], fields: [],
+        key: r.id + '_api', id: r.id, devName: r.devName, appName: r.appName,
+        tableKey: '—', tableName: '—', tableJson: '', hasApi: '是', apiName: '平台接口回流（对接文档）', docs: r.docs || [], fields: [],
+        volume: ((vi++ + 3) * 412).toLocaleString() + ' 条',
         status: r.status || '成功', failReason: r.failReason || '', syncTime: r.syncTime || '',
       });
     } else {
@@ -5696,8 +5976,9 @@ function buildBackflowDetailRows(list) {
           return p ? p.label + '（' + p.name + '）' : f;
         });
         out.push({
-          key: r.id + '_scope_' + idx, id: r.id, devName: r.devName, appName: r.appName, name: r.name,
-          hasApi: '否', apiName: api ? api.name : s.service, docs: [], fields,
+          key: r.id + '_scope_' + idx, id: r.id, devName: r.devName, appName: r.appName,
+          tableKey: s.tableKey || s.tableName || '—', tableName: s.tableName || '—', tableJson: s.tableJson || '', hasApi: '否', apiName: api ? api.name : s.service, docs: [], fields,
+          volume: ((vi++ + 7) * 268).toLocaleString() + ' 条',
           status: s.status || '成功', failReason: s.failReason || '', syncTime: s.syncTime || '',
         });
       });
@@ -5705,6 +5986,90 @@ function buildBackflowDetailRows(list) {
   });
   return out;
 }
+
+/* P36DetailView 回流明细查看：按明细行（接口/数据表类别）展示与列表一致的查看信息 */
+app.component('P36DetailView', {
+  props: ['ctx'],
+  data() {
+    return { preview: { visible: false, doc: null } };
+  },
+  computed: {
+    row() {
+      const key = this.ctx && this.ctx.key;
+      return buildBackflowDetailRows(DATA_BACKFLOW).find(r => r.key === key) || {};
+    },
+  },
+  methods: {
+    previewDoc(doc) { this.preview = { visible: true, doc }; },
+    back() { this.$root.go((this.ctx && this.ctx.backPage) || 'P36Detail'); },
+    tableDisplay(row) {
+      const name = row.tableName && row.tableName !== '—' ? row.tableName : '';
+      const key = row.tableKey && row.tableKey !== '—' ? row.tableKey : '';
+      if (name && key) return name + '（' + key + '）';
+      return name || key || '—';
+    },
+  },
+  template: `
+  <div class="card" style="max-width:960px">
+    <div style="font-weight:600;margin:8px 0 16px">查看回流明细</div>
+    <el-form label-width="130px" style="width:100%">
+      <el-row :gutter="20">
+        <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.devName || '—' }}</div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="应用名称"><div class="ro-text">{{ row.appName || '—' }}</div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="回流类别"><div class="ro-text">{{ row.hasApi === '是' ? '接口回流' : '数据表回流' }}</div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="同步数据量"><div class="ro-text">{{ row.volume || '—' }}</div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="回流状态"><div><st-tag :v="row.status || '—'"></st-tag></div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="最近同步时间"><div class="ro-text">{{ row.syncTime || '—' }}</div></el-form-item></el-col>
+        <el-col :span="24"><el-form-item label="失败原因"><div class="ro-text" :style="row.status === '失败' ? 'color:#f56c6c' : ''">{{ row.failReason || '—' }}</div></el-form-item></el-col>
+      </el-row>
+    </el-form>
+
+    <template v-if="row.hasApi === '是'">
+      <div style="border-top:1px dashed #e4e7ed;padding-top:14px;margin-top:14px">
+        <div style="font-weight:600;margin-bottom:12px">接口回流内容</div>
+        <el-form label-width="130px" style="width:100%">
+          <el-form-item label="接口名称"><div class="ro-text">{{ row.apiName || '—' }}</div></el-form-item>
+          <el-form-item label="对接文档">
+            <div v-if="row.docs && row.docs.length" style="display:flex;flex-wrap:wrap;gap:10px">
+              <div v-for="(doc, i) in row.docs" :key="i" style="background:#f5f7fa;padding:6px 12px;border-radius:4px;display:flex;align-items:center;gap:8px">
+                <span style="font-size:13px">{{ doc.name }}</span>
+                <el-button link type="primary" size="small" @click="previewDoc(doc)">预览</el-button>
+              </div>
+            </div>
+            <div v-else class="ro-text">—</div>
+          </el-form-item>
+        </el-form>
+      </div>
+    </template>
+    <template v-else>
+      <div style="border-top:1px dashed #e4e7ed;padding-top:14px;margin-top:14px">
+        <div style="font-weight:600;margin-bottom:12px">数据表回流内容</div>
+        <el-form label-width="130px" style="width:100%">
+          <el-form-item label="数据表"><div class="ro-text">{{ tableDisplay(row) }}</div></el-form-item>
+          <el-form-item label="同步字段"><div class="ro-text">{{ (row.fields && row.fields.length) ? row.fields.join('、') : '—' }}</div></el-form-item>
+          <el-form-item label="数据json">
+            <div v-if="row.tableJson" class="ro-text" style="white-space:pre-wrap;background:#f5f7fa;border:1px solid #e4e7ed;border-radius:4px;padding:10px 12px;line-height:1.6">{{ row.tableJson }}</div>
+            <div v-else class="ro-text">—</div>
+          </el-form-item>
+        </el-form>
+      </div>
+    </template>
+
+    <div style="text-align:center;margin-top:18px">
+      <el-button @click="back">返回</el-button>
+    </div>
+
+    <el-dialog title="对接文档预览" v-model="preview.visible" width="640px">
+      <div v-if="preview.doc" style="text-align:center">
+        <div style="font-weight:600;margin-bottom:10px">{{ preview.doc.name }}</div>
+        <img :src="preview.doc.url" style="max-width:100%;max-height:56vh;border:1px solid #e4e7ed;border-radius:4px"/>
+      </div>
+      <template #footer>
+        <el-button @click="preview.visible=false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
 
 app.component('P36Detail', {
   props: ['ctx'],
@@ -5729,7 +6094,7 @@ app.component('P36Detail', {
     syncTimeText(r) { return r.syncTime || '—'; },
     previewDoc(doc) { this.preview = { visible: true, doc }; },
     view(row) {
-      this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Detail' });
+      this.$root.go('P36DetailView', { key: row.key, backPage: 'P36Detail' });
     },
     manualSync(row) {
       this.$confirm('将手动调用接口拉取回流数据，是否继续？', '手动同步', {
@@ -5764,20 +6129,10 @@ app.component('P36Detail', {
         <el-table-column type="index" label="序号" width="60"></el-table-column>
         <el-table-column prop="devName" label="开发者名称" min-width="160"></el-table-column>
         <el-table-column prop="appName" label="应用名称" min-width="140"></el-table-column>
-        <el-table-column prop="name" label="回流数据名称" min-width="130"></el-table-column>
+        <el-table-column prop="tableKey" label="数据表key" min-width="160"></el-table-column>
         <el-table-column prop="apiName" label="接口名称" min-width="170"></el-table-column>
-        <el-table-column label="回流明细" min-width="220">
-          <template #default="{row}">
-            <template v-if="row.hasApi === '是'">
-              <div v-for="(d,i) in (row.docs||[])" :key="i">
-                <el-link type="primary" @click="previewDoc(d)">{{ d.name }}</el-link>
-              </div>
-            </template>
-            <template v-else>
-              <el-tag v-for="(f,j) in row.fields" :key="j" size="small" style="margin:2px 4px 2px 0">{{ f }}</el-tag>
-              <span v-if="!row.fields.length">—</span>
-            </template>
-          </template>
+        <el-table-column label="同步数据量" width="130" align="center">
+          <template #default="{row}"><span>{{ row.volume || '—' }}</span></template>
         </el-table-column>
         <el-table-column label="回流状态" width="100" align="center">
           <template #default="{row}"><st-tag :v="row.status"></st-tag></template>
