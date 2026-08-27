@@ -292,12 +292,12 @@ const SUBACCOUNTS = [
 
 // 客户端授权关联（桂教通超管维护）
 const CLIENT_AUTH = [
-  { clientId: 'client_a1b2c3', clientSecret: 'sct_8f3a2b1c7d4e5f60', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'edu.gxschool.edu.cn' }], remark: '南宁市第三中学统一认证回调' },
-  { clientId: 'client_d4e5f6', clientSecret: 'sct_1c5e8a2b7d3f6a09', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '桂林市育才小学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：桂林市育才小学', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: [{ protocol: 'https://', domain: 'ylxx.guilin.edu.cn' }], remark: '桂林市育才小学教务系统' },
-  { clientId: 'client_g7h8i9', clientSecret: 'sct_5b7d9f1c3e5a7b94', allData: '是', allApis: '是', syncRangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '全部数据', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'lz12.gxedu.edu.cn' }], remark: '柳州市第十二中学门户登录' },
-  { clientId: 'client_j1k2l3', clientSecret: 'sct_3d5f7a9c1b3e5d80', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '北海市第一小学', orgNames: '', apiIds: [3], deadline: '2029-08-18', authScopeText: '学校：北海市第一小学', useStatus: '未使用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: [{ protocol: 'https://', domain: 'bohyd.gxedu.edu.cn' }], remark: '北海市第一小学单点登录' },
-  { clientId: 'client_m4n5o6', clientSecret: 'sct_6a8c0e2f4d6b8a03', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '梧州市高级中学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：梧州市高级中学', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://wzgx.gxedu.edu.cn/oauth/callback', logoutRedirectUri: 'https://wzgx.gxedu.edu.cn/oauth/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: 'wzgx.gxedu.edu.cn' }], remark: '梧州市高级中学数据对接' },
-  { clientId: 'client_p7q8r9', clientSecret: 'sct_9b1d3f5a7c9e1f42', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '钦州市第二中学', orgNames: '', apiIds: [2], deadline: '2029-08-18', authScopeText: '学校：钦州市第二中学', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://qzez.gxedu.edu.cn/sso/cb', logoutRedirectUri: 'https://qzez.gxedu.edu.cn/sso/lo', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: [{ protocol: 'https://', domain: 'qzez.gxedu.edu.cn' }], remark: '钦州市第二中学教务对接' },
+  { clientId: 'client_a1b2c3', clientSecret: 'sct_8f3a2b1c7d4e5f60', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://edu.gxschool.edu.cn', remark: '南宁市第三中学统一认证回调' },
+  { clientId: 'client_d4e5f6', clientSecret: 'sct_1c5e8a2b7d3f6a09', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '桂林市育才小学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：桂林市育才小学', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://ylxx.guilin.edu.cn', remark: '桂林市育才小学教务系统' },
+  { clientId: 'client_g7h8i9', clientSecret: 'sct_5b7d9f1c3e5a7b94', allData: '是', allApis: '是', syncRangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '全部数据', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://lz12.gxedu.edu.cn', remark: '柳州市第十二中学门户登录' },
+  { clientId: 'client_j1k2l3', clientSecret: 'sct_3d5f7a9c1b3e5d80', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '北海市第一小学', orgNames: '', apiIds: [3], deadline: '2029-08-18', authScopeText: '学校：北海市第一小学', useStatus: '未使用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: 'https://bohyd.gxedu.edu.cn', remark: '北海市第一小学单点登录' },
+  { clientId: 'client_m4n5o6', clientSecret: 'sct_6a8c0e2f4d6b8a03', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '梧州市高级中学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：梧州市高级中学', useStatus: '使用中', authType: 'authorization_code', redirectUri: 'https://wzgx.gxedu.edu.cn/oauth/callback', logoutRedirectUri: 'https://wzgx.gxedu.edu.cn/oauth/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://wzgx.gxedu.edu.cn', remark: '梧州市高级中学数据对接' },
+  { clientId: 'client_p7q8r9', clientSecret: 'sct_9b1d3f5a7c9e1f42', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '钦州市第二中学', orgNames: '', apiIds: [2], deadline: '2029-08-18', authScopeText: '学校：钦州市第二中学', useStatus: '未使用', authType: 'client_credentials', redirectUri: 'https://qzez.gxedu.edu.cn/sso/cb', logoutRedirectUri: 'https://qzez.gxedu.edu.cn/sso/lo', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://qzez.gxedu.edu.cn', remark: '钦州市第二中学教务对接' },
 ];
 
 // 数据授权管理（桂教通超管维护：为应用配置数据授权范围与授权接口）
@@ -3855,9 +3855,9 @@ app.component('P30', {
       dialogTitle: '新增客户端授权',
       editingId: null,
       form: {
-        authType: 'authorization_code', redirectUri: '', logoutRedirectUri: '',
+        clientId: '', redirectUri: '', logoutRedirectUri: '',
         accessTokenExp: 7200, refreshTokenExp: 2592000,
-        whiteList: [{ protocol: 'https://', domain: '' }], remark: '',
+        whiteList: '', remark: '',
       },
       viewDialog: false,
       viewRow: null,
@@ -3909,23 +3909,17 @@ app.component('P30', {
       if (!ids.length) return '—';
       return ids.map(id => { const a = APIS.find(x => x.id === id); return a ? a.name : id; }).join('、');
     },
-    genId() { return 'client_' + Math.random().toString(36).slice(2, 8); },
     genSecret() { return 'sct_' + Math.random().toString(36).slice(2, 18); },
-    addWhiteItem() { this.form.whiteList.push({ protocol: 'https://', domain: '' }); },
-    removeWhiteItem(index) {
-      this.form.whiteList.splice(index, 1);
-      if (!this.form.whiteList.length) this.form.whiteList.push({ protocol: 'https://', domain: '' });
-    },
     openAdd() {
       this.dialogTitle = '新增客户端授权';
       this.editingId = null;
-      this.form = { authType: 'authorization_code', redirectUri: '', logoutRedirectUri: '', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: [{ protocol: 'https://', domain: '' }], remark: '' };
+      this.form = { clientId: '', redirectUri: '', logoutRedirectUri: '', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: '', remark: '' };
       this.dialog = true;
     },
     openEdit(row) {
       this.dialogTitle = '编辑客户端授权';
       this.editingId = row.clientId;
-      this.form = { ...row, whiteList: (row.whiteList || []).length ? row.whiteList.map(w => ({ ...w })) : [{ protocol: 'https://', domain: '' }], remark: row.remark || '' };
+      this.form = { ...row, whiteList: row.whiteList || '', remark: row.remark || '' };
       this.dialog = true;
     },
     openView(row) {
@@ -3933,16 +3927,17 @@ app.component('P30', {
       this.viewDialog = true;
     },
     submit() {
-      if (!this.form.authType) { this.$message.warning('请选择授权类型'); return; }
+      if (!this.form.clientId.trim() || !/^[a-zA-Z0-9_]+$/.test(this.form.clientId.trim())) { this.$message.warning('请填写客户端ID（仅限数字、英文字母和下划线）'); return; }
       if (!this.form.redirectUri.trim()) { this.$message.warning('请填写回调地址'); return; }
       if (!this.form.logoutRedirectUri.trim()) { this.$message.warning('请填写登出后回调地址'); return; }
       if (!this.form.accessTokenExp || this.form.accessTokenExp <= 0) { this.$message.warning('请填写访问令牌有效期'); return; }
       if (this.form.refreshTokenExp === '' || this.form.refreshTokenExp === null) { this.$message.warning('请填写刷新令牌有效期'); return; }
-      if (!this.form.whiteList.length || this.form.whiteList.some(w => !w.domain.trim())) { this.$message.warning('请填写完整的白名单（前缀+域名）'); return; }
+      if (!this.form.whiteList.trim()) { this.$message.warning('请填写白名单（支持填写 * 表示放行不限制）'); return; }
       const data = {
         ...this.form,
-        whiteList: this.form.whiteList.map(w => ({ ...w })),
-        clientId: this.editingId || this.genId(),
+        whiteList: this.form.whiteList.split('\n').map(s => s.trim()).filter(Boolean).join('\n'),
+        clientId: this.form.clientId.trim(),
+        authType: this.editingId ? (this.clients.find(x => x.clientId === this.editingId) || {}).authType || 'authorization_code' : 'authorization_code',
         clientSecret: this.editingId ? (this.clients.find(x => x.clientId === this.editingId) || {}).clientSecret : this.genSecret(),
         useStatus: this.editingId ? (this.clients.find(x => x.clientId === this.editingId) || {}).useStatus || '未使用' : '未使用',
       };
@@ -4011,9 +4006,9 @@ app.component('P30', {
 
     <el-dialog :title="dialogTitle" v-model="dialog" width="720px">
       <el-form label-width="140px" style="width:100%">
-        <div style="color:#909399;font-size:12px;line-height:1.5;margin-bottom:14px">提交后系统自动生成客户端ID与授权秘钥，可在列表「信息查看」中查看。</div>
-        <el-form-item label="授权类型" required>
-          <el-select v-model="form.authType" style="width:100%"><el-option v-for="o in authTypeOptions" :key="o.value" :label="o.label" :value="o.value"></el-option></el-select>
+        <div style="color:#909399;font-size:12px;line-height:1.5;margin-bottom:14px">授权类型默认为 authorization_code（授权码），不提供选择；授权秘钥提交后自动生成，可在列表「信息查看」中查看。</div>
+        <el-form-item label="客户端ID" required>
+          <el-input v-model="form.clientId" :disabled="!!editingId" placeholder="仅限数字、英文字母和下划线" maxlength="64"></el-input>
         </el-form-item>
         <el-form-item label="回调地址" required>
           <el-input v-model="form.redirectUri" placeholder="请输入回调地址"></el-input>
@@ -4029,17 +4024,7 @@ app.component('P30', {
           <div style="color:#909399;font-size:12px;margin-top:4px">0 表示不颁发刷新令牌</div>
         </el-form-item>
         <el-form-item label="白名单" required>
-          <div style="width:100%">
-            <div v-for="(item,index) in form.whiteList" :key="index" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <el-select v-model="item.protocol" style="width:100px;flex:none">
-                <el-option label="https://" value="https://"></el-option>
-                <el-option label="http://" value="http://"></el-option>
-              </el-select>
-              <el-input v-model="item.domain" placeholder="请输入域名/地址" style="flex:1;width:auto"></el-input>
-              <el-button type="danger" link @click="removeWhiteItem(index)">删除</el-button>
-            </div>
-            <el-button type="primary" plain @click="addWhiteItem">+ 新增白名单</el-button>
-          </div>
+          <el-input v-model="form.whiteList" type="textarea" :rows="4" placeholder="每行一个地址（域名或完整回调地址）；支持填写 * 表示放行不限制"></el-input>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="form.remark" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入备注（选填）"></el-input>
@@ -4063,7 +4048,7 @@ app.component('P30', {
             <el-col :span="24"><el-form-item label="登出后回调地址"><div class="ro-text">{{ viewRow.logoutRedirectUri }}</div></el-form-item></el-col>
             <el-col :span="12"><el-form-item label="访问令牌有效期(秒)"><div class="ro-text">{{ viewRow.accessTokenExp }}</div></el-form-item></el-col>
             <el-col :span="12"><el-form-item label="刷新令牌有效期(秒)"><div class="ro-text">{{ viewRow.refreshTokenExp }}</div></el-form-item></el-col>
-            <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (viewRow.whiteList||[]).map(w=>w.protocol+w.domain).join('、') || '—' }}</div></el-form-item></el-col>
+            <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ viewRow.whiteList || '—' }}</div></el-form-item></el-col>
             <el-col :span="24"><el-form-item label="备注"><div class="ro-text">{{ viewRow.remark || '—' }}</div></el-form-item></el-col>
             <el-col :span="24"><el-form-item label="授权范围"><div class="ro-text">{{ scopeText(viewRow) }}</div></el-form-item></el-col>
           </el-row>
