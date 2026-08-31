@@ -2612,17 +2612,16 @@ app.component('P13', {
     ];
     return { range:'近7天', days, apiCall7d, apiCallToday, appCall7d, appCallToday,
       cards:[
-        { t:'接口总数', v:'128', sub:'敏感 52 / 非敏感 76' },
-        { t:'接口申请量', v:'96', sub:'审核通过率 82%' },
-        { t:'接口授权量', v:'210', sub:'被授权应用数 15' },
-        { t:'开发者总数', v:'32', sub:'未合作 6 / 合作中 23 / 已取消 3' },
-        { t:'已授权应用数', v:'15', sub:'授权接口数 210' },
-        { t:'应用调用总次数', v:'1,284', sub:'今日 101 / 近7天 1,184' },
-        { t:'应用调用成功率', v:'94.2%', sub:'失败率 5.8%' },
+        { t:'接口总数', v:'128' },
+        { t:'接口申请量', v:'96' },
+        { t:'接口授权量', v:'210' },
+        { t:'开发者总数', v:'32' },
+        { t:'已授权应用数', v:'15' },
+        { t:'应用调用总次数', v:'1,284' },
+        { t:'应用调用成功率', v:'94.2%' },
       ],
       apiRank:[['学生信息查询接口',28],['课程同步接口',19],['考勤数据接口',15],['成绩上报接口',12],['教学计划接口',8]],
       catDist:[['基础服务',40],['业务服务',85],['数据服务',85]],
-      statusDist:[['待审核',32],['已通过',52],['已驳回',12]],
       appRank:[['智慧校园APP',101],['家校互动平台',72],['教务管理系统',57],['教师助手',34],['数据分析平台',21]],
       appAuthDist:[['智慧校园APP',12],['家校互动平台',9],['教务管理系统',7],['教师助手',4],['数据分析平台',6]],
     };
@@ -2676,7 +2675,7 @@ app.component('P13', {
       <div class="card" v-for="c in cards" :key="c.t" style="margin-bottom:0">
         <div style="color:#909399;font-size:13px">{{ c.t }}</div>
         <div style="font-size:30px;font-weight:700;margin:4px 0">{{ c.v }}</div>
-        <div style="color:#c0c4cc;font-size:12px">{{ c.sub }}</div>
+        <div style="color:#c0c4cc;font-size:12px" v-if="c.sub">{{ c.sub }}</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -2714,16 +2713,6 @@ app.component('P13', {
         </div>
       </div>
       <div class="card">
-        <div style="font-weight:600;margin-bottom:12px">申请审批状态分布</div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>待审核</span><el-tag type="info" size="small">32</el-tag></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>已通过</span><el-tag type="success" size="small">52</el-tag></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>已驳回</span><el-tag type="danger" size="small">12</el-tag></div>
-        <div style="color:#909399;font-size:12px;margin-top:10px">本月新增申请 96 笔，审核通过率 82%</div>
-      </div>
-    </div>
-    <div style="font-weight:600;margin:18px 0 10px;font-size:15px">应用维度统计</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="card">
         <div style="font-weight:600;margin-bottom:8px">应用调用趋势（调用量 TOP5 应用 · {{ rangeLabel }}）</div>
         <div style="display:flex;gap:16px;font-size:12px;margin-bottom:6px">
           <span style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;background:#409eff;border-radius:2px"></span>成功数</span>
@@ -2756,35 +2745,9 @@ app.component('P13', {
           <el-progress :percentage="Math.round(r[1]/12*100)" :stroke-width="8" :show-text="false" color="#909399"></el-progress>
         </div>
       </div>
-      <div class="card">
-        <div style="font-weight:600;margin-bottom:12px">应用调用结果分布</div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>调用成功</span><el-tag type="success" size="small">1,211</el-tag></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>调用失败</span><el-tag type="danger" size="small">73</el-tag></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0"><span>调用成功率</span><el-tag type="info" size="small">94.2%</el-tag></div>
-        <div style="color:#909399;font-size:12px;margin-top:10px">近7天累计调用 1,284 次，覆盖 15 个已授权应用</div>
-      </div>
     </div>
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:600;margin-bottom:8px">统计口径说明</div>
-      <div style="font-size:12px;color:#606266;line-height:2">
-        <div>• 时间范围口径：今日 = 自然日 00:00-24:00；近7天 / 近30天 = 不含今日的最近 7 / 30 个自然日；自定义 = 所选起止日期（含首尾当日）。</div>
-        <div>• 存量指标（取当前实时值，不随所选时间范围变化）：接口总数（含敏感/非敏感分布）、开发者总数（含合作状态分布）、已授权应用数、接口分类分布。</div>
-        <div>• 期间指标（统计所选时间范围内新增/产生的数据量）：接口申请量、接口授权量、接口申请量 TOP5 榜单、申请审批状态分布——「今日」取当日数据，「近7天 / 近30天」取区间累计数据，「自定义」取所选区间累计数据。</div>
-        <div>• 审核通过率 = 所选时间范围内已审批申请中「已通过」笔数 ÷（已通过 + 已驳回）× 100%。</div>
-        <div>• 接口调用趋势：统计接口申请量 TOP5 接口在所选时间范围内的成功/失败调用量——「今日」取当日调用量，「近7天 / 近30天」取区间累计调用量，「自定义」取所选区间累计调用量。</div>
-        <div>• 应用维度统计（应用调用趋势 / 应用调用量 TOP5 / 应用授权接口数分布 / 应用调用结果分布）：以"应用"为聚合维度，统计调用量 TOP5 应用的成功/失败调用量、调用量榜单、各应用授权接口数及调用结果分布；时间范围口径与接口维度一致。</div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:600;margin-bottom:8px">维度统计说明</div>
-      <div style="font-size:12px;color:#606266;line-height:2">
-        <div>• <b>接口维度</b>：面向"单个接口"聚合，反映接口的运行与使用情况。覆盖接口总数（含敏感/非敏感）、接口分类分布（基础服务/业务服务/数据服务）、接口申请量 TOP5（按调用量排序的接口榜单）、接口调用趋势（申请量 TOP5 接口的成功/失败调用量）。用于识别高频与异常接口。</div>
-        <div>• <b>开发者维度</b>：面向"开发者（企业/个人）"聚合，反映供需方规模与活跃度。覆盖开发者总数（含未合作/合作中/已取消合作状态分布）、接口授权量（被授权应用数）。用于掌握生态开发者结构。</div>
-        <div>• <b>应用维度</b>：面向"授权应用"聚合，反映各应用的调用表现。覆盖已授权应用数、应用调用总次数、应用调用成功率，以及应用调用趋势、应用调用量 TOP5、应用授权接口数分布、应用调用结果分布。用于识别高活跃与低成功率应用。</div>
-        <div>• <b>审批维度</b>：面向"接口申请审批流程"聚合，反映审核效率与质量。覆盖申请审批状态分布（待审核/已通过/已驳回）与审核通过率（= 已通过 ÷（已通过 + 已驳回）× 100%）。用于监控待办与驳回风险。</div>
-      </div>
-    </div>
-  </div>`,
+   
+   `,
 });
 
 
