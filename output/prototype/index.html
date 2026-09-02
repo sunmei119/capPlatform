@@ -145,7 +145,6 @@ const MENU_TREE = {
       { label: '数据授权记录', page: 'P08Auth' },
     ]},
     { label: '数据回流管理', children: [
-      { label: '数据表管理', page: 'P36Table' },
       { label: '数据回流管理', page: 'P36' },
     ]},
   ],
@@ -169,7 +168,7 @@ const PAGE_TITLES = {
   P30: '客户端授权管理', P30View: '客户端信息查看', P31: '数据授权配置', P31B: '接口授权配置',
   P32: '组织同步申请',
   P34: '数据授权管理', P34Form: '新增/编辑数据授权',
-  P36: '数据回流管理', P36Form: '数据回流申请', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看', P36Table: '数据表管理', P36TableForm: '新增/编辑数据表',
+  P36: '数据回流管理', P36Form: '数据回流申请', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看',
 };
 
 /* ---------------- 共享演示数据 ---------------- */
@@ -325,67 +324,24 @@ const DATA_SYNC_APPS = [
   { id: 7, orgId: 'ORG007', orgName: '青秀区实验小学', applicant: '林珊', applyTime: '2026-08-11 09:50', sysName: '家校互动平台', contact: '何军', phone: '13233334444', whiteList: [{ protocol: 'http://', domain: 'jx.qx.edu.cn' }], status: '已驳回', opinion: '不通过', opinionNote: '业务系统对接人信息不完整，请补充后重新提交', approver: '王超管', approveTime: '2026-08-12 17:30' },
 ];
 
-// 数据回流 — 接口参数字典（用于同步字段多选）
-const API_PARAMS = {
-  student_info_query: [
-    { name: 'studentId', label: '学生学号', type: 'string' },
-    { name: 'name', label: '学生姓名', type: 'string' },
-    { name: 'classId', label: '班级标识', type: 'string' },
-    { name: 'gradeId', label: '年级标识', type: 'string' },
-  ],
-  course_sync: [
-    { name: 'courseId', label: '课程标识', type: 'string' },
-    { name: 'courseName', label: '课程名称', type: 'string' },
-    { name: 'teacherId', label: '教师标识', type: 'string' },
-  ],
-  score_report: [
-    { name: 'studentId', label: '学生学号', type: 'string' },
-    { name: 'subjectId', label: '学科标识', type: 'string' },
-    { name: 'score', label: '成绩', type: 'int32' },
-    { name: 'examId', label: '考试标识', type: 'string' },
-  ],
-  attendance: [
-    { name: 'studentId', label: '学生学号', type: 'string' },
-    { name: 'date', label: '日期', type: 'string' },
-    { name: 'status', label: '考勤状态', type: 'string' },
-  ],
-  teaching_plan: [
-    { name: 'planId', label: '计划标识', type: 'string' },
-    { name: 'gradeId', label: '年级标识', type: 'string' },
-    { name: 'subjectId', label: '学科标识', type: 'string' },
-  ],
-  internal_test: [
-    { name: 'testId', label: '测试标识', type: 'string' },
-  ],
-};
-
 // 数据回流申请（开发者管理员提交，桂教通超管审批/确认，双方共维护同一份数据）
-// 状态机：待审批（开发者提交后）→ 同步中（超管审批通过）→（有接口：超管同步完成）已完成
-//                               ↘（无接口：开发者同步完成→待确认→超管同步确认）已完成
+// 状态机：待审批（开发者提交后）→ 联调中（超管审批通过）→（有接口：超管联调完成）已完成
+//                               ↘（无接口：开发者联调完成→待确认→超管联调确认）已完成
 const DATA_BACKFLOW = [
   { id: 1, name: '学生学籍回流', appId: 'app_1001', appName: '智慧校园APP', devName: '南宁智课教育科技有限公司', hasApi: '否', scopes: [
-    { tableId: 1, tableName: '学生基础信息表', tableKey: 'tbl_student_base', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', fields: ['studentId', 'name', 'classId'], status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
-    { tableId: 2, tableName: '成绩明细表', tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', fields: ['studentId', 'subjectId', 'score'], status: '失败', failReason: '数据同步失败（超时504）', syncTime: '2026-08-22 16:30' }
+    { tableKey: 'tbl_student_base', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
+    { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '失败', failReason: '数据联调失败（超时504）', syncTime: '2026-08-22 16:30' }
   ], syncStatus: '待确认', applyTime: '2026-08-20 10:00' },
   { id: 2, name: '成绩数据回流', appId: 'app_1002', appName: '家校互动平台', devName: '广西云启科技有限公司', hasApi: '否', scopes: [
-    { tableId: 2, tableName: '成绩明细表', tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', fields: ['studentId', 'subjectId', 'score'], status: '失败', failReason: '数据源连接异常', syncTime: '' }
-  ], syncStatus: '同步中', applyTime: '2026-08-21 14:30' },
+    { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '失败', failReason: '数据源连接异常', syncTime: '' }
+  ], syncStatus: '联调中', applyTime: '2026-08-21 14:30' },
   { id: 3, name: '课程文档回流', appId: 'app_1001', appName: '智慧校园APP', devName: '北海海创科技有限公司', hasApi: '是', docs: [
     { name: '对接文档.pdf', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF' },
     { name: '接口说明.pptx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PPT' }
   ], status: '失败', failReason: '接口鉴权失败（401）', syncTime: '2026-08-23 09:00', syncStatus: '已完成', applyTime: '2026-08-18 09:00' },
 ];
 
-// 数据回流管理——开发者数据表管理（数据表台账，供无接口回流选择同步数据表）
-// useStatus: 使用中 / 未使用；status(状态): 上架 / 下架；used 表示是否被回流申请引用（被引用则不可编辑/不可删除）
-const DATA_TABLES = [
-  { id: 1, name: '学生基础信息表', tableKey: 'tbl_student_base', json: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', useStatus: '使用中', remark: '对接学籍系统学生主档', status: '已上架', used: true },
-  { id: 2, name: '成绩明细表', tableKey: 'tbl_score', json: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', useStatus: '使用中', remark: '期中/期末考试成绩', status: '已上架', used: true },
-  { id: 3, name: '考勤记录表', tableKey: 'tbl_attendance', json: '{\n  "studentId": "学号",\n  "date": "日期",\n  "status": "考勤状态"\n}', useStatus: '未使用', remark: '待接入门禁系统', status: '未上架', used: false },
-  { id: 4, name: '课程安排表', tableKey: 'tbl_course', json: '{\n  "courseId": "课程标识",\n  "courseName": "课程名称",\n  "teacherId": "教师标识"\n}', useStatus: '未使用', remark: '', status: '已上架', used: false },
-];
-
-const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '同步中':'primary', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
+const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
 
 const app = Vue.createApp({
   data() {
@@ -1626,11 +1582,11 @@ app.component('P04', {
     toggle(api){ api.status = api.status==='启用'?'停用':'启用'; api.mStop=false; this.$message.success(api.status==='启用'?'接口已启用':'接口已停用'); },
     openBatchAuth(){
       if(!this.selectedRows.length){ this.$message.warning('请先勾选至少一个接口'); return; }
-      this.batchAppId=''; this.appOptions=APP_LIST.filter(a=>a.appAttr!=='生态应用').slice(0,30); this.mBatchAuth=true;
+      this.batchAppId=''; this.appOptions=APP_LIST.filter(a=>a.appAttr==='生态应用').slice(0,30); this.mBatchAuth=true;
     },
     searchApps(q){
       this.appLoading=true;
-      setTimeout(()=>{ this.appOptions=APP_LIST.filter(a=>a.appAttr!=='生态应用' && (!q || a.appName.includes(q))).slice(0,30); this.appLoading=false; },300);
+      setTimeout(()=>{ this.appOptions=APP_LIST.filter(a=>a.appAttr==='生态应用' && (!q || a.appName.includes(q))).slice(0,30); this.appLoading=false; },300);
     },
     confirmBatchAuth(){
       if(!this.batchAppId){ this.$message.warning('请选择应用'); return; }
@@ -1905,7 +1861,7 @@ app.component('P07', {
   data() {
     const a = APIS.find(x=>x.id===(this.ctx&&this.ctx.apiId));
     const api = a || APIS[0];
-    const preAuth = ['app_1003','app_1005'];
+    const preAuth = ['app_1001','app_1002'];
     return { api,
       rows: APP_LIST.filter(x=>preAuth.includes(x.appId)).map(x=>({...x, checked:false, dataScope: x.scopeOrgs.join('、') + ' / ' + (x.scopeGradeMode==='all' ? '所有学段' : x.grades.join('、'))})),
       q:{appName:'',appId:''}, mAdd:false, addChosen:[], mBatch:false,
@@ -1914,7 +1870,7 @@ app.component('P07', {
   },
   computed: {
     authorizedIds(){ return this.rows.map(x=>x.appId); },
-    availableApps(){ return APP_LIST.filter(x=>!this.authorizedIds.includes(x.appId) && x.appAttr !== '生态应用'); },
+    availableApps(){ return APP_LIST.filter(x=>!this.authorizedIds.includes(x.appId) && x.appAttr === '生态应用'); },
     chosenApps(){ return this.addChosen.map(id => APP_LIST.find(a=>a.appId===id)).filter(Boolean); },
     batchCount(){ return this.rows.filter(x=>x.checked).length; },
     filteredAddApps() {
@@ -1982,8 +1938,6 @@ app.component('P07', {
             <span class="q-label">应用ID</span><el-input v-model="addQuery.appId" placeholder="请输入应用ID" clearable style="width:120px" size="default"></el-input>
             <span class="q-label">应用属性</span><el-select v-model="addQuery.appAttr" placeholder="请选择" clearable style="width:150px" size="default">
               <el-option label="生态应用" value="生态应用"></el-option>
-              <el-option label="原生应用/低代码应用" value="原生应用/低代码应用"></el-option>
-              <el-option label="原生应用/自建应用" value="原生应用/自建应用"></el-option>
             </el-select>
             <el-button type="primary" size="default">查询</el-button>
           </div>
@@ -4867,244 +4821,6 @@ app.component('P34Form', {
   </div>`,
 });
 
-app.component('P36Table', {
-  props: ['ctx'],
-  data() {
-    return {
-      rows: DATA_TABLES.map(x => ({ ...x })),
-      q: { tableKey: '', useStatus: '', status: '' },
-    };
-  },
-  computed: {
-    filtered() {
-      return this.rows.filter(r =>
-        (!this.q.tableKey || (r.tableKey || '').includes(this.q.tableKey)) &&
-        (!this.q.useStatus || r.useStatus === this.q.useStatus) &&
-        (!this.q.status || r.status === this.q.status)
-      );
-    },
-  },
-  methods: {
-    resetQ() { this.q = { tableKey: '', useStatus: '', status: '' }; },
-    openAdd() { this.$root.go('P36TableForm'); },
-    openEdit(row) {
-      if (row.used) return;
-      this.$root.go('P36TableForm', { id: row.id });
-    },
-    up(row) {
-      this.$confirm('确认将该数据表上架？上架后可用于数据回流申请。', '上架', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
-        .then(() => { row.status = '已上架'; this.$message.success('已上架'); }).catch(() => {});
-    },
-    down(row) {
-      this.$confirm('确认将该数据表下架？下架后将不可用于数据回流申请。', '下架', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
-        .then(() => { row.status = '未上架'; this.$message.success('已下架'); }).catch(() => {});
-    },
-    del(row) {
-      this.$confirm('确认删除该数据表？删除后不可恢复。', '删除', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
-        .then(() => {
-          const i = this.rows.findIndex(x => x.id === row.id);
-          if (i >= 0) this.rows.splice(i, 1);
-          this.$message.success('已删除');
-        }).catch(() => {});
-    },
-  },
-  template: `
-  <div>
-    <div class="toolbar">
-      <span class="q-label">表key</span><el-input v-model="q.tableKey" placeholder="请输入" clearable style="width:180px"></el-input>
-      <span class="q-label">使用状态</span><el-select v-model="q.useStatus" placeholder="请选择" clearable style="width:130px">
-        <el-option label="使用中" value="使用中"></el-option>
-        <el-option label="未使用" value="未使用"></el-option>
-      </el-select>
-      <span class="q-label">状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:130px">
-        <el-option label="已上架" value="已上架"></el-option>
-        <el-option label="未上架" value="未上架"></el-option>
-      </el-select>
-      <el-button @click="resetQ">重置</el-button>
-      <div style="flex:1"></div>
-      <el-button type="primary" @click="openAdd">新增</el-button>
-    </div>
-    <div class="card">
-      <el-table :data="filtered" stripe style="width:100%">
-        <el-table-column type="index" label="序号" width="60"></el-table-column>
-        <el-table-column prop="name" label="表名称" min-width="160"></el-table-column>
-        <el-table-column prop="tableKey" label="表key" min-width="150"></el-table-column>
-        <el-table-column label="表json" min-width="220">
-          <template #default="{row}">
-            <el-tooltip :content="row.json" placement="top" :disabled="!(row.json && row.json.split('\\n').length > 2)">
-              <span style="display:block;max-height:42px;overflow:hidden;white-space:pre-wrap;line-height:1.4">{{ row.json }}</span>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column prop="useStatus" label="使用状态" width="100" align="center">
-          <template #default="{row}"><st-tag :v="row.useStatus"></st-tag></template>
-        </el-table-column>
-        <el-table-column label="备注" min-width="160"><template #default="{row}"><span :title="row.remark">{{ row.remark || '—' }}</span></template></el-table-column>
-        <el-table-column prop="status" label="状态" width="90" align="center">
-          <template #default="{row}"><st-tag :v="row.status === '已上架' ? '展示' : '未展示'"></st-tag></template>
-        </el-table-column>
-        <el-table-column label="操作" width="220" align="center" fixed="right">
-          <template #default="{row}">
-            <el-button v-if="row.status === '未上架'" link type="primary" @click="up(row)">上架</el-button>
-            <el-button v-if="row.status === '已上架' && !row.used" link type="primary" @click="down(row)">下架</el-button>
-            <el-button v-if="!row.used" link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button v-if="!row.used" link type="danger" @click="del(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-  </div>`,
-});
-
-/* ---------- P36TableForm：新增/编辑数据表（独立页面，含 JSON Editor） ---------- */
-app.component('P36TableForm', {
-  props: ['ctx'],
-  data() {
-    return {
-      isEdit: false,
-      editId: null,
-      form: { name: '', tableKey: '', json: '', remark: '' },
-      editor: null,
-      previewText: '',
-      previewError: false,
-    };
-  },
-  mounted() {
-    const params = this.ctx.params || {};
-    this.isEdit = !!params.id;
-    if (this.isEdit) {
-      this.editId = params.id;
-      const row = DATA_TABLES.find(t => t.id === params.id);
-      if (row) {
-        this.form = { name: row.name, tableKey: row.tableKey, json: row.json, remark: row.remark || '' };
-      }
-    } else {
-      this.form = { name: '', tableKey: '', json: '{\\n}', remark: '' };
-    }
-    this.$nextTick(() => this.initEditors());
-  },
-  beforeUnmount() {
-    if (this.editor) { this.editor.destroy(); this.editor = null; }
-  },
-  methods: {
-    initEditors() {
-      var container = document.getElementById('p36table-json-editor');
-      if (!container) return;
-
-      var defaultJson = {};
-      try { defaultJson = JSON.parse(this.form.json || '{}'); } catch(e) { defaultJson = {}; }
-
-      var self = this;
-      this.editor = new JSONEditor(container, {
-        mode: 'code',
-        modes: ['code', 'tree', 'table'],
-        theme: 'jse-theme-default',
-        mainMenuBar: [
-          { text: '格式化', className: 'jsoneditor-menu-btn', title: '格式化 JSON 并输出到预览框', click: function() { self.formatJson(); } },
-          { text: '清空', className: 'jsoneditor-menu-btn', title: '清空内容', click: function() { self.clearJson(); } },
-          { text: '复制结果', className: 'jsoneditor-menu-btn', title: '复制 JSON 到剪贴板', click: function() { self.copyJson(); } },
-        ],
-        statusBar: true,
-        search: true,
-      });
-
-      try { this.editor.set(defaultJson); } catch(e) {}
-      this.formatJson();
-    },
-    getJsonText() {
-      if (!this.editor) return this.form.json || '';
-      try { return this.editor.getText(); } catch(e) { return ''; }
-    },
-    /* 格式化：将编辑框文本解析为标准 JSON 格式并输出到预览框；校验失败则在预览框提示 */
-    formatJson() {
-      var raw = this.getJsonText();
-      if (!raw || !raw.trim()) {
-        this.previewText = '';
-        this.previewError = false;
-        return;
-      }
-      try {
-        var val = JSON.parse(raw);
-        this.previewText = JSON.stringify(val, null, 2);
-        this.previewError = false;
-      } catch (e) {
-        this.previewError = true;
-        this.previewText = 'JSON 格式校验未通过：\n' + (e && e.message ? e.message : String(e));
-      }
-    },
-    clearJson() {
-      if (this.editor) { try { this.editor.setText('{}'); } catch(e) {} }
-      this.previewText = '';
-      this.previewError = false;
-    },
-    copyJson() {
-      var txt = this.getJsonText();
-      navigator.clipboard.writeText(txt).then(() => this.$message.success('已复制')).catch(() => this.$message.error('复制失败'));
-    },
-    goBack() {
-      this.$root.goBack();
-    },
-    save() {
-      var name = this.form.name.trim();
-      var tableKey = this.form.tableKey.trim();
-      var remark = this.form.remark;
-
-      if (!name) { this.$message.warning('请输入表名称'); return; }
-      if (name.length > 20) { this.$message.warning('表名称长度不超过20个字符'); return; }
-      if (!tableKey) { this.$message.warning('请输入表key'); return; }
-
-      var jsonStr = this.getJsonText();
-      if (!jsonStr || !jsonStr.trim()) { this.$message.warning('请输入表json'); return; }
-
-      var parsed = null;
-      try { parsed = JSON.parse(jsonStr); } catch(e) { this.$message.warning('表json格式不正确，请输入合法 JSON'); return; }
-      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) { this.$message.warning('表json必须是一个 JSON 对象'); return; }
-      if (remark.length > 200) { this.$message.warning('备注长度不超过200个字符'); return; }
-
-      if (this.isEdit) {
-        var row = DATA_TABLES.find(t => t.id === this.editId);
-        if (row) Object.assign(row, { name: name, tableKey: tableKey, json: jsonStr, remark: remark });
-        this.$message.success('已保存');
-      } else {
-        DATA_TABLES.unshift({ id: Date.now(), name: name, tableKey: tableKey, json: jsonStr, remark: remark, useStatus: '未使用', status: '未上架', used: false });
-        this.$message.success('已新增，状态默认为未上架');
-      }
-      this.$root.goBack();
-    },
-  },
-  template: `
-  <div>
-    <div class="page-header">
-      <h2>{{ isEdit ? '编辑数据表' : '新增数据表' }}</h2>
-      <div>
-        <el-button @click="goBack">返回列表</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <el-form label-width="110px" style="max-width:900px">
-        <el-form-item label="表名称" required>
-          <el-input v-model="form.name" placeholder="请输入表名称" maxlength="20" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="表key" required>
-          <el-input v-model="form.tableKey" placeholder="请输入表key"></el-input>
-        </el-form-item>
-        <el-form-item label="表json" required>
-          <div id="p36table-json-editor" style="border:1px solid #dcdfe6;border-radius:4px;height:360px;width:100%"></div>
-        </el-form-item>
-        <el-form-item label="输出预览（只读）">
-          <pre :style="{ border:'1px solid ' + (previewError ? '#f56c6c' : '#e4e7ed'), borderRadius:'4px', background: previewError ? '#fef0f0' : '#fafafa', color: previewError ? '#f56c6c' : '#303133', margin:0, padding:'10px 12px', minHeight:'160px', maxHeight:'320px', width:'100%', overflow:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', fontSize:'13px', lineHeight:'1.6' }">{{ previewText || '（点击「格式化」按钮后将在此展示标准 JSON 格式）' }}</pre>
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" :rows="3" maxlength="200" show-word-limit placeholder="请输入备注（选填）"></el-input>
-        </el-form-item>
-        <div v-if="isEdit" style="color:#e6a23c;font-size:12px;margin:-6px 0 12px 110px">该数据表未被使用，可编辑；若已被使用则不可修改。</div>
-      </el-form>
-    </div>
-  </div>`,
-});
-
 app.component('P36', {
   data() {
     return {
@@ -5127,14 +4843,14 @@ app.component('P36', {
       if (r.hasApi === '是') return '接口对接'; // 有接口的对接文档独立成列展示
       const scopes = r.scopes || [];
       if (!scopes.length) return '—';
-      return scopes.map(s => (s.tableKey || s.tableName || '未指定数据表')).join(',');
+      return scopes.map(s => (s.tableKey || '未指定数据表')).join(',');
     },
     previewDoc(doc) { this.preview = { visible: true, doc }; },
     syncDone(row) {
-      this.$confirm('确认将该数据回流标记为「同步完成」？同步完成后将由桂教通超管确认。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+      this.$confirm('确认将该数据回流标记为「联调完成」？联调完成后将由桂教通超管确认。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
         .then(() => {
           row.syncStatus = '待确认';
-          this.$message.success('已标记同步完成，等待超管确认');
+          this.$message.success('已标记联调完成，等待超管确认');
         }).catch(() => {});
     },
     view(row) {
@@ -5148,9 +4864,9 @@ app.component('P36', {
   <div>
     <div class="toolbar">
       <span class="q-label">名称</span><el-input v-model="q.name" placeholder="请输入" clearable style="width:180px"></el-input>
-      <span class="q-label">同步状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
+      <span class="q-label">联调状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
         <el-option label="待审批" value="待审批"></el-option>
-        <el-option label="同步中" value="同步中"></el-option>
+        <el-option label="联调中" value="联调中"></el-option>
         <el-option label="待确认" value="待确认"></el-option>
         <el-option label="已完成" value="已完成"></el-option>
       </el-select>
@@ -5175,13 +4891,13 @@ app.component('P36', {
             <span v-else>—</span>
           </template>
         </el-table-column>
-        <el-table-column prop="syncStatus" label="同步状态" width="100" align="center">
+        <el-table-column prop="syncStatus" label="联调状态" width="100" align="center">
           <template #default="{row}"><st-tag :v="row.syncStatus"></st-tag></template>
         </el-table-column>
         <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
         <el-table-column label="操作" width="120" align="center" fixed="right">
           <template #default="{row}">
-            <el-button v-if="row.hasApi === '否' && row.syncStatus === '同步中'" link type="primary" @click="syncDone(row)">同步完成</el-button>
+            <el-button v-if="row.hasApi === '否' && row.syncStatus === '联调中'" link type="primary" @click="syncDone(row)">联调完成</el-button>
             <el-button link type="primary" @click="view(row)">查看</el-button>
           </template>
         </el-table-column>
@@ -5215,20 +4931,27 @@ app.component('P36Form', {
         devName: row ? (row.devName || '') : '',
         hasApi: row ? row.hasApi : '否',
         docs: row ? (row.docs || []).map(d => ({ ...d })) : [],
-        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ tableId: '', tableName: '', tableKey: '', tableJson: '', fields: [] }],
+        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ tableKey: '', tableJson: '' }],
         authKey: row ? (row.authKey || '') : '',
         domain: row ? (row.domain || '') : '',
         reason: row ? (row.reason || '') : '',
         disclaimer: row ? true : false,
       },
+      editors: {},
       appOptions: APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30),
       appLoading: false,
       devOptions: VENDORS.slice(0, 30),
       devLoading: false,
       declVisible: false,
       declText: `一、使用范围\n1. 您仅可在本平台授权及审批同意的数据范围内使用相关数据，不得超出审批同意的数据类型、用途及处理方式。\n2. 您应确保数据使用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将数据用于与申请用途无关的场景，不得向第三方提供、出售或交换数据。\n\n三、保密义务\n您对在接入与使用过程中知悉的平台技术信息、数据规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过平台安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰平台正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
-      availableTables: DATA_TABLES.filter(x => x.status === '已上架'),
     };
+  },
+  mounted() {
+    this.$nextTick(() => this.initScopeEditors());
+  },
+  beforeUnmount() {
+    Object.keys(this.editors).forEach(k => { try { this.editors[k].destroy(); } catch (e) {} });
+    this.editors = {};
   },
   computed: {
     syncApis() {
@@ -5236,33 +4959,79 @@ app.component('P36Form', {
     },
   },
   methods: {
-    apiParams(service) {
-      return API_PARAMS[service] || [];
-    },
     apiById(id) {
       return APIS.find(a => a.id === id);
     },
-    onTableChange(index, tableId) {
-      const t = DATA_TABLES.find(x => x.id === tableId);
-      if (t) {
-        this.form.scopes[index].tableName = t.name;
-        this.form.scopes[index].tableKey = t.tableKey;
-        this.form.scopes[index].tableJson = t.json; // 带出只读 json
-        this.form.scopes[index].fields = [];
+    initScopeEditors() {
+      if (this.isView) return;
+      const self = this;
+      this.form.scopes.forEach((s, i) => {
+        const container = document.getElementById('scope-json-editor-' + i);
+        if (!container) return;
+        if (this.editors[i]) {
+          try { this.editors[i].set(JSON.parse(s.tableJson || '{}')); } catch (e) {}
+          return;
+        }
+        let defaultJson = {};
+        try { defaultJson = JSON.parse(s.tableJson || '{}'); } catch (e) { defaultJson = {}; }
+        const ed = new JSONEditor(container, {
+          mode: 'code',
+          modes: ['code', 'tree', 'table'],
+          theme: 'jse-theme-default',
+          mainMenuBar: [
+            { text: '格式化', className: 'jsoneditor-menu-btn', title: '格式化 JSON 并输出到预览框', click: function() { self.formatScope(i); } },
+            { text: '清空', className: 'jsoneditor-menu-btn', title: '清空内容', click: function() { self.clearScope(i); } },
+            { text: '复制结果', className: 'jsoneditor-menu-btn', title: '复制 JSON 到剪贴板', click: function() { self.copyScope(i); } },
+          ],
+          statusBar: true,
+          search: true,
+        });
+        try { ed.set(defaultJson); } catch (e) {}
+        this.editors[i] = ed;
+        this.formatScope(i);
+      });
+    },
+    getScopeText(i) {
+      const ed = this.editors[i];
+      if (ed) { try { return ed.getText(); } catch (e) { return ''; } }
+      return this.form.scopes[i] ? this.form.scopes[i].tableJson || '' : '';
+    },
+    /* 格式化：将当前范围编辑框文本解析为标准 JSON 格式并输出到预览框；校验失败则在预览框提示 */
+    formatScope(i) {
+      const s = this.form.scopes[i];
+      if (!s) return;
+      const raw = this.getScopeText(i);
+      if (!raw || !raw.trim()) { s.previewText = ''; s.previewError = false; return; }
+      try {
+        const val = JSON.parse(raw);
+        s.previewText = JSON.stringify(val, null, 2);
+        s.previewError = false;
+      } catch (e) {
+        s.previewError = true;
+        s.previewText = 'JSON 格式校验未通过：\n' + (e && e.message ? e.message : String(e));
       }
     },
-    tableJsonPreview(json) {
-      if (!json) return '—';
-      const lines = json.split('\n');
-      const shown = lines.slice(0, 2).join('\n');
-      return lines.length > 2 ? shown + '\n…' : shown;
+    clearScope(i) {
+      const ed = this.editors[i];
+      if (ed) { try { ed.setText('{}'); } catch (e) {} }
+      const s = this.form.scopes[i];
+      if (s) { s.previewText = ''; s.previewError = false; }
+    },
+    copyScope(i) {
+      const txt = this.getScopeText(i);
+      if (!txt) { this.$message.warning('暂无内容可复制'); return; }
+      navigator.clipboard.writeText(txt).then(() => this.$message.success('已复制')).catch(() => this.$message.error('复制失败'));
     },
     addScope() {
-      this.form.scopes.push({ tableId: '', tableName: '', tableKey: '', tableJson: '', fields: [] });
+      this.form.scopes.push({ tableKey: '', tableJson: '', previewText: '', previewError: false });
+      this.$nextTick(() => this.initScopeEditors());
     },
     removeScope(index) {
+      if (this.editors[index]) { try { this.editors[index].destroy(); } catch (e) {} }
       this.form.scopes.splice(index, 1);
-      if (!this.form.scopes.length) this.form.scopes.push({ tableId: '', tableName: '', tableKey: '', tableJson: '', fields: [] });
+      if (!this.form.scopes.length) this.form.scopes.push({ tableKey: '', tableJson: '', previewText: '', previewError: false });
+      this.editors = {};
+      this.$nextTick(() => this.initScopeEditors());
     },
     addDoc() {
       const idx = this.form.docs.length + 1;
@@ -5297,8 +5066,17 @@ app.component('P36Form', {
         if (!this.form.authKey.trim()) { this.$message.warning('请输入认证key'); return; }
         if (this.form.domain && !/^https?:\/\//i.test(this.form.domain.trim())) { this.$message.warning('对接域名需以 http:// 或 https:// 开头'); return; }
       } else {
-        const valid = this.form.scopes.every(s => s.tableId);
-        if (!valid) { this.$message.warning('请为每条同步范围选择数据表'); return; }
+        let ok = true;
+        this.form.scopes.forEach((s, i) => {
+          if (!s.tableKey.trim()) { ok = false; return; }
+          const raw = this.getScopeText(i);
+          if (!raw || !raw.trim()) { ok = false; return; }
+          try {
+            const v = JSON.parse(raw);
+            if (typeof v !== 'object' || v === null || Array.isArray(v)) { ok = false; return; }
+          } catch (e) { ok = false; }
+        });
+        if (!ok) { this.$message.warning('请为每条同步范围填写数据表key，并填写合法的表json（JSON对象）'); return; }
       }
       if (!this.form.reason.trim()) { this.$message.warning('请填写申请理由'); return; }
       if (!this.form.disclaimer) { this.$message.warning('请同意免责声明'); return; }
@@ -5314,7 +5092,7 @@ app.component('P36Form', {
         devName: this.isSuper ? this.form.devName : (VENDORS[0] ? VENDORS[0].name : '南宁智课教育科技有限公司'),
         hasApi: this.form.hasApi,
         docs: this.form.hasApi === '是' ? this.form.docs.map(d => ({ ...d })) : [],
-        scopes: this.form.hasApi === '否' ? this.form.scopes.map(s => ({ ...s })) : [],
+        scopes: this.form.hasApi === '否' ? this.form.scopes.map((s, i) => ({ tableKey: s.tableKey.trim(), tableJson: this.getScopeText(i) })) : [],
         authKey: this.form.hasApi === '是' ? this.form.authKey : '',
         domain: this.form.hasApi === '是' ? this.form.domain.trim() : '',
         reason: this.form.reason,
@@ -5404,23 +5182,25 @@ app.component('P36Form', {
                 <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:10px">
                   <el-button v-if="!isView && form.scopes.length > 1" link type="danger" size="small" @click="removeScope(i)">删除</el-button>
                 </div>
-                <el-form-item label="数据表" required :label-width="90" style="margin-bottom:10px">
-                  <el-select v-if="!isView" v-model="scope.tableId" placeholder="请选择数据表" @change="onTableChange(i, $event)" style="width:100%" filterable>
-                    <el-option v-for="t in availableTables" :key="t.id" :label="t.name + '（' + t.tableKey + '）'" :value="t.id"></el-option>
-                  </el-select>
-                  <div v-else class="ro-text">{{ (scope.tableName || '—') + (scope.tableKey ? '（' + scope.tableKey + '）' : '') }}</div>
+                <el-form-item label="数据表key" required :label-width="90" style="margin-bottom:10px">
+                  <el-input v-if="!isView" v-model="scope.tableKey" placeholder="请输入数据表key" style="width:100%"></el-input>
+                  <div v-else class="ro-text">{{ scope.tableKey || '—' }}</div>
+                  <div v-if="!isView" style="color:#909399;font-size:12px;line-height:1.5">必填；数据表key 唯一标识一张数据表</div>
                 </el-form-item>
-                <el-form-item label="数据json" :label-width="90" style="margin-bottom:0">
+                <el-form-item label="表json" required :label-width="90" style="margin-bottom:10px">
                   <template v-if="!isView">
-                    <el-tooltip :content="scope.tableJson" placement="top" :disabled="!(scope.tableJson && scope.tableJson.split('\\n').length > 2)">
-                      <div style="border:1px solid #e4e7ed;background:#f5f7fa;border-radius:4px;padding:8px 12px;max-height:48px;overflow:hidden;white-space:pre-wrap;line-height:1.5;color:#606266">{{ tableJsonPreview(scope.tableJson) }}</div>
-                    </el-tooltip>
-                    <div style="color:#909399;font-size:12px;line-height:1.5">选择数据表后自动带出对应 JSON（只读）</div>
+                    <div :id="'scope-json-editor-' + i" style="border:1px solid #dcdfe6;border-radius:4px;height:260px;width:100%"></div>
                   </template>
                   <div v-else class="ro-text" style="white-space:pre-wrap">{{ scope.tableJson || '—' }}</div>
                 </el-form-item>
+                <el-form-item label="输出预览（只读）" :label-width="90" style="margin-bottom:0">
+                  <template v-if="!isView">
+                    <pre :style="{ border:'1px solid ' + (scope.previewError ? '#f56c6c' : '#e4e7ed'), borderRadius:'4px', background: scope.previewError ? '#fef0f0' : '#fafafa', color: scope.previewError ? '#f56c6c' : '#303133', margin:0, padding:'10px 12px', minHeight:'100px', maxHeight:'220px', width:'100%', overflow:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', fontSize:'13px', lineHeight:'1.6' }">{{ scope.previewText || '（点击「格式化」按钮后将在此展示标准 JSON 格式）' }}</pre>
+                  </template>
+                  <pre v-else class="ro-text" style="white-space:pre-wrap;margin:0">{{ scope.tableJson || '—' }}</pre>
+                </el-form-item>
               </div>
-              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加数据表</el-button>
+              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加数据表key</el-button>
             </div>
           </el-form-item>
         </template>
@@ -5458,9 +5238,9 @@ app.component('P36Form', {
 /* =====================================================================
  * P36Admin 数据回流管理（桂教通超管·授权管理）
  * 与开发者数据回流（P36）共享同一份数据源 DATA_BACKFLOW：开发者提交后
- * 状态为「待审批」并出现在本列表；超管审批通过后进入「同步中」；
- * 有接口：超管「同步完成」→ 已完成；无接口：开发者「同步完成」→「待确认」，
- * 超管核实同步成功后「同步确认」→ 已完成。
+ * 状态为「待审批」并出现在本列表；超管审批通过后进入「联调中」；
+ * 有接口：超管「联调完成」→ 已完成；无接口：开发者「联调完成」→「待确认」，
+ * 超管核实联调成功后「联调确认」→ 已完成。
  * ===================================================================== */
 app.component('P36Admin', {
   props: ['ctx'],
@@ -5487,23 +5267,23 @@ app.component('P36Admin', {
     submitAudit() {
       const a = this.audit;
       if (a.opinion === '驳回' && !a.note.trim()) { this.$message.warning('驳回时请填写审批说明'); return; }
-      a.row.syncStatus = a.opinion === '通过' ? '同步中' : '已驳回';
+      a.row.syncStatus = a.opinion === '通过' ? '联调中' : '已驳回';
       a.row.approver = '王超管';
       a.row.opinion = a.opinion;
       a.row.opinionNote = a.note;
       a.row.approveTime = this.nowStr();
       this.audit.visible = false;
-      this.$message.success(a.opinion === '通过' ? '已审批通过，数据回流进入同步中' : '已驳回该申请');
+      this.$message.success(a.opinion === '通过' ? '已审批通过，数据回流进入联调中' : '已驳回该申请');
     },
     syncDone(row) {
-      this.$confirm('确认将该数据回流标记为「同步完成」？', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+      this.$confirm('确认将该数据回流标记为「联调完成」？', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
         .then(() => {
           row.syncStatus = '已完成';
-          this.$message.success('已标记同步完成');
+          this.$message.success('已标记联调完成');
         }).catch(() => {});
     },
     syncConfirm(row) {
-      this.$confirm('请确认该数据回流已同步成功？确认后状态将改为「已完成」。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
+      this.$confirm('请确认该数据回流已联调成功？确认后状态将改为「已完成」。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
         .then(() => {
           row.syncStatus = '已完成';
           this.$message.success('已确认同步成功');
@@ -5514,7 +5294,7 @@ app.component('P36Admin', {
       if (r.hasApi === '是') return '接口对接'; // 有接口的对接文档独立成列展示
       const scopes = r.scopes || [];
       if (!scopes.length) return '—';
-      return scopes.map(s => (s.tableKey || s.tableName || '未指定数据表')).join(',');
+      return scopes.map(s => (s.tableKey || '未指定数据表')).join(',');
     },
     view(row) {
       this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Admin' });
@@ -5529,9 +5309,9 @@ app.component('P36Admin', {
     <div class="toolbar">
       <span class="q-label">名称</span><el-input v-model="q.name" placeholder="请输入" clearable style="width:180px"></el-input>
       <span class="q-label">开发者名称</span><el-input v-model="q.devName" placeholder="请输入" clearable style="width:180px"></el-input>
-      <span class="q-label">同步状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
+      <span class="q-label">联调状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
         <el-option label="待审批" value="待审批"></el-option>
-        <el-option label="同步中" value="同步中"></el-option>
+        <el-option label="联调中" value="联调中"></el-option>
         <el-option label="待确认" value="待确认"></el-option>
         <el-option label="已完成" value="已完成"></el-option>
       </el-select>
@@ -5556,15 +5336,15 @@ app.component('P36Admin', {
             <span v-else>—</span>
           </template>
         </el-table-column>
-        <el-table-column prop="syncStatus" label="同步状态" width="100" align="center">
+        <el-table-column prop="syncStatus" label="联调状态" width="100" align="center">
           <template #default="{row}"><st-tag :v="row.syncStatus"></st-tag></template>
         </el-table-column>
         <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
         <el-table-column label="操作" width="180" align="center" fixed="right">
           <template #default="{row}">
             <el-button v-if="row.syncStatus === '待审批'" link type="primary" @click="openAudit(row)">审批</el-button>
-            <el-button v-if="row.syncStatus === '同步中' && row.hasApi === '是'" link type="primary" @click="syncDone(row)">同步完成</el-button>
-            <el-button v-if="row.syncStatus === '待确认'" link type="primary" @click="syncConfirm(row)">同步确认</el-button>
+            <el-button v-if="row.syncStatus === '联调中' && row.hasApi === '是'" link type="primary" @click="syncDone(row)">联调完成</el-button>
+            <el-button v-if="row.syncStatus === '待确认'" link type="primary" @click="syncConfirm(row)">联调确认</el-button>
             <el-button link type="primary" @click="view(row)">查看</el-button>
           </template>
         </el-table-column>
@@ -5607,7 +5387,7 @@ app.component('P36Admin', {
 /* =====================================================================
  * P36Detail 数据回流明细（桂教通超管·授权管理）
  * 台账式汇总记录各开发者回流数据的明细：开发者、应用、回流数据名称、
- * 回流明细（同步接口与字段/对接文档）、同步状态、申请时间、最近同步时间。
+ * 回流明细（接口对接/数据表key与表json）、回流状态、申请时间、最近同步时间。
  * 与 P36 / P36Admin 共享同一份数据源 DATA_BACKFLOW，只读展示。
  * ===================================================================== */
 /* 数据回流明细：按接口维度展开为一行一条记录 */
@@ -5618,21 +5398,15 @@ function buildBackflowDetailRows(list) {
     if (r.hasApi === '是') {
       out.push({
         key: r.id + '_api', id: r.id, devName: r.devName, appName: r.appName,
-        tableKey: '—', tableName: '—', tableJson: '', hasApi: '是', apiName: '平台接口回流（对接文档）', docs: r.docs || [], fields: [],
+        tableKey: '—', tableName: '—', tableJson: '', hasApi: '是', apiName: '平台接口回流（对接文档）', docs: r.docs || [],
         volume: ((vi++ + 3) * 412).toLocaleString() + ' 条',
         status: r.status || '成功', failReason: r.failReason || '', syncTime: r.syncTime || '',
       });
     } else {
       (r.scopes || []).forEach((s, idx) => {
-        const api = APIS.find(a => a.id === s.apiId);
-        const pm = API_PARAMS[s.service] || [];
-        const fields = (s.fields || []).map(f => {
-          const p = pm.find(x => x.name === f);
-          return p ? p.label + '（' + p.name + '）' : f;
-        });
         out.push({
           key: r.id + '_scope_' + idx, id: r.id, devName: r.devName, appName: r.appName,
-          tableKey: s.tableKey || '—', tableName: s.tableName || '—', tableJson: s.tableJson || '', hasApi: '否', apiName: api ? api.name : s.service, docs: [], fields,
+          tableKey: s.tableKey || '—', tableName: '—', tableJson: s.tableJson || '', hasApi: '否', apiName: s.tableKey || '—', docs: [],
           volume: ((vi++ + 7) * 268).toLocaleString() + ' 条',
           status: s.status || '成功', failReason: s.failReason || '', syncTime: s.syncTime || '',
         });
@@ -5700,9 +5474,8 @@ app.component('P36DetailView', {
       <div style="border-top:1px dashed #e4e7ed;padding-top:14px;margin-top:14px">
         <div style="font-weight:600;margin-bottom:12px">数据表回流内容</div>
         <el-form label-width="130px" style="width:100%">
-          <el-form-item label="数据表"><div class="ro-text">{{ tableDisplay(row) }}</div></el-form-item>
-          <el-form-item label="同步字段"><div class="ro-text">{{ (row.fields && row.fields.length) ? row.fields.join('、') : '—' }}</div></el-form-item>
-          <el-form-item label="数据json">
+          <el-form-item label="数据表key"><div class="ro-text">{{ tableDisplay(row) }}</div></el-form-item>
+          <el-form-item label="表json">
             <div v-if="row.tableJson" class="ro-text" style="white-space:pre-wrap;background:#f5f7fa;border:1px solid #e4e7ed;border-radius:4px;padding:10px 12px;line-height:1.6">{{ row.tableJson }}</div>
             <div v-else class="ro-text">—</div>
           </el-form-item>
