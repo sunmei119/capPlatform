@@ -4578,7 +4578,7 @@ app.component('P28ApplyApi', {
  *     / 刷新令牌有效期(秒) / 操作（编辑、启用、停用、数据授权、接口授权、查看）
  * 说明：本列表不提供审批操作；「机构申请」类记录由机构组织同步申请经
  *       「审批管理 → 组织同步审批」审批通过后自动生成（含客户端凭证）
- * P31 数据授权配置（新开表单页）：是否全部数据/同步范围类型/学校名称/机构名称/授权截止时间
+ * P31 数据授权配置（新开表单页）：是否全部数据/同步范围类型/学校名称/机构名称/授权截止时间/授权接口（多选）
  * P31B 接口授权配置（新开表单页）：是否全部接口/授权接口（与数据授权分开维护）
  * ===================================================================== */
 app.component('P30', {
@@ -4929,7 +4929,7 @@ app.component('P30View', {
  * 是否全部数据（是→全区数据，不展示同步范围类型/学校名称/机构名称）
  * 同步范围类型（学校→学校名称；教育局→机构名称）
  * 授权截止时间（不可选今天之前，最长三年）
- * 数据授权与接口授权分开维护，本页只负责数据授权
+ * 授权接口（弹窗多选，选择该数据授权关联的接口）
  * ===================================================================== */
 app.component('P31', {
   props: ['ctx'],
@@ -4937,6 +4937,7 @@ app.component('P31', {
     const c = CLIENT_AUTH.find(x => x.clientId === (this.ctx && this.ctx.clientId));
     const row = c || CLIENT_AUTH[0];
     return {
+      filterApisPage: 1, filterApisSize: 10,
       row,
       form: {
         allData: row.allData || '否',
@@ -4944,14 +4945,24 @@ app.component('P31', {
         schoolNames: row.schoolNames || '',
         orgNames: row.orgNames || '',
         deadline: row.deadline || '',
+        apiIds: row.apiIds ? [...row.apiIds] : [],
       },
       rangeTypeOptions: ['学校', '教育局'],
+      apiDialog: false,
+      tempApiIds: [],
+      apiKeyword: '',
     };
   },
   computed: {
     showDataScope() { return this.form.allData === '否'; },
     showSchool() { return this.showDataScope && this.form.syncRangeTypes.includes('学校'); },
     showOrg() { return this.showDataScope && this.form.syncRangeTypes.includes('教育局'); },
+    visibleApis() { return APIS.filter(a => a.visible && a.needAuth); },
+    filterApis() {
+      const kw = (this.apiKeyword || '').trim().toLowerCase();
+      return this.visibleApis.filter(a => !kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw));
+    },
+    chosenApis() { return APIS.filter(a => this.form.apiIds.includes(a.id)); },
   },
   methods: {
     disabledDate(time) {
@@ -4959,6 +4970,10 @@ app.component('P31', {
       const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
       return time.getTime() < today.getTime() || time.getTime() > max.getTime();
     },
+    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiDialog = true; },
+    onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
+    saveApiDialog() { this.form.apiIds = [...this.tempApiIds]; this.apiDialog = false; },
+    removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); },
     submit() {
       if (!this.form.deadline) { this.$message.warning('请选择授权截止时间'); return; }
       if (this.form.allData === '否') {
@@ -4966,12 +4981,14 @@ app.component('P31', {
         if (this.form.syncRangeTypes.includes('学校') && !this.form.schoolNames.trim()) { this.$message.warning('请填写学校名称'); return; }
         if (this.form.syncRangeTypes.includes('教育局') && !this.form.orgNames.trim()) { this.$message.warning('请填写机构名称'); return; }
       }
+      if (!this.form.apiIds.length) { this.$message.warning('请至少选择一个授权接口'); return; }
       const row = this.row;
       row.allData = this.form.allData;
       row.syncRangeTypes = this.form.syncRangeTypes.slice();
       row.schoolNames = this.form.schoolNames;
       row.orgNames = this.form.orgNames;
       row.deadline = this.form.deadline;
+      row.apiIds = [...this.form.apiIds];
       this.$message.success('数据授权已保存');
       this.$root.go('P30');
     },
@@ -5010,12 +5027,39 @@ app.component('P31', {
           <el-date-picker v-model="form.deadline" type="date" placeholder="请选择授权截止时间" :disabled-date="disabledDate" value-format="YYYY-MM-DD" style="width:100%"></el-date-picker>
           <div style="color:#909399;font-size:12px;line-height:1.5">必填；不可选择当前时间之前的时间，只能选择当前时间的三年内的时间</div>
         </el-form-item>
+        <el-form-item label="授权接口" required>
+          <div style="width:100%">
+            <el-button type="primary" plain @click="openApiDialog">选择授权接口</el-button>
+            <div v-if="chosenApis.length" style="margin-top:8px">
+              <el-tag v-for="a in chosenApis" :key="a.id" closable @close="removeApi(a.id)" style="margin:0 8px 8px 0">{{ a.name }}</el-tag>
+            </div>
+            <div v-else style="color:#c0c4cc;font-size:12px;margin-top:8px">尚未选择授权接口</div>
+            <div style="color:#909399;font-size:12px;line-height:1.5">必填；选择该数据授权关联的接口，可多选</div>
+          </div>
+        </el-form-item>
       </el-form>
       <div style="text-align:center;margin-top:18px">
         <el-button @click="$root.go('P30')">取消</el-button>
         <el-button type="primary" @click="submit">保存</el-button>
       </div>
     </div>
+
+    <el-dialog title="选择授权接口" v-model="apiDialog" width="760px">
+      <div style="margin-bottom:10px">
+        <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:260px"></el-input>
+      </div>
+      <el-table :data="pageSlice(filterApis, 'filterApis')" border size="small" @selection-change="onApiChange" :row-key="r => r.id">
+        <el-table-column type="selection" :reserve-selection="true" width="45"></el-table-column>
+        <el-table-column prop="name" label="接口名称" min-width="150"></el-table-column>
+        <el-table-column prop="service" label="接口服务名" min-width="140"></el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
+      </el-table>
+      <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="filterApis.length" :page-size="filterApisSize" :current-page="filterApisPage" @current-change="filterApisPage=$event"></el-pagination>
+      <template #footer>
+        <el-button @click="apiDialog=false">取消</el-button>
+        <el-button type="primary" @click="saveApiDialog">确定</el-button>
+      </template>
+    </el-dialog>
   </div>`,
 });
 
@@ -5770,7 +5814,11 @@ app.component('P36Form', {
               <span style="color:#409eff;cursor:pointer" @click.stop="declVisible=true">《数据使用免责申明》</span>
             </el-checkbox>
           </template>
-          <div v-else class="ro-text">已同意免责声明</div>
+          <template v-else>
+            <el-checkbox :model-value="true" disabled>我已阅读并同意
+              <span style="color:#409eff;cursor:pointer" @click.stop="declVisible=true">《数据使用免责申明》</span>
+            </el-checkbox>
+          </template>
         </el-form-item>
         </template>
       </el-form>
