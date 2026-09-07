@@ -128,6 +128,7 @@ const MENU_TREE = {
       { label: '客户端授权管理', page: 'P30' },
       { label: '数据回流管理', page: 'P36Admin' },
       { label: '数据回流明细', page: 'P36Detail' },
+      { label: '数据表管理', page: 'P37' },
     ]},
     { label: '审批管理', children: [
       { label: '接口申请审批', page: 'P08' },
@@ -147,7 +148,7 @@ const MENU_TREE = {
       { label: '接口申请记录', page: 'P08' },
       { label: '数据授权记录', page: 'P08Auth' },
     ]},
-    { label: '数据回流管理', children: [
+    { label: '数据回流', children: [
       { label: '数据回流管理', page: 'P36' },
     ]},
   ],
@@ -171,7 +172,8 @@ const PAGE_TITLES = {
   P28ApiAuth: '接口授权', P28DataAuth: '数据授权', P28AuthCancel: '取消授权', P28AuthView: '查看授权记录',
   P30: '客户端授权管理', P30View: '客户端信息查看', P31: '数据授权配置', P31B: '接口授权配置',
   P32: '组织同步申请',
-  P36: '数据回流管理', P36Form: '数据回流申请', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看',
+  P36: '数据回流管理', P36Form: '数据回流管理', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看',
+  P37: '数据表管理',
   P41: '组织同步审批',
 };
 
@@ -351,24 +353,35 @@ const DATA_SYNC_APPS = [
   { id: 7, orgId: 'ORG007', orgName: '青秀区实验小学', applicant: '林珊', applyTime: '2026-08-11 09:50', sysName: '家校互动平台', contact: '何军', phone: '13233334444', whiteList: [{ protocol: 'http://', domain: 'jx.qx.edu.cn' }], status: '已驳回', opinion: '不通过', opinionNote: '业务系统对接人信息不完整，请补充后重新提交', approver: '王超管', approveTime: '2026-08-12 17:30' },
 ];
 
-// 数据回流申请（开发者管理员提交，桂教通超管审批/确认，双方共维护同一份数据）
-// 状态机：待审批（开发者提交后）→ 联调中（超管审批通过）→（有接口：超管联调完成）已完成
-//                               ↘（无接口：开发者联调完成→待确认→超管联调确认）已完成
-const DATA_BACKFLOW = [
-  { id: 1, name: '学生学籍回流', appId: 'app_1001', appName: '智慧校园APP', devName: '南宁智课教育科技有限公司', hasApi: '否', scopes: [
-    { tableKey: 'tbl_student_base', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
-    { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '失败', failReason: '数据联调失败（超时504）', syncTime: '2026-08-22 16:30' }
-  ], syncStatus: '待确认', applyTime: '2026-08-20 10:00' },
-  { id: 2, name: '成绩数据回流', appId: 'app_1002', appName: '家校互动平台', devName: '广西云启科技有限公司', hasApi: '否', scopes: [
-    { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '失败', failReason: '数据源连接异常', syncTime: '' }
-  ], syncStatus: '联调中', applyTime: '2026-08-21 14:30' },
-  { id: 3, name: '课程文档回流', appId: 'app_1001', appName: '智慧校园APP', devName: '北海海创科技有限公司', hasApi: '是', docs: [
-    { name: '对接文档.pdf', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF' },
-    { name: '接口说明.pptx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PPT' }
-  ], status: '失败', failReason: '接口鉴权失败（401）', syncTime: '2026-08-23 09:00', syncStatus: '已完成', applyTime: '2026-08-18 09:00' },
+// 数据表管理（桂教通超管维护，用于数据回流时下拉选择数据表key）
+const DATA_TABLES = [
+  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', desc: '记录学生学籍基本信息', status: '启用', createTime: '2026-08-01 10:00' },
+  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', desc: '记录学生各科成绩明细', status: '启用', createTime: '2026-08-02 14:00' },
+  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', desc: '记录教师考勤打卡数据', status: '停用', createTime: '2026-08-03 09:00' },
+  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', desc: '记录课程相关文档资源', status: '启用', createTime: '2026-08-05 11:00' },
+  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', desc: '记录学生日常考勤签到', status: '启用', createTime: '2026-08-10 15:00' },
 ];
 
-const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
+// 数据回流管理（桂教通超管发起，开发者管理员响应，双方共维护同一份数据）
+// 状态机：
+//   对接方式 = "开发者提供接口"：超管新增 → 待对接 → 开发者上传对接文档 → 联调中 → 超管联调完成 → 已完成
+//   对接方式 = "开发者主动推送"：超管新增 → 联调中 → 超管联调完成 → 已完成
+const DATA_BACKFLOW = [
+  { id: 1, name: '学生学籍回流', appId: 'app_1001', appName: '智慧校园APP', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者主动推送', pushMethod: '增量', uniqueField: 'studentId', scopes: [
+    { tableKey: 'tbl_student_base', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', tableFile: null, status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
+    { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', tableFile: null, status: '失败', failReason: '数据联调失败（超时504）', syncTime: '2026-08-22 16:30' }
+  ], syncStatus: '联调中', applyTime: '2026-08-20 10:00' },
+  { id: 2, name: '成绩数据回流', appId: 'app_1002', appName: '家校互动平台', devId: 2, devName: '广西云启信息科技有限公司', dockingType: '开发者主动推送', pushMethod: '全量', uniqueField: 'examId', scopes: [
+    { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', tableFile: null, status: '成功', failReason: '', syncTime: '2026-08-25 09:00' }
+  ], syncStatus: '已完成', applyTime: '2026-08-21 14:30' },
+  { id: 3, name: '课程文档回流', appId: 'app_1001', appName: '智慧校园APP', devId: 5, devName: '北海海创科技有限公司', dockingType: '开发者提供接口', pushMethod: '全量', docs: [
+    { name: '对接文档.pdf', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF' },
+    { name: '接口说明.pptx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PPT' }
+  ], authKey: 'ak_3f8e2a1b', domain: 'https://api.hctech.edu.cn', syncStatus: '已完成', applyTime: '2026-08-18 09:00' },
+  { id: 4, name: '教师考勤回流', appId: 'app_1001', appName: '智慧校园APP', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者提供接口', pushMethod: '增量', docs: [], authKey: '', domain: '', syncStatus: '待对接', applyTime: '2026-09-05 11:00' },
+];
+
+const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待对接':'warning', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
 
 const app = Vue.createApp({
   data() {
@@ -5288,11 +5301,18 @@ app.component('P32', {
 });
 
 
+/* =====================================================================
+ * P36 数据回流管理（开发者管理员视角）
+ * 开发者查看超管发起的数据回流记录，当对接方式为"开发者提供接口"且状态为
+ * "待对接"时，可上传对接文档；当对接方式为"开发者主动推送"时仅查看。
+ * ===================================================================== */
 app.component('P36', {
+  props: ['ctx'],
   data() {
+    const myDevName = VENDORS[0].name;
     return {
       filteredPage: 1, filteredSize: 10,
-      rows: DATA_BACKFLOW.map(x => ({ ...x })),
+      rows: DATA_BACKFLOW.filter(x => x.devName === myDevName).map(x => ({ ...x })),
       q: { name: '', syncStatus: '' },
       preview: { visible: false, doc: null },
     };
@@ -5307,25 +5327,12 @@ app.component('P36', {
   },
   methods: {
     resetQ() { this.q = { name: '', syncStatus: '' }; },
-    scopeText(r) {
-      if (r.hasApi === '是') return '接口对接'; // 有接口的对接文档独立成列展示
-      const scopes = r.scopes || [];
-      if (!scopes.length) return '—';
-      return scopes.map(s => (s.tableKey || '未指定数据表')).join(',');
-    },
     previewDoc(doc) { this.preview = { visible: true, doc }; },
-    syncDone(row) {
-      this.$confirm('确认将该数据回流标记为「联调完成」？联调完成后将由桂教通超管确认。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
-        .then(() => {
-          row.syncStatus = '待确认';
-          this.$message.success('已标记联调完成，等待超管确认');
-        }).catch(() => {});
+    uploadDoc(row) {
+      this.$root.go('P36Form', { id: row.id, upload: true, backPage: 'P36' });
     },
     view(row) {
       this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36' });
-    },
-    openAdd() {
-      this.$root.go('P36Form', { view: false });
     },
   },
   template: `
@@ -5333,28 +5340,27 @@ app.component('P36', {
     <div class="toolbar">
       <span class="q-label">名称</span><el-input v-model="q.name" placeholder="请输入" clearable style="width:180px"></el-input>
       <span class="q-label">联调状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
-        <el-option label="待审批" value="待审批"></el-option>
+        <el-option label="待对接" value="待对接"></el-option>
         <el-option label="联调中" value="联调中"></el-option>
-        <el-option label="待确认" value="待确认"></el-option>
         <el-option label="已完成" value="已完成"></el-option>
       </el-select>
       <el-button @click="resetQ">重置</el-button>
       <div style="flex:1"></div>
-      <el-button type="primary" @click="openAdd">新增申请</el-button>
     </div>
     <div class="card">
       <el-table :data="pageSlice(filtered, 'filtered')" stripe style="width:100%">
         <el-table-column prop="name" label="名称" min-width="150"></el-table-column>
         <el-table-column prop="appName" label="应用名称" min-width="150"></el-table-column>
-        <el-table-column prop="hasApi" label="是否有接口" width="100" align="center"></el-table-column>
-        <el-table-column label="数据表" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
+        <el-table-column prop="dockingType" label="对接方式" width="140" align="center"></el-table-column>
+        <el-table-column prop="pushMethod" label="推送方式" width="100" align="center"></el-table-column>
         <el-table-column label="对接文档" min-width="160">
           <template #default="{row}">
-            <template v-if="row.hasApi === '是'">
+            <template v-if="row.dockingType === '开发者提供接口' && (row.docs||[]).length">
               <div v-for="(d,i) in (row.docs||[])" :key="i">
                 <el-link type="primary" @click="previewDoc(d)">{{ d.name }}</el-link>
               </div>
             </template>
+            <span v-else-if="row.dockingType === '开发者提供接口'">待上传</span>
             <span v-else>—</span>
           </template>
         </el-table-column>
@@ -5362,9 +5368,9 @@ app.component('P36', {
           <template #default="{row}"><st-tag :v="row.syncStatus"></st-tag></template>
         </el-table-column>
         <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
-        <el-table-column label="操作" width="120" align="center" fixed="right">
+        <el-table-column label="操作" width="140" align="center" fixed="right">
           <template #default="{row}">
-            <el-button v-if="row.hasApi === '否' && row.syncStatus === '联调中'" link type="primary" @click="syncDone(row)">联调完成</el-button>
+            <el-button v-if="row.dockingType === '开发者提供接口' && row.syncStatus === '待对接'" link type="primary" @click="uploadDoc(row)">上传文档</el-button>
             <el-button link type="primary" @click="view(row)">查看</el-button>
           </template>
         </el-table-column>
@@ -5387,25 +5393,32 @@ app.component('P36Form', {
   props: ['ctx'],
   data() {
     const isView = this.ctx && this.ctx.view;
+    const isUpload = this.ctx && this.ctx.upload;
     const id = this.ctx && this.ctx.id;
     const row = id ? DATA_BACKFLOW.find(x => x.id === id) : null;
     return {
       isView: !!isView,
-      isSuper: this.ctx && this.ctx.from === 'P36Admin', // 桂教通超管数据回流申请（需选择开发者）
+      isUpload: !!isUpload,
+      isSuper: this.ctx && this.ctx.from === 'P36Admin',
       form: {
         name: row ? row.name : '',
         appId: row ? (row.appId || '') : '',
         appName: row ? (row.appName || '') : '',
         devName: row ? (row.devName || '') : '',
-        hasApi: row ? row.hasApi : '否',
+        dockingType: row ? row.dockingType : '开发者提供接口',
+        pushMethod: row ? (row.pushMethod || '全量') : '全量',
+        uniqueField: row ? (row.uniqueField || '') : '',
         docs: row ? (row.docs || []).map(d => ({ ...d })) : [],
-        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ tableKey: '', tableJson: '' }],
+        scopes: row ? (row.scopes || []).map(s => ({ ...s, tableFile: s.tableFile ? { ...s.tableFile } : null, previewText: '', previewError: false })) : [{ tableKey: '', tableJson: '', tableFile: null, previewText: '', previewError: false }],
         authKey: row ? (row.authKey || '') : '',
         domain: row ? (row.domain || '') : '',
         reason: row ? (row.reason || '') : '',
         disclaimer: row ? true : false,
       },
       editors: {},
+      jsonDialogVisible: false,
+      jsonDialogIndex: -1,
+      tableKeyOptions: DATA_TABLES.filter(t => t.status === '启用'),
       appOptions: APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30),
       appLoading: false,
       devOptions: VENDORS.slice(0, 30),
@@ -5491,13 +5504,13 @@ app.component('P36Form', {
       navigator.clipboard.writeText(txt).then(() => this.$message.success('已复制')).catch(() => this.$message.error('复制失败'));
     },
     addScope() {
-      this.form.scopes.push({ tableKey: '', tableJson: '', previewText: '', previewError: false });
+      this.form.scopes.push({ tableKey: '', tableJson: '', tableFile: null, previewText: '', previewError: false });
       this.$nextTick(() => this.initScopeEditors());
     },
     removeScope(index) {
       if (this.editors[index]) { try { this.editors[index].destroy(); } catch (e) {} }
       this.form.scopes.splice(index, 1);
-      if (!this.form.scopes.length) this.form.scopes.push({ tableKey: '', tableJson: '', previewText: '', previewError: false });
+      if (!this.form.scopes.length) this.form.scopes.push({ tableKey: '', tableJson: '', uniqueField: '', tableFile: null, previewText: '', previewError: false });
       this.editors = {};
       this.$nextTick(() => this.initScopeEditors());
     },
@@ -5525,26 +5538,70 @@ app.component('P36Form', {
         this.devLoading = false;
       }, 300);
     },
+    openJsonDialog(i) {
+      this.jsonDialogIndex = i;
+      this.jsonDialogVisible = true;
+      this.$nextTick(() => this.initScopeEditors());
+    },
+    confirmJson() {
+      const i = this.jsonDialogIndex;
+      const s = this.form.scopes[i];
+      if (!s) return;
+      const raw = this.getScopeText(i);
+      if (!raw || !raw.trim()) { ElMessage.warning('请输入表json内容'); return; }
+      try {
+        const v = JSON.parse(raw);
+        if (typeof v !== 'object' || v === null || Array.isArray(v)) { ElMessage.warning('表json必须为合法JSON对象'); return; }
+        s.tableJson = JSON.stringify(v, null, 2);
+        s.previewText = s.tableJson;
+        s.previewError = false;
+        this.jsonDialogVisible = false;
+        ElMessage.success('表json已保存');
+      } catch (e) {
+        ElMessage.error('JSON格式校验未通过：' + (e.message || String(e)));
+      }
+    },
+    addTableFile(i) {
+      const scope = this.form.scopes[i];
+      if (!scope) return;
+      const idx = i + 1;
+      scope.tableFile = { name: '数据表结构文件' + idx + '.xlsx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=XLSX' };
+    },
+    removeTableFile(i) {
+      const scope = this.form.scopes[i];
+      if (scope) scope.tableFile = null;
+    },
     submit() {
+      if (this.isUpload) {
+        if (!this.form.docs.length) { this.$message.warning('请上传至少一个对接文档'); return; }
+        const row = DATA_BACKFLOW.find(x => x.id === (this.ctx && this.ctx.id));
+        if (row) {
+          row.docs = this.form.docs.map(d => ({ ...d }));
+          row.syncStatus = '联调中';
+        }
+        this.$message.success('对接文档已提交，进入联调阶段');
+        this.$root.go((this.ctx && this.ctx.backPage) || 'P36');
+        return;
+      }
       if (!this.form.name.trim()) { this.$message.warning('请输入名称'); return; }
       if (!this.form.appId) { this.$message.warning('请选择应用名称'); return; }
-      if (this.isSuper && !this.form.devName) { this.$message.warning('请选择开发者'); return; }
-      if (this.form.hasApi === '是') {
-        if (!this.form.docs.length) { this.$message.warning('请上传至少一个对接文档'); return; }
-        if (!this.form.authKey.trim()) { this.$message.warning('请输入认证key'); return; }
+      if (!this.form.devName) { this.$message.warning('请选择开发者'); return; }
+      if (this.form.dockingType === '开发者提供接口') {
         if (this.form.domain && !/^https?:\/\//i.test(this.form.domain.trim())) { this.$message.warning('对接域名需以 http:// 或 https:// 开头'); return; }
       } else {
+        if (!this.form.uniqueField || !this.form.uniqueField.trim()) { this.$message.warning('请输入唯一字段'); return; }
+        if (this.form.uniqueField.trim().includes(',')) { this.$message.warning('唯一字段仅支持填写一个字段名'); return; }
         let ok = true;
         this.form.scopes.forEach((s, i) => {
           if (!s.tableKey.trim()) { ok = false; return; }
-          const raw = this.getScopeText(i);
+          const raw = s.tableJson || '';
           if (!raw || !raw.trim()) { ok = false; return; }
           try {
             const v = JSON.parse(raw);
             if (typeof v !== 'object' || v === null || Array.isArray(v)) { ok = false; return; }
           } catch (e) { ok = false; }
         });
-        if (!ok) { this.$message.warning('请为每条同步范围填写数据表key，并填写合法的表json（JSON对象）'); return; }
+        if (!ok) { this.$message.warning('请为每条同步范围选择数据表key、填写唯一字段，并通过弹窗配置合法的表json（JSON对象）'); return; }
       }
       if (!this.form.reason.trim()) { this.$message.warning('请填写申请理由'); return; }
       if (!this.form.disclaimer) { this.$message.warning('请同意免责声明'); return; }
@@ -5552,24 +5609,28 @@ app.component('P36Form', {
       const p = n => String(n).padStart(2, '0');
       const timeStr = now.getFullYear() + '-' + p(now.getMonth() + 1) + '-' + p(now.getDate()) + ' ' + p(now.getHours()) + ':' + p(now.getMinutes());
       const app = APP_LIST.find(a => a.appId === this.form.appId);
+      const dev = VENDORS.find(v => v.name === this.form.devName);
       const data = {
         id: Date.now(),
         name: this.form.name,
         appId: this.form.appId,
         appName: app ? app.appName : this.form.appName,
-        devName: this.isSuper ? this.form.devName : (VENDORS[0] ? VENDORS[0].name : '南宁智课教育科技有限公司'),
-        hasApi: this.form.hasApi,
-        docs: this.form.hasApi === '是' ? this.form.docs.map(d => ({ ...d })) : [],
-        scopes: this.form.hasApi === '否' ? this.form.scopes.map((s, i) => ({ tableKey: s.tableKey.trim(), tableJson: this.getScopeText(i) })) : [],
-        authKey: this.form.hasApi === '是' ? this.form.authKey : '',
-        domain: this.form.hasApi === '是' ? this.form.domain.trim() : '',
+        devId: dev ? dev.id : 0,
+        devName: this.form.devName,
+        dockingType: this.form.dockingType,
+        pushMethod: this.form.pushMethod,
+        uniqueField: this.form.dockingType === '开发者主动推送' ? this.form.uniqueField.trim() : '',
+        docs: [],
+        scopes: this.form.dockingType === '开发者主动推送' ? this.form.scopes.map((s, i) => ({ tableKey: s.tableKey.trim(), tableJson: s.tableJson || '', tableFile: s.tableFile ? { ...s.tableFile } : null })) : [],
+        authKey: this.form.authKey || '',
+        domain: this.form.dockingType === '开发者提供接口' ? (this.form.domain || '').trim() : '',
         reason: this.form.reason,
-        syncStatus: '待审批',
+        syncStatus: this.form.dockingType === '开发者提供接口' ? '待对接' : '联调中',
         applyTime: timeStr,
       };
       DATA_BACKFLOW.unshift(data);
-      this.$message.success(this.isSuper ? '数据回流申请已提交，等待审批' : '数据回流申请已提交，等待桂教通超管审批');
-      this.$root.go((this.ctx && this.ctx.backPage) || 'P36');
+      this.$message.success(this.form.dockingType === '开发者提供接口' ? '已创建，等待开发者上传对接文档' : '已创建，数据回流进入联调阶段');
+      this.$root.go((this.ctx && this.ctx.backPage) || 'P36Admin');
     },
     back() {
       this.$root.go((this.ctx && this.ctx.backPage) || 'P36');
@@ -5578,14 +5639,14 @@ app.component('P36Form', {
   template: `
   <div>
     <div class="card" style="max-width:960px">
-      <div style="font-weight:600;margin:8px 0 12px">{{ isView ? '查看数据回流申请' : '数据回流申请' }}</div>
+      <div style="font-weight:600;margin:8px 0 12px">{{ isUpload ? '上传对接文档' : isView ? '查看数据回流' : '新增数据回流' }}</div>
       <el-form label-width="120px" style="width:100%">
         <el-form-item label="名称" required>
-          <el-input v-if="!isView" v-model="form.name" placeholder="请输入数据回流名称" maxlength="50"></el-input>
+          <el-input v-if="!isView && !isUpload" v-model="form.name" placeholder="请输入数据回流名称" maxlength="50"></el-input>
           <div v-else class="ro-text">{{ form.name }}</div>
         </el-form-item>
         <el-form-item label="应用名称" required>
-          <template v-if="!isView">
+          <template v-if="!isView && !isUpload">
             <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%">
               <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
             </el-select>
@@ -5593,26 +5654,38 @@ app.component('P36Form', {
           </template>
           <div v-else class="ro-text">{{ form.appName || '—' }}</div>
         </el-form-item>
-        <el-form-item v-if="isSuper && !isView" label="开发者" required>
+        <el-form-item v-if="!isView && !isUpload" label="开发者" required>
           <el-select v-model="form.devName" filterable remote :remote-method="searchDevs" :loading="devLoading" placeholder="请输入开发者名称模糊匹配" style="width:100%">
             <el-option v-for="v in devOptions" :key="v.id" :label="v.name" :value="v.name"></el-option>
           </el-select>
           <div style="color:#909399;font-size:12px;line-height:1.5">根据开发者名称模糊匹配，最多展示 30 个</div>
         </el-form-item>
         <el-form-item v-else label="开发者名称">
-          <div class="ro-text">{{ currentDevName }}</div>
+          <div class="ro-text">{{ form.devName }}</div>
         </el-form-item>
-        <el-form-item label="是否有接口" required>
-          <el-radio-group v-if="!isView" v-model="form.hasApi">
-            <el-radio value="是">是</el-radio>
-            <el-radio value="否">否</el-radio>
+        <el-form-item label="对接方式" required>
+          <el-radio-group v-if="!isView && !isUpload" v-model="form.dockingType">
+            <el-radio value="开发者提供接口">开发者提供接口</el-radio>
+            <el-radio value="开发者主动推送">开发者主动推送</el-radio>
           </el-radio-group>
-          <div v-else class="ro-text">{{ form.hasApi }}</div>
+          <div v-else class="ro-text">{{ form.dockingType }}</div>
+        </el-form-item>
+        <el-form-item label="推送方式" required>
+          <el-radio-group v-if="!isView && !isUpload" v-model="form.pushMethod">
+            <el-radio value="全量">全量</el-radio>
+            <el-radio value="增量">增量</el-radio>
+          </el-radio-group>
+          <div v-else class="ro-text">{{ form.pushMethod || '—' }}</div>
         </el-form-item>
 
-        <template v-if="form.hasApi === '是'">
-          <el-form-item label="对接文档" required>
-            <template v-if="!isView">
+        <el-form-item v-if="form.dockingType === '开发者主动推送'" label="唯一字段" required>
+          <el-input v-if="!isView && !isUpload" v-model="form.uniqueField" placeholder="请输入唯一标识字段名（仅支持一个）" maxlength="64" style="width:100%"></el-input>
+          <div v-else class="ro-text">{{ form.uniqueField || '—' }}</div>
+        </el-form-item>
+
+        <template v-if="form.dockingType === '开发者提供接口'">
+          <el-form-item label="对接文档" :required="isUpload">
+            <template v-if="isUpload">
               <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px">
                 <div v-for="(doc, i) in form.docs" :key="i" style="display:flex;align-items:center;gap:6px;background:#f5f7fa;padding:6px 12px;border-radius:4px">
                   <span style="font-size:13px">{{ doc.name }}</span>
@@ -5622,57 +5695,70 @@ app.component('P36Form', {
               <el-button type="primary" plain @click="addDoc">+ 上传对接文档</el-button>
               <div style="color:#909399;font-size:12px;margin-top:6px">支持格式：PDF、PPT、Word 及照片（jpg/png）</div>
             </template>
-            <template v-else>
+            <template v-else-if="isView">
               <div v-if="form.docs.length" style="display:flex;flex-wrap:wrap;gap:10px">
                 <div v-for="(doc, i) in form.docs" :key="i" style="background:#f5f7fa;padding:6px 12px;border-radius:4px">
                   <span style="font-size:13px">{{ doc.name }}</span>
                 </div>
               </div>
-              <div v-else class="ro-text">—</div>
+              <div v-else class="ro-text">待开发者上传</div>
+            </template>
+            <template v-else>
+              <div class="ro-text" style="color:#909399">对接文档由对应开发者上传，创建后开发者可在管理端上传</div>
             </template>
           </el-form-item>
-          <el-form-item label="认证key" required>
-            <el-input v-if="!isView" v-model="form.authKey" placeholder="请输入认证key（数据存储加密处理）" style="width:100%"></el-input>
+          <el-form-item label="认证key">
+            <el-input v-if="!isView && !isUpload" v-model="form.authKey" placeholder="选填，认证key（数据存储加密处理）" style="width:100%"></el-input>
             <div v-else class="ro-text">{{ form.authKey ? '••••••（已加密）' : '—' }}</div>
-            <div v-if="!isView" style="color:#909399;font-size:12px;line-height:1.5">必填；提交后该字段以加密方式存储</div>
+            <div v-if="!isView && !isUpload" style="color:#909399;font-size:12px;line-height:1.5">选填；提交后该字段以加密方式存储</div>
           </el-form-item>
           <el-form-item label="对接域名">
-            <el-input v-if="!isView" v-model="form.domain" placeholder="选填，如 https://api.example.com" style="width:100%"></el-input>
+            <el-input v-if="!isView && !isUpload" v-model="form.domain" placeholder="选填，如 https://api.example.com" style="width:100%"></el-input>
             <div v-else class="ro-text">{{ form.domain || '—' }}</div>
-            <div v-if="!isView" style="color:#909399;font-size:12px;line-height:1.5">选填；需以 http:// 或 https:// 开头</div>
+            <div v-if="!isView && !isUpload" style="color:#909399;font-size:12px;line-height:1.5">选填；需以 http:// 或 https:// 开头</div>
           </el-form-item>
         </template>
 
-        <template v-if="form.hasApi === '否'">
+        <template v-if="form.dockingType === '开发者主动推送'">
           <el-form-item label="同步数据表" required>
             <div style="width:100%">
               <div v-for="(scope, i) in form.scopes" :key="i" style="border:1px solid #e4e7ed;border-radius:6px;padding:14px 16px;margin-bottom:12px;background:#fafbfc">
                 <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:10px">
                   <el-button v-if="!isView && form.scopes.length > 1" link type="danger" size="small" @click="removeScope(i)">删除</el-button>
                 </div>
-                <el-form-item label="数据表key" required :label-width="90" style="margin-bottom:10px">
-                  <el-input v-if="!isView" v-model="scope.tableKey" placeholder="请输入数据表key" style="width:100%"></el-input>
+                <el-form-item label="数据表key" required :label-width="100" style="margin-bottom:10px">
+                  <el-select v-if="!isView" v-model="scope.tableKey" filterable placeholder="请搜索选择数据表" style="width:100%">
+                    <el-option v-for="t in tableKeyOptions" :key="t.id" :label="t.tableKey + ' — ' + t.tableName" :value="t.tableKey"></el-option>
+                  </el-select>
                   <div v-else class="ro-text">{{ scope.tableKey || '—' }}</div>
-                  <div v-if="!isView" style="color:#909399;font-size:12px;line-height:1.5">必填；数据表key 唯一标识一张数据表</div>
                 </el-form-item>
-                <el-form-item label="表json" required :label-width="90" style="margin-bottom:10px">
+                <el-form-item label="表json" required :label-width="100" style="margin-bottom:10px">
                   <template v-if="!isView">
-                    <div :id="'scope-json-editor-' + i" style="border:1px solid #dcdfe6;border-radius:4px;height:260px;width:100%"></div>
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <el-button type="primary" plain @click="openJsonDialog(i)">编辑表json</el-button>
+                      <span :style="{ color: scope.tableJson ? '#67c23a' : '#909399', fontSize: '13px' }">{{ scope.tableJson ? '已配置 ✓' : '未配置' }}</span>
+                    </div>
                   </template>
                   <div v-else class="ro-text" style="white-space:pre-wrap">{{ scope.tableJson || '—' }}</div>
                 </el-form-item>
-                <el-form-item label="输出预览（只读）" :label-width="90" style="margin-bottom:0">
+                <el-form-item label="数据表文件" :label-width="100" style="margin-bottom:0">
                   <template v-if="!isView">
-                    <pre :style="{ border:'1px solid ' + (scope.previewError ? '#f56c6c' : '#e4e7ed'), borderRadius:'4px', background: scope.previewError ? '#fef0f0' : '#fafafa', color: scope.previewError ? '#f56c6c' : '#303133', margin:0, padding:'10px 12px', minHeight:'100px', maxHeight:'220px', width:'100%', overflow:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', fontSize:'13px', lineHeight:'1.6' }">{{ scope.previewText || '（点击「格式化」按钮后将在此展示标准 JSON 格式）' }}</pre>
+                    <div v-if="scope.tableFile" style="display:flex;align-items:center;gap:6px;background:#f5f7fa;padding:6px 12px;border-radius:4px;margin-bottom:6px">
+                      <span style="font-size:13px">{{ scope.tableFile.name }}</span>
+                      <el-button link type="danger" size="small" @click="removeTableFile(i)">删除</el-button>
+                    </div>
+                    <el-button v-else type="primary" plain @click="addTableFile(i)">+ 上传数据表文件</el-button>
+                    <div style="color:#909399;font-size:12px;line-height:1.5">选填；上传后后端以文件生成表结构（支持 Excel、CSV）</div>
                   </template>
-                  <pre v-else class="ro-text" style="white-space:pre-wrap;margin:0">{{ scope.tableJson || '—' }}</pre>
+                  <div v-else class="ro-text">{{ scope.tableFile ? scope.tableFile.name : '—' }}</div>
                 </el-form-item>
               </div>
-              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加数据表key</el-button>
+              <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加数据表</el-button>
             </div>
           </el-form-item>
         </template>
 
+        <template v-if="!isUpload">
         <el-form-item label="申请理由" required>
           <el-input v-if="!isView" v-model="form.reason" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入申请理由"></el-input>
           <div v-else class="ro-text">{{ form.reason || '—' }}</div>
@@ -5686,10 +5772,12 @@ app.component('P36Form', {
           </template>
           <div v-else class="ro-text">已同意免责声明</div>
         </el-form-item>
+        </template>
       </el-form>
       <div style="text-align:center;margin-top:18px">
         <el-button @click="back">{{ isView ? '返回' : '取消' }}</el-button>
-        <el-button v-if="!isView" type="primary" @click="submit">提交申请</el-button>
+        <el-button v-if="isUpload" type="primary" @click="submit">提交文档</el-button>
+        <el-button v-else-if="!isView" type="primary" @click="submit">提交</el-button>
       </div>
     </div>
 
@@ -5700,15 +5788,31 @@ app.component('P36Form', {
         <el-button type="primary" @click="declVisible=false; form.disclaimer=true">我已阅读并同意</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog title="编辑表json" v-model="jsonDialogVisible" width="780px" :close-on-click-modal="false" destroy-on-close>
+      <template v-if="jsonDialogIndex >= 0 && form.scopes[jsonDialogIndex]">
+        <div style="margin-bottom:10px">
+          <el-button size="small" @click="formatScope(jsonDialogIndex)">格式化</el-button>
+          <el-button size="small" @click="clearScope(jsonDialogIndex)">清空</el-button>
+          <el-button size="small" @click="copyScope(jsonDialogIndex)">复制结果</el-button>
+        </div>
+        <div :id="'scope-json-editor-' + jsonDialogIndex" style="border:1px solid #dcdfe6;border-radius:4px;height:280px;width:100%"></div>
+        <div style="font-weight:600;margin:14px 0 6px">输出预览（只读）</div>
+        <pre :style="{ border:'1px solid ' + (form.scopes[jsonDialogIndex].previewError ? '#f56c6c' : '#e4e7ed'), borderRadius:'4px', background: form.scopes[jsonDialogIndex].previewError ? '#fef0f0' : '#fafafa', color: form.scopes[jsonDialogIndex].previewError ? '#f56c6c' : '#303133', margin:0, padding:'10px 12px', minHeight:'80px', maxHeight:'180px', width:'100%', overflow:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', fontSize:'13px', lineHeight:'1.6', boxSizing:'border-box' }">{{ form.scopes[jsonDialogIndex].previewText || '（点击「格式化」按钮后将在此展示标准 JSON 格式）' }}</pre>
+      </template>
+      <template #footer>
+        <el-button @click="jsonDialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="confirmJson">确定</el-button>
+      </template>
+    </el-dialog>
   </div>`,
 });
 
 /* =====================================================================
  * P36Admin 数据回流管理（桂教通超管·授权管理）
- * 与开发者数据回流（P36）共享同一份数据源 DATA_BACKFLOW：开发者提交后
- * 状态为「待审批」并出现在本列表；超管审批通过后进入「联调中」；
- * 有接口：超管「联调完成」→ 已完成；无接口：开发者「联调完成」→「待确认」，
- * 超管核实联调成功后「联调确认」→ 已完成。
+ * 超管发起数据回流，开发者响应。状态机：
+ *   对接方式="开发者提供接口"：超管新增→待对接→开发者上传文档→联调中→超管联调完成→已完成
+ *   对接方式="开发者主动推送"：超管新增→联调中→超管联调完成→已完成
  * ===================================================================== */
 app.component('P36Admin', {
   props: ['ctx'],
@@ -5717,7 +5821,6 @@ app.component('P36Admin', {
       filteredPage: 1, filteredSize: 10,
       rows: DATA_BACKFLOW.map(x => ({ ...x })),
       q: { name: '', devName: '', syncStatus: '' },
-      audit: { visible: false, row: null, opinion: '通过', note: '' },
       preview: { visible: false, doc: null },
     };
   },
@@ -5732,18 +5835,6 @@ app.component('P36Admin', {
   },
   methods: {
     resetQ() { this.q = { name: '', devName: '', syncStatus: '' }; },
-    openAudit(row) { this.audit = { visible: true, row, opinion: '通过', note: '' }; },
-    submitAudit() {
-      const a = this.audit;
-      if (a.opinion === '驳回' && !a.note.trim()) { this.$message.warning('驳回时请填写审批说明'); return; }
-      a.row.syncStatus = a.opinion === '通过' ? '联调中' : '已驳回';
-      a.row.approver = '王超管';
-      a.row.opinion = a.opinion;
-      a.row.opinionNote = a.note;
-      a.row.approveTime = this.nowStr();
-      this.audit.visible = false;
-      this.$message.success(a.opinion === '通过' ? '已审批通过，数据回流进入联调中' : '已驳回该申请');
-    },
     syncDone(row) {
       this.$confirm('确认将该数据回流标记为「联调完成」？', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
         .then(() => {
@@ -5751,26 +5842,18 @@ app.component('P36Admin', {
           this.$message.success('已标记联调完成');
         }).catch(() => {});
     },
-    syncConfirm(row) {
-      this.$confirm('请确认该数据回流已联调成功？确认后状态将改为「已完成」。', '提示', { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' })
-        .then(() => {
-          row.syncStatus = '已完成';
-          this.$message.success('已确认同步成功');
-        }).catch(() => {});
-    },
     previewDoc(doc) { this.preview = { visible: true, doc }; },
     scopeText(r) {
-      if (r.hasApi === '是') return '接口对接'; // 有接口的对接文档独立成列展示
+      if (r.dockingType === '开发者提供接口') return '接口对接';
       const scopes = r.scopes || [];
       if (!scopes.length) return '—';
       return scopes.map(s => (s.tableKey || '未指定数据表')).join(',');
     },
-    view(row) {
-      this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Admin' });
+    openAdd() {
+      this.$root.go('P36Form', { from: 'P36Admin' });
     },
-    nowStr() {
-      const d = new Date(), p = n => String(n).padStart(2, '0');
-      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    view(row) {
+      this.$root.go('P36Form', { id: row.id, view: true, backPage: 'P36Admin', from: 'P36Admin' });
     },
   },
   template: `
@@ -5779,28 +5862,30 @@ app.component('P36Admin', {
       <span class="q-label">名称</span><el-input v-model="q.name" placeholder="请输入" clearable style="width:180px"></el-input>
       <span class="q-label">开发者名称</span><el-input v-model="q.devName" placeholder="请输入" clearable style="width:180px"></el-input>
       <span class="q-label">联调状态</span><el-select v-model="q.syncStatus" placeholder="请选择" clearable style="width:130px">
-        <el-option label="待审批" value="待审批"></el-option>
+        <el-option label="待对接" value="待对接"></el-option>
         <el-option label="联调中" value="联调中"></el-option>
-        <el-option label="待确认" value="待确认"></el-option>
         <el-option label="已完成" value="已完成"></el-option>
       </el-select>
       <el-button @click="resetQ">重置</el-button>
       <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增</el-button>
     </div>
     <div class="card">
       <el-table :data="pageSlice(filtered, 'filtered')" stripe style="width:100%">
         <el-table-column prop="name" label="名称" min-width="140"></el-table-column>
         <el-table-column prop="appName" label="应用名称" min-width="150"></el-table-column>
         <el-table-column prop="devName" label="开发者名称" min-width="180"></el-table-column>
-        <el-table-column prop="hasApi" label="是否有接口" width="100" align="center"></el-table-column>
+        <el-table-column prop="dockingType" label="对接方式" width="140" align="center"></el-table-column>
+        <el-table-column prop="pushMethod" label="推送方式" width="100" align="center"></el-table-column>
         <el-table-column label="数据表" min-width="200"><template #default="{row}"><span>{{ scopeText(row) }}</span></template></el-table-column>
         <el-table-column label="对接文档" min-width="160">
           <template #default="{row}">
-            <template v-if="row.hasApi === '是'">
+            <template v-if="row.dockingType === '开发者提供接口' && (row.docs||[]).length">
               <div v-for="(d,i) in (row.docs||[])" :key="i">
                 <el-link type="primary" @click="previewDoc(d)">{{ d.name }}</el-link>
               </div>
             </template>
+            <span v-else-if="row.dockingType === '开发者提供接口'">待开发者上传</span>
             <span v-else>—</span>
           </template>
         </el-table-column>
@@ -5808,38 +5893,15 @@ app.component('P36Admin', {
           <template #default="{row}"><st-tag :v="row.syncStatus"></st-tag></template>
         </el-table-column>
         <el-table-column prop="applyTime" label="申请时间" width="150"></el-table-column>
-        <el-table-column label="操作" width="180" align="center" fixed="right">
+        <el-table-column label="操作" width="140" align="center" fixed="right">
           <template #default="{row}">
-            <el-button v-if="row.syncStatus === '待审批'" link type="primary" @click="openAudit(row)">审批</el-button>
-            <el-button v-if="row.syncStatus === '联调中' && row.hasApi === '是'" link type="primary" @click="syncDone(row)">联调完成</el-button>
-            <el-button v-if="row.syncStatus === '待确认'" link type="primary" @click="syncConfirm(row)">联调确认</el-button>
+            <el-button v-if="row.syncStatus === '联调中'" link type="primary" @click="syncDone(row)">联调完成</el-button>
             <el-button link type="primary" @click="view(row)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
       <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="filtered.length" :page-size="filteredSize" :current-page="filteredPage" @current-change="filteredPage=$event"></el-pagination>
     </div>
-
-    <el-dialog title="审批数据回流申请" v-model="audit.visible" width="520px">
-      <el-form label-width="90px" label-position="left">
-        <el-form-item label="申请名称"><span>{{ audit.row && audit.row.name }}</span></el-form-item>
-        <el-form-item label="开发者名称"><span>{{ audit.row && audit.row.devName }}</span></el-form-item>
-        <el-form-item label="是否有接口"><span>{{ audit.row && audit.row.hasApi }}</span></el-form-item>
-        <el-form-item label="审批结果">
-          <el-radio-group v-model="audit.opinion">
-            <el-radio label="通过">通过</el-radio>
-            <el-radio label="驳回">驳回</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="审批说明">
-          <el-input v-model="audit.note" type="textarea" :rows="3" placeholder="驳回时必填，通过时可留空"></el-input>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="audit.visible=false">取消</el-button>
-        <el-button type="primary" @click="submitAudit">确认</el-button>
-      </template>
-    </el-dialog>
 
     <el-dialog title="对接文档预览" v-model="preview.visible" width="640px">
       <div v-if="preview.doc" style="text-align:center">
@@ -5848,6 +5910,142 @@ app.component('P36Admin', {
       </div>
       <template #footer>
         <el-button @click="preview.visible=false">关闭</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P37 数据表管理（桂教通超管·授权管理）
+ * 管理对接的业务场景数据表key与数据库表名称映射，为数据回流下拉选择提供数据源。
+ * ===================================================================== */
+app.component('P37', {
+  props: ['ctx'],
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: [...DATA_TABLES],
+      q: { tableKey: '', tableName: '' },
+      formVisible: false,
+      formTitle: '新增数据表',
+      form: { id: null, tableKey: '', tableName: '', desc: '' },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.tableKey || r.tableKey.includes(this.q.tableKey)) &&
+        (!this.q.tableName || r.tableName.includes(this.q.tableName))
+      );
+    },
+    usedTableKeys() {
+      const keys = new Set();
+      DATA_BACKFLOW.forEach(bf => { (bf.scopes || []).forEach(s => { if (s.tableKey) keys.add(s.tableKey); }); });
+      return keys;
+    },
+  },
+  methods: {
+    resetQ() { this.q = { tableKey: '', tableName: '' }; },
+    isProtected(row) { return row.status === '启用' || this.usedTableKeys.has(row.tableKey); },
+    openAdd() {
+      this.form = { id: null, tableKey: '', tableName: '', desc: '' };
+      this.formTitle = '新增数据表';
+      this.formVisible = true;
+    },
+    openEdit(row) {
+      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, desc: row.desc || '' };
+      this.formTitle = '编辑数据表';
+      this.formVisible = true;
+    },
+    saveForm() {
+      if (!this.form.tableKey.trim()) return ElMessage.warning('请输入数据表key');
+      if (!this.form.tableName.trim()) return ElMessage.warning('请输入数据库表名称');
+      if (this.form.id) {
+        const row = this.rows.find(r => r.id === this.form.id);
+        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim() }); }
+        const src = DATA_TABLES.find(r => r.id === this.form.id);
+        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim() }); }
+        ElMessage.success('编辑成功');
+      } else {
+        if (DATA_TABLES.some(r => r.tableKey === this.form.tableKey.trim())) return ElMessage.warning('数据表key已存在');
+        const newId = DATA_TABLES.length ? Math.max(...DATA_TABLES.map(r => r.id)) + 1 : 1;
+        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
+        DATA_TABLES.unshift(rec);
+        this.rows.unshift(rec);
+        ElMessage.success('新增成功');
+      }
+      this.formVisible = false;
+    },
+    toggleStatus(row) {
+      const next = row.status === '启用' ? '停用' : '启用';
+      const msg = next === '停用' ? '停用后新增的数据回流将不可选择该数据表，已有数据不受影响。确定停用？' : '确定启用数据表「' + row.tableKey + '」？';
+      ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
+        row.status = next;
+        const src = DATA_TABLES.find(r => r.id === row.id);
+        if (src) src.status = next;
+        ElMessage.success(next + '成功');
+      }).catch(() => {});
+    },
+    deleteRow(row) {
+      if (this.isProtected(row)) {
+        const reasons = [];
+        if (row.status === '启用') reasons.push('当前为启用状态');
+        if (this.usedTableKeys.has(row.tableKey)) reasons.push('已被数据回流使用');
+        return ElMessage.warning('该数据表不可删除：' + reasons.join('，'));
+      }
+      ElMessageBox.confirm('确定删除数据表「' + row.tableKey + '」？删除后不可恢复。', '删除确认', { type: 'warning' }).then(() => {
+        const idx = DATA_TABLES.findIndex(r => r.id === row.id);
+        if (idx !== -1) DATA_TABLES.splice(idx, 1);
+        const idx2 = this.rows.findIndex(r => r.id === row.id);
+        if (idx2 !== -1) this.rows.splice(idx2, 1);
+        ElMessage.success('删除成功');
+      }).catch(() => {});
+    },
+  },
+  template: `<div>
+    <div class="toolbar">
+      <el-input v-model="q.tableKey" placeholder="数据表key" clearable style="width:180px" />
+      <el-input v-model="q.tableName" placeholder="数据库表名称" clearable style="width:180px;margin-left:8px" />
+      <el-button type="primary" style="margin-left:8px">查询</el-button>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="tableKey" label="数据表key" min-width="160" />
+        <el-table-column prop="tableName" label="数据库表名称" min-width="160" />
+        <el-table-column prop="desc" label="业务场景说明" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" width="80" align="center">
+          <template #default="{row}"><st-tag :v="row.status" /></template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="170" />
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{row}">
+            <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
+            <el-button :type="row.status==='启用'?'warning':'success'" link @click="toggleStatus(row)">{{ row.status==='启用'?'停用':'启用' }}</el-button>
+            <el-button type="danger" link :disabled="isProtected(row)" @click="deleteRow(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end" />
+    </div>
+    <el-dialog v-model="formVisible" :title="formTitle" width="500px" :close-on-click-modal="false">
+      <el-form label-width="120px">
+        <el-form-item label="数据表key" required>
+          <el-input v-model="form.tableKey" placeholder="请输入数据表key" maxlength="64" :disabled="!!form.id" />
+        </el-form-item>
+        <el-form-item label="数据库表名称" required>
+          <el-input v-model="form.tableName" placeholder="请输入数据库表名称" maxlength="100" />
+        </el-form-item>
+        <el-form-item label="业务场景说明">
+          <el-input v-model="form.desc" type="textarea" :rows="3" placeholder="请输入业务场景说明（选填）" maxlength="200" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="formVisible=false">取消</el-button>
+        <el-button type="primary" @click="saveForm">确定</el-button>
       </template>
     </el-dialog>
   </div>`,
@@ -5864,19 +6062,19 @@ function buildBackflowDetailRows(list) {
   const out = [];
   let vi = 0;
   list.forEach(r => {
-    if (r.hasApi === '是') {
+    if (r.dockingType === '开发者提供接口') {
       out.push({
         key: r.id + '_api', id: r.id, devName: r.devName, appName: r.appName,
-        tableKey: '—', tableName: '—', tableJson: '', hasApi: '是', apiName: '平台接口回流（对接文档）', docs: r.docs || [],
-        volume: ((vi++ + 3) * 412).toLocaleString() + ' 条',
+        tableKey: '—', tableName: '—', tableJson: '', dockingType: '开发者提供接口', pushMethod: r.pushMethod || '', apiName: '平台接口回流（对接文档）', docs: r.docs || [],
+        uniqueField: '', volume: ((vi++ + 3) * 412).toLocaleString() + ' 条',
         status: r.status || '成功', failReason: r.failReason || '', syncTime: r.syncTime || '',
       });
     } else {
       (r.scopes || []).forEach((s, idx) => {
         out.push({
           key: r.id + '_scope_' + idx, id: r.id, devName: r.devName, appName: r.appName,
-          tableKey: s.tableKey || '—', tableName: '—', tableJson: s.tableJson || '', hasApi: '否', apiName: s.tableKey || '—', docs: [],
-          volume: ((vi++ + 7) * 268).toLocaleString() + ' 条',
+          tableKey: s.tableKey || '—', tableName: '—', tableJson: s.tableJson || '', dockingType: '开发者主动推送', pushMethod: r.pushMethod || '', apiName: s.tableKey || '—', docs: [],
+          uniqueField: r.uniqueField || '', volume: ((vi++ + 7) * 268).toLocaleString() + ' 条',
           status: s.status || '成功', failReason: s.failReason || '', syncTime: s.syncTime || '',
         });
       });
@@ -5914,7 +6112,8 @@ app.component('P36DetailView', {
       <el-row :gutter="20">
         <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.devName || '—' }}</div></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="应用名称"><div class="ro-text">{{ row.appName || '—' }}</div></el-form-item></el-col>
-        <el-col :span="12"><el-form-item label="回流类别"><div class="ro-text">{{ row.hasApi === '是' ? '接口回流' : '数据表回流' }}</div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="回流类别"><div class="ro-text">{{ row.dockingType === '开发者提供接口' ? '接口回流' : '数据表回流' }}</div></el-form-item></el-col>
+        <el-col :span="12"><el-form-item label="推送方式"><div class="ro-text">{{ row.pushMethod || '—' }}</div></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="同步数据量"><div class="ro-text">{{ row.volume || '—' }}</div></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="回流状态"><div><st-tag :v="row.status || '—'"></st-tag></div></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="最近同步时间"><div class="ro-text">{{ row.syncTime || '—' }}</div></el-form-item></el-col>
@@ -5922,7 +6121,7 @@ app.component('P36DetailView', {
       </el-row>
     </el-form>
 
-    <template v-if="row.hasApi === '是'">
+    <template v-if="row.dockingType === '开发者提供接口'">
       <div style="border-top:1px dashed #e4e7ed;padding-top:14px;margin-top:14px">
         <div style="font-weight:600;margin-bottom:12px">接口回流内容</div>
         <el-form label-width="130px" style="width:100%">
@@ -5944,6 +6143,7 @@ app.component('P36DetailView', {
         <div style="font-weight:600;margin-bottom:12px">数据表回流内容</div>
         <el-form label-width="130px" style="width:100%">
           <el-form-item label="数据表key"><div class="ro-text">{{ tableDisplay(row) }}</div></el-form-item>
+          <el-form-item label="唯一字段"><div class="ro-text">{{ row.uniqueField || '—' }}</div></el-form-item>
           <el-form-item label="表json">
             <div v-if="row.tableJson" class="ro-text" style="white-space:pre-wrap;background:#f5f7fa;border:1px solid #e4e7ed;border-radius:4px;padding:10px 12px;line-height:1.6">{{ row.tableJson }}</div>
             <div v-else class="ro-text">—</div>
@@ -6043,7 +6243,7 @@ app.component('P36Detail', {
         </el-table-column>
         <el-table-column label="操作" width="150" align="center" fixed="right">
           <template #default="{row}">
-            <el-button v-if="row.hasApi === '是' && row.status === '失败'" link type="primary" @click="manualSync(row)">手动同步</el-button>
+            <el-button v-if="row.dockingType === '开发者提供接口' && row.status === '失败'" link type="primary" @click="manualSync(row)">手动同步</el-button>
             <el-button link type="primary" @click="view(row)">查看</el-button>
           </template>
         </el-table-column>
