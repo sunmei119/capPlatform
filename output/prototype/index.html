@@ -215,53 +215,77 @@ const APIS = [
 ];
 
 const APP_LIST = [
-  { appId: 'app_1001', appName: '智慧校园APP',   appAttr: '生态应用', appCategory: '智慧校园', suiteKey: 'gjt_9f3a2c1e7b4d8a05', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1002', appName: '家校互动平台',   appAttr: '生态应用', appCategory: '家校共育', suiteKey: 'gjt_1c5e8a2b7d3f6a09', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1003', appName: '教务管理系统',   appAttr: '原生应用/自建应用', appCategory: '教务管理', suiteKey: 'gjt_7d2e9a1c4b8f3056', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1004', appName: '教师助手',       appAttr: '原生应用/低代码应用', appCategory: '教学工具', suiteKey: 'gjt_a4b6c8d0e2f40518', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['初中', '高中'] },
-  { appId: 'app_1005', appName: '校园支付中心',   appAttr: '原生应用/自建应用', appCategory: '校园服务', suiteKey: 'gjt_2c4e6a8b0d1f3a72', scopeOrgs: ['学校', '上级单位'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1006', appName: '校园OA系统',     appAttr: '生态应用', appCategory: '办公协同', suiteKey: 'gjt_5b7d9f1c3e5a7b94', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1007', appName: '数据可视化平台', appAttr: '原生应用/低代码应用', appCategory: '数据分析', suiteKey: 'gjt_8a0c2e4f6b8d0a26', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1008', appName: '智慧食堂系统',   appAttr: '原生应用/自建应用', appCategory: '校园服务', suiteKey: 'gjt_3d5f7a9c1b3e5d80', scopeOrgs: ['学校', '上级单位'], scopeGradeMode: 'part', grades: ['小学', '初中'] },
-  { appId: 'app_1009', appName: '家校通',         appAttr: '生态应用', appCategory: '家校共育', suiteKey: 'gjt_6a8c0e2f4d6b8a03', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1010', appName: '校园安防平台',   appAttr: '原生应用/自建应用', appCategory: '校园安全', suiteKey: 'gjt_9b1d3f5a7c9e1f42', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
-  { appId: 'app_1011', appName: '在线备课系统',   appAttr: '原生应用/低代码应用', appCategory: '教学工具', suiteKey: 'gjt_4c6e8a0b2d4f6a91', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['小学', '初中', '高中'] },
-  { appId: 'app_1012', appName: '学生成长档案',   appAttr: '生态应用', appCategory: '学生发展', suiteKey: 'gjt_7a9b1c3d5e7f8b60', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
+  { appId: '1001', appName: '课堂互动助手',   appAttr: '原生应用 / 低代码应用', appCategory: '教学管理', suiteKey: 'gjt_9f3a2c1e7b4d8a05', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
+  { appId: '1002', appName: '校园通',         appAttr: '生态应用', appCategory: '校园办公', suiteKey: 'gjt_1c5e8a2b7d3f6a09', scopeOrgs: ['学校', '上级单位'], scopeGradeMode: 'all', grades: [] },
+  { appId: '1003', appName: '英语听说训练',   appAttr: '原生应用 / 自建应用', appCategory: '教学管理', suiteKey: 'gjt_7d2e9a1c4b8f3056', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['初中', '高中'] },
+  { appId: '1004', appName: '图书管理',       appAttr: '生态应用', appCategory: '教务管理', suiteKey: 'gjt_a4b6c8d0e2f40518', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
+  { appId: '1005', appName: '排课系统',       appAttr: '原生应用 / 低代码应用', appCategory: '教学管理', suiteKey: 'gjt_2c4e6a8b0d1f3a72', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['小学', '初中'] },
+  { appId: '1006', appName: '成绩分析',       appAttr: '原生应用 / 自建应用', appCategory: '教务管理', suiteKey: 'gjt_5b7d9f1c3e5a7b94', scopeOrgs: ['学校', '上级单位'], scopeGradeMode: 'part', grades: ['初中', '高中'] },
+  { appId: '1007', appName: '校园OA',         appAttr: '生态应用', appCategory: '校园办公', suiteKey: 'gjt_8a0c2e4f6b8d0a26', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
+  { appId: '1008', appName: '家校互动',       appAttr: '原生应用 / 自建应用', appCategory: '校园办公', suiteKey: 'gjt_3d5f7a9c1b3e5d80', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['小学', '初中'] },
+  { appId: '1009', appName: '选课系统',       appAttr: '生态应用', appCategory: '教务管理', suiteKey: 'gjt_6a8c0e2f4d6b8a03', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['高中'] },
+  { appId: '1010', appName: '电子钢琴',       appAttr: '原生应用 / 自建应用', appCategory: '教学管理', suiteKey: 'gjt_9b1d3f5a7c9e1f42', scopeOrgs: ['学校'], scopeGradeMode: 'all', grades: [] },
+  { appId: '1011', appName: '作业批改',       appAttr: '原生应用 / 自建应用', appCategory: '教学管理', suiteKey: 'gjt_4c6e8a0b2d4f6a91', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['小学', '初中', '高中'] },
+  { appId: '1012', appName: '阅读打卡',       appAttr: '原生应用 / 自建应用', appCategory: '教学管理', suiteKey: 'gjt_7a9b1c3d5e7f8b60', scopeOrgs: ['学校'], scopeGradeMode: 'part', grades: ['小学'] },
 ];
 
 // 开发者已申请且通过审核的应用（P21 开发者申请 API 时可选）
 const DEV_PASSED_APPS = [
-  { appId: 'app_1001', appName: '智慧校园APP' },
-  { appId: 'app_1003', appName: '教务管理系统' },
-  { appId: 'app_1005', appName: '校园支付中心' },
-  { appId: 'app_1009', appName: '家校通' },
+  { appId: '1001', appName: '课堂互动助手' },
+  { appId: '1002', appName: '校园通' },
+  { appId: '1003', appName: '英语听说训练' },
+  { appId: '1005', appName: '排课系统' },
+  { appId: '1006', appName: '成绩分析' },
+  { appId: '1007', appName: '校园OA' },
+  { appId: '1008', appName: '家校互动' },
+  { appId: '1010', appName: '电子钢琴' },
+  { appId: '1011', appName: '作业批改' },
+  { appId: '1012', appName: '阅读打卡' },
 ];
 
 const API_APPS = [
-  { id: 1, appId: 'app_1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-07-20', reason: '用于家校互通的学生基础信息展示', whiteList: ['https://api.zhike.edu.cn', 'http://dev.zhike.edu.cn'], maxCalls: 10000, rangeTypes: ['教育局'], orgs: '南宁市教育局', includeSub: '是', deadline: '2029-07-19',
+  { id: 1, appId: '1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-07-20', reason: '用于家校互通的学生基础信息展示', whiteList: ['https://api.zhike.edu.cn', 'http://dev.zhike.edu.cn'], maxCalls: 10000, rangeTypes: ['教育局'], orgs: '南宁市教育局', includeSub: '是', deadline: '2029-07-19',
     apis: [ { name: '学生信息查询接口', service: 'student_info_query', apiType: '桂教通平台', type: '敏感接口', category: '基础服务', maxCalls: 10000 } ] },
-  { id: 2, appId: 'app_1002', vendor: '广西云启', status: '未审批', applyTime: '2026-07-21', reason: '同步课程数据到校内教学平台', whiteList: ['https://open.gxyunqi.com'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第二中学', includeSub: '否', deadline: '2029-07-20',
-    apis: [ { name: '课程同步接口', service: 'course_sync', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务', maxCalls: 10000 } ] },
-  { id: 3, appId: 'app_1003', vendor: '北海海创', status: '已审批', opinion: '通过', approver: '王超管', approveTime: '2026-07-18', authKey: 'gjt_7d2e9a1c4b8f3056', credFiles: [{ name: '授权凭证-1.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-1' }, { name: '授权凭证-2.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-2' }], applyTime: '2026-07-15', reason: '成绩数据上报到局端', whiteList: ['https://bhhaichuang.com'], maxCalls: 50000, rangeTypes: ['教育局'], orgs: '北海市教育局', includeSub: '是', deadline: '2029-07-14',
+  { id: 6, appId: '1001', vendor: '南宁智课教育', status: '已审批', opinion: '通过', approver: '南宁市教育局管理员', approveTime: '2026-06-25', applyTime: '2026-06-18', reason: '考勤数据同步至校园平台', whiteList: ['https://api.zhike.edu.cn'], maxCalls: 20000, rangeTypes: ['学校', '教育局'], orgs: '南宁市第二中学;南宁市教育局', includeSub: '是', deadline: '2029-06-17',
+    apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务', maxCalls: 20000 } ] },
+  { id: 7, appId: '1001', vendor: '南宁智课教育', status: '已审批', opinion: '不通过', opinionNote: '授权范围涉及敏感数据，需提供更详细的使用说明', approver: '南宁市教育局管理员', approveTime: '2026-05-15', applyTime: '2026-05-10', reason: '获取全区成绩数据用于分析', whiteList: ['https://api.zhike.edu.cn'], maxCalls: 50000, rangeTypes: ['教育局'], orgs: '南宁市教育局;桂林市教育局', includeSub: '是', deadline: '2029-05-09',
     apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务', maxCalls: 50000 } ] },
-  { id: 4, appId: 'app_1004', vendor: '个人开发者 王磊', status: '已审批', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-07-19', applyTime: '2026-07-12', reason: '需要考勤数据', whiteList: ['http://wanglei.dev.cn'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第三中学', includeSub: '否', deadline: '2029-07-11',
+  { id: 2, appId: '1002', vendor: '广西云启', status: '未审批', applyTime: '2026-07-21', reason: '同步课程数据到校内教学平台', whiteList: ['https://open.gxyunqi.com'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第二中学', includeSub: '否', deadline: '2029-07-20',
+    apis: [ { name: '课程同步接口', service: 'course_sync', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务', maxCalls: 10000 } ] },
+  { id: 3, appId: '1003', vendor: '北海海创', status: '已审批', opinion: '通过', approver: '王超管', approveTime: '2026-07-18', authKey: 'gjt_7d2e9a1c4b8f3056', credFiles: [{ name: '授权凭证-1.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-1' }, { name: '授权凭证-2.jpg', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=%E6%8E%88%E6%9D%83%E5%87%AD%E8%AF%81-2' }], applyTime: '2026-07-15', reason: '成绩数据上报到局端', whiteList: ['https://bhhaichuang.com'], maxCalls: 50000, rangeTypes: ['教育局'], orgs: '北海市教育局', includeSub: '是', deadline: '2029-07-14',
+    apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务', maxCalls: 50000 } ] },
+  { id: 4, appId: '1005', vendor: '个人开发者 王磊', status: '已审批', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-07-19', applyTime: '2026-07-12', reason: '需要考勤数据', whiteList: ['http://wanglei.dev.cn'], maxCalls: 10000, rangeTypes: ['学校'], orgs: '南宁市第三中学', includeSub: '否', deadline: '2029-07-11',
     apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '第三方平台', type: '非敏感接口', category: '业务服务', maxCalls: 10000 } ] },
-  { id: 5, appId: 'app_1003', vendor: '北海海创', status: '未审批', applyTime: '2026-07-22', reason: '成绩与考勤数据统一管理上报', whiteList: ['https://bhhaichuang.com'], maxCalls: 80000, rangeTypes: ['学校', '教育局'], orgs: '北海市第一中学;北海市教育局', includeSub: '是', deadline: '2029-07-21',
+  { id: 5, appId: '1003', vendor: '北海海创', status: '未审批', applyTime: '2026-07-22', reason: '成绩与考勤数据统一管理上报', whiteList: ['https://bhhaichuang.com'], maxCalls: 80000, rangeTypes: ['学校', '教育局'], orgs: '北海市第一中学;北海市教育局', includeSub: '是', deadline: '2029-07-21',
     apis: [
       { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务', maxCalls: 50000 },
       { name: '考勤数据接口', service: 'attendance', apiType: '第三方平台', type: '非敏感接口', category: '业务服务', maxCalls: 30000 },
     ] },
+  { id: 8, appId: '1007', vendor: '南宁智课教育', status: '已审批', opinion: '通过', approver: '南宁市教育局管理员', approveTime: '2026-08-20', applyTime: '2026-08-15', reason: '校园OA同步教职工考勤数据', whiteList: ['https://oa.edu.com'], maxCalls: 30000, rangeTypes: ['学校'], orgs: '南宁市第七中学;南宁市第十四中学', includeSub: '否', deadline: '2029-08-14',
+    apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务', maxCalls: 30000 } ] },
+  { id: 9, appId: '1011', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-09-01', reason: '作业批改系统需获取学生成绩数据进行分析', whiteList: ['https://zy.edu.com'], maxCalls: 40000, rangeTypes: ['学校'], orgs: '南宁市第二中学;南宁市育才小学', includeSub: '是', deadline: '2029-08-31',
+    apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务', maxCalls: 40000 } ] },
 ];
 
 // 接口申请记录（开发者从应用管理「接口申请」提交，桂教通超管审批；通过后可发起数据授权申请）
 const API_REQS = [
-  { id: 101, appId: 'app_1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-08-16', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-08-15',
+  { id: 101, appId: '1001', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-08-16', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-08-15',
     apis: [ { name: '学生信息查询接口', service: 'student_info_query', apiType: '桂教通平台', type: '敏感接口', category: '基础服务' } ] },
-  { id: 102, appId: 'app_1002', vendor: '广西云启', status: '未审批', applyTime: '2026-08-17', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-08-16',
+  { id: 105, appId: '1001', vendor: '南宁智课教育', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可发起数据授权申请', approver: '王超管', approveTime: '2026-07-10 09:15', applyTime: '2026-07-05', deadline: '2029-07-04',
+    apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务' }, { name: '教学计划接口', service: 'teaching_plan', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务' } ] },
+  { id: 106, appId: '1001', vendor: '南宁智课教育', status: '已驳回', opinion: '不通过', opinionNote: '接口申请范围过大，请拆分后重新提交', approver: '王超管', approveTime: '2026-06-20 14:30', applyTime: '2026-06-15', deadline: '2029-06-14',
+    apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务' }, { name: '学籍变更接口', service: 'enrollment_change', apiType: '桂教通平台', type: '敏感接口', category: '基础服务' } ] },
+  { id: 102, appId: '1002', vendor: '广西云启', status: '未审批', applyTime: '2026-08-17', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-08-16',
     apis: [ { name: '课程同步接口', service: 'course_sync', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务' } ] },
-  { id: 103, appId: 'app_1003', vendor: '北海海创', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可对该应用发起数据授权申请', approver: '李超管', approveTime: '2026-08-14 15:30', applyTime: '2026-08-12', deadline: '2029-08-11',
+  { id: 103, appId: '1003', vendor: '北海海创', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可对该应用发起数据授权申请', approver: '李超管', approveTime: '2026-08-14 15:30', applyTime: '2026-08-12', deadline: '2029-08-11',
     apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务' } ] },
-  { id: 104, appId: 'app_1004', vendor: '个人开发者 王磊', status: '已驳回', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-08-13 10:20', applyTime: '2026-08-10', deadline: '2029-08-09',
+  { id: 107, appId: '1004', vendor: '南宁智课教育', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可发起数据授权申请', approver: '李超管', approveTime: '2026-08-05 11:00', applyTime: '2026-08-01', deadline: '2029-07-31',
+    apis: [ { name: '学生信息查询接口', service: 'student_info_query', apiType: '桂教通平台', type: '敏感接口', category: '基础服务' } ] },
+  { id: 108, appId: '1007', vendor: '南宁智课教育', status: '已审批', opinion: '通过', opinionNote: '接口申请通过，可发起数据授权申请', approver: '王超管', approveTime: '2026-08-12 14:00', applyTime: '2026-08-08', deadline: '2029-08-07',
+    apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务' }, { name: '教学计划接口', service: 'teaching_plan', apiType: '桂教通平台', type: '非敏感接口', category: '业务服务' } ] },
+  { id: 109, appId: '1011', vendor: '南宁智课教育', status: '未审批', applyTime: '2026-09-02', opinion: '', opinionNote: '', approver: '', approveTime: '', deadline: '2029-09-01',
+    apis: [ { name: '成绩上报接口', service: 'score_report', apiType: '桂教通平台', type: '敏感接口', category: '数据服务' } ] },
+  { id: 104, appId: '1005', vendor: '个人开发者 王磊', status: '已驳回', opinion: '不通过', opinionNote: '申请理由不充分，请补充后重新提交', approver: '李超管', approveTime: '2026-08-13 10:20', applyTime: '2026-08-10', deadline: '2029-08-09',
     apis: [ { name: '考勤数据接口', service: 'attendance', apiType: '第三方平台', type: '非敏感接口', category: '业务服务' } ] },
 ];
 
@@ -277,44 +301,44 @@ const _stamp = (back, hm) => {
 };
 const CALL_RECORDS = [
   // —— 今天（默认时间区间即能展示）——
-  { id: 1,  time: _stamp(0, '00:03:12'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 74 },
-  { id: 2,  time: _stamp(0, '00:18:40'), apiName: '课程同步接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 128 },
-  { id: 3,  time: _stamp(0, '01:05:27'), apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 69 },
-  { id: 4,  time: _stamp(0, '01:33:58'), apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 58 },
-  { id: 5,  time: _stamp(0, '02:12:05'), apiName: '教学计划接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 92 },
-  { id: 6,  time: _stamp(0, '02:48:33'), apiName: '学生信息查询接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 63 },
-  { id: 7,  time: _stamp(0, '03:21:16'), apiName: '成绩上报接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '失败', code: '500', cost: 14 },
-  { id: 8,  time: _stamp(0, '03:54:09'), apiName: '课程同步接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 141 },
-  { id: 9,  time: _stamp(0, '04:26:51'), apiName: '考勤数据接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 49 },
-  { id: 10, time: _stamp(0, '05:09:33'), apiName: '学生信息查询接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 81 },
-  { id: 11, time: _stamp(0, '06:15:47'), apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 97 },
-  { id: 12, time: _stamp(0, '06:58:20'), apiName: '课程同步接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 110 },
-  { id: 13, time: _stamp(0, '07:34:12'), apiName: '成绩上报接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 76 },
-  { id: 14, time: _stamp(0, '08:12:35'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 86 },
-  { id: 15, time: _stamp(0, '08:15:02'), apiName: '课程同步接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 132 },
-  { id: 16, time: _stamp(0, '08:20:41'), apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '失败', code: '500', cost: 12 },
-  { id: 17, time: _stamp(0, '08:33:18'), apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 64 },
-  { id: 18, time: _stamp(0, '09:41:55'), apiName: '教学计划接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 98 },
-  { id: 19, time: _stamp(0, '09:47:09'), apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 73 },
-  { id: 20, time: _stamp(0, '10:52:27'), apiName: '学生信息查询接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 51 },
-  { id: 21, time: _stamp(0, '11:03:44'), apiName: '考勤数据接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '失败', code: '401', cost: 9 },
-  { id: 22, time: _stamp(0, '13:15:36'), apiName: '课程同步接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 145 },
-  { id: 23, time: _stamp(0, '14:28:03'), apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 88 },
-  { id: 24, time: _stamp(0, '15:36:21'), apiName: '成绩上报接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 67 },
-  { id: 25, time: _stamp(0, '16:44:58'), apiName: '学生信息查询接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '成功', code: '200', cost: 54 },
-  { id: 26, time: _stamp(0, '18:07:29'), apiName: '成绩上报接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '失败', code: '403', cost: 11 },
-  { id: 27, time: _stamp(0, '19:22:15'), apiName: '课程同步接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 137 },
-  { id: 28, time: _stamp(0, '21:05:44'), apiName: '学生信息查询接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 72 },
+  { id: 1,  time: _stamp(0, '00:03:12'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 74 },
+  { id: 2,  time: _stamp(0, '00:18:40'), apiName: '课程同步接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 128 },
+  { id: 3,  time: _stamp(0, '01:05:27'), apiName: '成绩上报接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 69 },
+  { id: 4,  time: _stamp(0, '01:33:58'), apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 58 },
+  { id: 5,  time: _stamp(0, '02:12:05'), apiName: '教学计划接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 92 },
+  { id: 6,  time: _stamp(0, '02:48:33'), apiName: '学生信息查询接口', vendor: '个人开发者 王磊', appName: '图书管理', appId: '1004', result: '成功', code: '200', cost: 63 },
+  { id: 7,  time: _stamp(0, '03:21:16'), apiName: '成绩上报接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '失败', code: '500', cost: 14 },
+  { id: 8,  time: _stamp(0, '03:54:09'), apiName: '课程同步接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 141 },
+  { id: 9,  time: _stamp(0, '04:26:51'), apiName: '考勤数据接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 49 },
+  { id: 10, time: _stamp(0, '05:09:33'), apiName: '学生信息查询接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 81 },
+  { id: 11, time: _stamp(0, '06:15:47'), apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '图书管理', appId: '1004', result: '成功', code: '200', cost: 97 },
+  { id: 12, time: _stamp(0, '06:58:20'), apiName: '课程同步接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 110 },
+  { id: 13, time: _stamp(0, '07:34:12'), apiName: '成绩上报接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 76 },
+  { id: 14, time: _stamp(0, '08:12:35'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 86 },
+  { id: 15, time: _stamp(0, '08:15:02'), apiName: '课程同步接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 132 },
+  { id: 16, time: _stamp(0, '08:20:41'), apiName: '成绩上报接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '失败', code: '500', cost: 12 },
+  { id: 17, time: _stamp(0, '08:33:18'), apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 64 },
+  { id: 18, time: _stamp(0, '09:41:55'), apiName: '教学计划接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 98 },
+  { id: 19, time: _stamp(0, '09:47:09'), apiName: '成绩上报接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 73 },
+  { id: 20, time: _stamp(0, '10:52:27'), apiName: '学生信息查询接口', vendor: '个人开发者 王磊', appName: '图书管理', appId: '1004', result: '成功', code: '200', cost: 51 },
+  { id: 21, time: _stamp(0, '11:03:44'), apiName: '考勤数据接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '失败', code: '401', cost: 9 },
+  { id: 22, time: _stamp(0, '13:15:36'), apiName: '课程同步接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 145 },
+  { id: 23, time: _stamp(0, '14:28:03'), apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '图书管理', appId: '1004', result: '成功', code: '200', cost: 88 },
+  { id: 24, time: _stamp(0, '15:36:21'), apiName: '成绩上报接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 67 },
+  { id: 25, time: _stamp(0, '16:44:58'), apiName: '学生信息查询接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '成功', code: '200', cost: 54 },
+  { id: 26, time: _stamp(0, '18:07:29'), apiName: '成绩上报接口', vendor: '个人开发者 王磊', appName: '图书管理', appId: '1004', result: '失败', code: '403', cost: 11 },
+  { id: 27, time: _stamp(0, '19:22:15'), apiName: '课程同步接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 137 },
+  { id: 28, time: _stamp(0, '21:05:44'), apiName: '学生信息查询接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 72 },
   // —— 昨日 ——
-  { id: 29, time: _stamp(1, '09:10:11'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 77 },
-  { id: 30, time: _stamp(1, '10:25:33'), apiName: '课程同步接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 120 },
-  { id: 31, time: _stamp(1, '14:02:48'), apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '失败', code: '500', cost: 15 },
-  { id: 32, time: _stamp(1, '16:18:09'), apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 60 },
-  { id: 33, time: _stamp(1, '19:36:52'), apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '教师助手', appId: 'app_1004', result: '成功', code: '200', cost: 90 },
+  { id: 29, time: _stamp(1, '09:10:11'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 77 },
+  { id: 30, time: _stamp(1, '10:25:33'), apiName: '课程同步接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 120 },
+  { id: 31, time: _stamp(1, '14:02:48'), apiName: '成绩上报接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '失败', code: '500', cost: 15 },
+  { id: 32, time: _stamp(1, '16:18:09'), apiName: '考勤数据接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 60 },
+  { id: 33, time: _stamp(1, '19:36:52'), apiName: '教学计划接口', vendor: '个人开发者 王磊', appName: '图书管理', appId: '1004', result: '成功', code: '200', cost: 90 },
   // —— 前日 ——
-  { id: 34, time: _stamp(2, '08:40:03'), apiName: '课程同步接口', vendor: '广西云启', appName: '家校互动平台', appId: 'app_1002', result: '成功', code: '200', cost: 118 },
-  { id: 35, time: _stamp(2, '11:12:26'), apiName: '成绩上报接口', vendor: '北海海创', appName: '教务管理系统', appId: 'app_1003', result: '失败', code: '500', cost: 13 },
-  { id: 36, time: _stamp(2, '15:07:48'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '智慧校园APP', appId: 'app_1001', result: '成功', code: '200', cost: 66 },
+  { id: 34, time: _stamp(2, '08:40:03'), apiName: '课程同步接口', vendor: '广西云启', appName: '校园通', appId: '1002', result: '成功', code: '200', cost: 118 },
+  { id: 35, time: _stamp(2, '11:12:26'), apiName: '成绩上报接口', vendor: '北海海创', appName: '英语听说训练', appId: '1003', result: '失败', code: '500', cost: 13 },
+  { id: 36, time: _stamp(2, '15:07:48'), apiName: '学生信息查询接口', vendor: '南宁智课教育', appName: '课堂互动助手', appId: '1001', result: '成功', code: '200', cost: 66 },
 ];
 
 const CAPABILITY_LIST = [
@@ -367,18 +391,18 @@ const DATA_TABLES = [
 //   对接方式 = "开发者提供接口"：超管新增 → 待对接 → 开发者上传对接文档 → 联调中 → 超管联调完成 → 已完成
 //   对接方式 = "开发者主动推送"：超管新增 → 联调中 → 超管联调完成 → 已完成
 const DATA_BACKFLOW = [
-  { id: 1, name: '学生学籍回流', appId: 'app_1001', appName: '智慧校园APP', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者主动推送', pushMethod: '增量', uniqueField: 'studentId', scopes: [
+  { id: 1, name: '学生学籍回流', appId: '1001', appName: '课堂互动助手', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者主动推送', pushMethod: '增量', uniqueField: 'studentId', scopes: [
     { tableKey: 'tbl_student_base', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', tableFile: null, status: '成功', failReason: '', syncTime: '2026-08-22 16:30' },
     { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', tableFile: null, status: '失败', failReason: '数据联调失败（超时504）', syncTime: '2026-08-22 16:30' }
   ], syncStatus: '联调中', applyTime: '2026-08-20 10:00' },
-  { id: 2, name: '成绩数据回流', appId: 'app_1002', appName: '家校互动平台', devId: 2, devName: '广西云启信息科技有限公司', dockingType: '开发者主动推送', pushMethod: '全量', uniqueField: 'examId', scopes: [
+  { id: 2, name: '成绩数据回流', appId: '1002', appName: '校园通', devId: 2, devName: '广西云启信息科技有限公司', dockingType: '开发者主动推送', pushMethod: '全量', uniqueField: 'examId', scopes: [
     { tableKey: 'tbl_score', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', tableFile: null, status: '成功', failReason: '', syncTime: '2026-08-25 09:00' }
   ], syncStatus: '已完成', applyTime: '2026-08-21 14:30' },
-  { id: 3, name: '课程文档回流', appId: 'app_1001', appName: '智慧校园APP', devId: 5, devName: '北海海创科技有限公司', dockingType: '开发者提供接口', pushMethod: '全量', docs: [
+  { id: 3, name: '课程文档回流', appId: '1001', appName: '课堂互动助手', devId: 5, devName: '北海海创科技有限公司', dockingType: '开发者提供接口', pushMethod: '全量', docs: [
     { name: '对接文档.pdf', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PDF' },
     { name: '接口说明.pptx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=PPT' }
   ], authKey: 'ak_3f8e2a1b', domain: 'https://api.hctech.edu.cn', syncStatus: '已完成', applyTime: '2026-08-18 09:00' },
-  { id: 4, name: '教师考勤回流', appId: 'app_1001', appName: '智慧校园APP', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者提供接口', pushMethod: '增量', docs: [], authKey: '', domain: '', syncStatus: '待对接', applyTime: '2026-09-05 11:00' },
+  { id: 4, name: '教师考勤回流', appId: '1001', appName: '课堂互动助手', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者提供接口', pushMethod: '增量', docs: [], authKey: '', domain: '', syncStatus: '待对接', applyTime: '2026-09-05 11:00' },
 ];
 
 const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待对接':'warning', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
@@ -1913,7 +1937,7 @@ app.component('P07', {
   data() {
     const a = APIS.find(x=>x.id===(this.ctx&&this.ctx.apiId));
     const api = a || APIS[0];
-    const preAuth = ['app_1001','app_1002'];
+    const preAuth = ['1001','1002'];
     return {
       filteredRowsPage: 1, filteredRowsSize: 20, api,
       rows: APP_LIST.filter(x=>preAuth.includes(x.appId)).map(x=>({...x, checked:false, dataScope: x.scopeOrgs.join('、') + ' / ' + (x.scopeGradeMode==='all' ? '所有学段' : x.grades.join('、'))})),
@@ -2780,24 +2804,6 @@ app.component('P13', {
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>{{ r[0] }}</span><span>{{ r[1] }}</span></div>
           <el-progress :percentage="Math.round(r[1]/12*100)" :stroke-width="8" :show-text="false" color="#909399"></el-progress>
         </div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:600;margin-bottom:8px">统计口径说明</div>
-      <div style="font-size:12px;color:#606266;line-height:2">
-        <div>• 时间范围口径：今日 = 自然日 00:00-24:00；近7天 / 近30天 = 不含今日的最近 7 / 30 个自然日；自定义 = 所选起止日期（含首尾当日）。</div>
-        <div>• 存量指标（取当前实时值，不随所选时间范围变化）：接口总数、开发者总数、已授权应用数、接口分类分布、应用调用总次数、应用调用成功率。</div>
-        <div>• 期间指标（统计所选时间范围内新增/产生的数据量）：接口申请量、接口授权量、接口申请量 TOP5 榜单——「今日」取当日数据，「近7天 / 近30天」取区间累计数据，「自定义」取所选区间累计数据。</div>
-        <div>• 接口调用趋势：统计接口申请量 TOP5 接口在所选时间范围内的成功/失败调用量——「今日」取当日调用量，「近7天 / 近30天」取区间累计调用量，「自定义」取所选区间累计调用量。</div>
-        <div>• 应用维度统计（应用调用趋势 / 应用调用量 TOP5 / 应用授权接口数分布）：以"应用"为聚合维度统计调用量 TOP5 应用的成功/失败调用量、调用量榜单、各应用授权接口数；时间范围口径与接口维度一致。</div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:14px">
-      <div style="font-weight:600;margin-bottom:8px">维度统计说明</div>
-      <div style="font-size:12px;color:#606266;line-height:2">
-        <div>• <b>接口维度</b>：面向"单个接口"聚合，反映接口运行与使用情况。覆盖接口总数（含敏感/非敏感）、接口分类分布（基础服务/业务服务/数据服务）、接口申请量 TOP5（按调用量排序）、接口调用趋势（TOP5 接口成功/失败调用量）；用于识别高频与异常接口。</div>
-        <div>• <b>开发者维度</b>：面向"开发者（企业/个人）"聚合，反映供需方规模与活跃度。覆盖开发者总数（含未合作/合作中/已取消合作状态分布）、接口授权量（被授权应用数）；用于掌握生态开发者结构。</div>
-        <div>• <b>应用维度</b>：面向"授权应用"聚合，反映各应用调用表现。覆盖已授权应用数、应用调用总次数、应用调用成功率，以及应用调用趋势、应用调用量 TOP5、应用授权接口数分布；用于识别高活跃应用。</div>
       </div>
     </div>
   </div>
@@ -3950,62 +3956,34 @@ app.component('P29',{
 
     <!-- 查看模式：文本只读，一行两列布局 -->
     <div v-if="isView" style="width:100%">
-      <div class="card" style="width:100%;max-width:100%;box-sizing:border-box">
-        <div class="view-sec">基础信息</div>
-        <el-row :gutter="24">
-          <el-col :span="12"><div class="view-row"><span class="view-label">应用 Logo</span><img :src="app.logo" style="width:40px;height:40px;border-radius:4px;object-fit:cover"></div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">应用名称</span>{{ app.name }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">应用ID</span>{{ app.appId }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">所属分类</span>{{ app.category }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">是否数据同步</span>{{ app.d.dataSync ? '是' : '否' }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">打开方式</span>{{ app.d.openType.join('、') }}</div></el-col>
-          <el-col :span="24"><div class="view-row"><span class="view-label">应用简介</span>{{ app.d.desc }}</div></el-col>
-          <el-col :span="24"><div class="view-row"><span class="view-label">应用详情介绍</span><span style="white-space:pre-wrap">{{ app.d.detailText || '（未填写）' }}</span></div></el-col>
-        </el-row>
-      </div>
-      <div class="card" style="width:100%;max-width:100%;box-sizing:border-box;margin-top:20px" v-if="app.status==='审批通过'||app.status==='已完成'">
-        <div class="view-sec">接入凭证</div>
-        <el-row :gutter="24">
-          <el-col :span="12"><div class="view-row"><span class="view-label">应用ID</span>{{ app.appId }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">suiteKey</span><code style="background:#f5f7fa;padding:2px 6px;border-radius:3px;font-size:13px">{{ app.suiteKey || '（暂无）' }}</code></div></el-col>
-        </el-row>
-      </div>
+      <!-- 申请记录 -->
       <div class="card" style="width:100%;max-width:100%;box-sizing:border-box;margin-top:20px">
-        <div class="view-sec">适用范围</div>
-        <el-row :gutter="24">
-          <el-col :span="12"><div class="view-row"><span class="view-label">适用机构</span>{{ app.d.scopeOrgs.join('、') }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">适用学段</span>{{ app.d.scopeGradeMode==='all' ? '所有学段' : app.d.grades.join('、') }}</div></el-col>
-        </el-row>
+        <el-tabs v-model="activeRecordTab">
+          <el-tab-pane :label="'接口申请记录（' + apiReqRows.length + '）'" name="apiReq">
+            <el-table :data="pagedApiReq" border size="small">
+              <el-table-column label="授权接口" min-width="200"><template #default="s">{{ (s.row.apis||[]).map(a=>a.name).join('、') || '—' }}</template></el-table-column>
+              <el-table-column prop="applyTime" label="申请时间" width="130"></el-table-column>
+              <el-table-column prop="deadline" label="授权截止时间" width="130"></el-table-column>
+              <el-table-column label="审批状态" width="100" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
+            </el-table>
+            <div v-if="!apiReqRows.length" style="color:#909399;text-align:center;padding:24px 0">暂无接口申请记录</div>
+            <el-pagination v-if="apiReqRows.length > recordPageSize" layout="total, prev, pager, next" :total="apiReqRows.length" :page-size="recordPageSize" :current-page="reqPage" @current-change="reqPage=$event" style="margin-top:10px"></el-pagination>
+          </el-tab-pane>
+          <el-tab-pane :label="'授权申请记录（' + authReqRows.length + '）'" name="authReq">
+            <el-table :data="pagedAuthReq" border size="small">
+              <el-table-column prop="rangeTypes" label="同步范围类型" width="120"></el-table-column>
+              <el-table-column prop="orgName" label="机构名称" min-width="160"></el-table-column>
+              <el-table-column prop="apis" label="授权接口" min-width="180"></el-table-column>
+              <el-table-column prop="applyTime" label="申请时间" width="130"></el-table-column>
+              <el-table-column prop="deadline" label="授权截止时间" width="130"></el-table-column>
+              <el-table-column label="审批状态" width="100" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
+            </el-table>
+            <div v-if="!authReqRows.length" style="color:#909399;text-align:center;padding:24px 0">暂无授权申请记录</div>
+            <el-pagination v-if="authReqRows.length > recordPageSize" layout="total, prev, pager, next" :total="authReqRows.length" :page-size="recordPageSize" :current-page="authPage" @current-change="authPage=$event" style="margin-top:10px"></el-pagination>
+          </el-tab-pane>
+        </el-tabs>
       </div>
-      <div class="card" style="width:100%;max-width:100%;box-sizing:border-box;margin-top:20px">
-        <div class="view-sec">应用属性</div>
-        <el-row :gutter="24"><el-col :span="12"><div class="view-row"><span class="view-label">应用属性</span>{{ app.d.attr }}</div></el-col></el-row>
-      </div>
-      <div class="card" style="width:100%;max-width:100%;box-sizing:border-box;margin-top:20px">
-        <div class="view-sec">可见性配置</div>
-        <el-row :gutter="24">
-          <el-col :span="12" v-if="app.d.openType.includes('PCweb')"><div class="view-row"><span class="view-label">PC 端角色</span>{{ app.d.pcRoles.join('、') }}</div></el-col>
-          <el-col :span="12" v-if="app.d.openType.includes('PCweb')"><div class="view-row"><span class="view-label">PC 端地址</span>{{ (app.d.pcUrl&&app.d.pcUrl.domain) ? app.d.pcUrl.protocol+app.d.pcUrl.domain : (app.d.pcUrl||'—') }}</div></el-col>
-          <el-col :span="12" v-if="app.d.openType.includes('H5')"><div class="view-row"><span class="view-label">H5 角色</span>{{ app.d.h5Roles.join('、') }}</div></el-col>
-          <el-col :span="12" v-if="app.d.openType.includes('H5')"><div class="view-row"><span class="view-label">H5 地址</span>{{ (app.d.h5Url&&app.d.h5Url.domain) ? app.d.h5Url.protocol+app.d.h5Url.domain : (app.d.h5Url||'—') }}</div></el-col>
-          <el-col :span="12" v-if="app.d.openType.includes('独立小程序')"><div class="view-row"><span class="view-label">移动端角色</span>{{ app.d.miniRoles.join('、') }}</div></el-col>
-          <el-col :span="12" v-if="app.d.openType.includes('独立小程序')"><div class="view-row"><span class="view-label">移动端地址</span>{{ app.d.miniUrl }}</div></el-col>
-          <el-col :span="12" v-if="app.d.openType.includes('独立小程序')"><div class="view-row"><span class="view-label">微信 appid</span>{{ app.d.miniWxAppid || '—' }}</div></el-col>
-        </el-row>
-      </div>
-      <div class="card" style="width:100%;max-width:100%;box-sizing:border-box;margin-top:20px">
-        <div class="view-sec">审核信息</div>
-        <el-row :gutter="24">
-          <el-col :span="12"><div class="view-row"><span class="view-label">审批结果</span>
-            <el-tag v-if="app.reviewResult==='通过'" type="success" size="small">审批通过</el-tag>
-            <el-tag v-else-if="app.reviewResult==='驳回'" type="danger" size="small">已驳回</el-tag>
-            <span v-else>待审批</span>
-          </div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">审批意见</span>{{ app.reviewComment || '（暂无）' }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">审批时间</span>{{ app.reviewTime || '（暂无）' }}</div></el-col>
-          <el-col :span="12"><div class="view-row"><span class="view-label">联调完成时间</span>{{ app.jointDebugTime || '（未完成）' }}</div></el-col>
-        </el-row>
-      </div>
+
       <div style="margin-top:24px;text-align:center"><el-button @click="$root.go('P28')">返回</el-button></div>
     </div>
 
@@ -4199,6 +4177,10 @@ app.component('P29',{
       desc:[{required:true,message:'请输入应用简介',trigger:'blur'}],
       category:[{required:true,message:'请选择所属分类',trigger:'change'}],
     },
+    activeRecordTab: 'apiReq',
+    reqPage: 1,
+    authPage: 1,
+    recordPageSize: 5,
   };},
   computed:{
     mode(){ return this.$root.ctx?.mode || (this.$root.ctx?.id ? 'view' : 'add'); },
@@ -4217,6 +4199,33 @@ app.component('P29',{
         const domain = this.stripProtocol(u);
         return domain ? proto + domain : '';
       }).filter(Boolean);
+    },
+    apiReqRows(){
+      return API_REQS.filter(x => x.appId === this.app.appId);
+    },
+    authReqRows(){
+      const rows = [];
+      API_APPS.filter(x => x.appId === this.app.appId).forEach(r => {
+        const orgList = r.orgs ? r.orgs.split(';').map(s => s.trim()).filter(Boolean) : ['—'];
+        orgList.forEach(org => {
+          rows.push({
+            id: r.id,
+            rangeTypes: (r.rangeTypes || []).join('、') || '—',
+            orgName: org,
+            apis: (r.apis || []).map(a => a.name).join('、') || '—',
+            applyTime: r.applyTime || '—',
+            deadline: r.deadline || '—',
+            status: r.status === '已审批' && r.opinion === '不通过' ? '已驳回' : r.status,
+          });
+        });
+      });
+      return rows;
+    },
+    pagedApiReq(){
+      return this.apiReqRows.slice((this.reqPage - 1) * this.recordPageSize, this.reqPage * this.recordPageSize);
+    },
+    pagedAuthReq(){
+      return this.authReqRows.slice((this.authPage - 1) * this.recordPageSize, this.authPage * this.recordPageSize);
     },
   },
   watch:{
