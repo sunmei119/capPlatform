@@ -331,13 +331,13 @@ const SUBACCOUNTS = [
 
 // 客户端授权关联（桂教通超管维护）
 const CLIENT_AUTH = [
-  { clientId: 'client_a1b2c3', clientName: '南宁市第三中学统一认证客户端', clientSecret: 'sct_8f3a2b1c7d4e5f60', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://edu.gxschool.edu.cn', remark: '南宁市第三中学统一认证回调' },
-  { clientId: 'client_d4e5f6', clientName: '桂林市育才小学教务客户端', clientSecret: 'sct_1c5e8a2b7d3f6a09', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '桂林市育才小学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：桂林市育才小学', useStatus: '未使用', enableStatus: '停用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://ylxx.guilin.edu.cn', remark: '桂林市育才小学教务系统' },
-  { clientId: 'client_g7h8i9', clientName: '柳州市第十二中学门户客户端', clientSecret: 'sct_5b7d9f1c3e5a7b94', clientType: '平台授权', approvalStatus: '已通过', allData: '是', allApis: '是', syncRangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '全部数据', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://lz12.gxedu.edu.cn', remark: '柳州市第十二中学门户登录' },
-  { clientId: 'client_j1k2l3', clientName: '北海市第一小学单点登录客户端', clientSecret: 'sct_3d5f7a9c1b3e5d80', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '北海市第一小学', orgNames: '', apiIds: [3], deadline: '2029-08-18', authScopeText: '学校：北海市第一小学', useStatus: '未使用', enableStatus: '停用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: 'https://bohyd.gxedu.edu.cn', remark: '北海市第一小学单点登录' },
-  { clientId: 'client_m4n5o6', clientName: '梧州市高级中学数据对接客户端', clientSecret: 'sct_6a8c0e2f4d6b8a03', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '梧州市高级中学', orgNames: '', apiIds: [], deadline: '2029-08-18', authScopeText: '学校：梧州市高级中学', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://wzgx.gxedu.edu.cn/oauth/callback', logoutRedirectUri: 'https://wzgx.gxedu.edu.cn/oauth/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://wzgx.gxedu.edu.cn', remark: '梧州市高级中学数据对接' },
-  { clientId: 'client_p7q8r9', clientName: '钦州市第二中学教务客户端', clientSecret: 'sct_9b1d3f5a7c9e1f42', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '钦州市第二中学', orgNames: '', apiIds: [2], deadline: '2029-08-18', authScopeText: '学校：钦州市第二中学', useStatus: '未使用', enableStatus: '停用', authType: 'client_credentials', redirectUri: 'https://qzez.gxedu.edu.cn/sso/cb', logoutRedirectUri: 'https://qzez.gxedu.edu.cn/sso/lo', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://qzez.gxedu.edu.cn', remark: '钦州市第二中学教务对接' },
-  { clientId: 'gc_orgapply01', clientName: '玉林市博白县教育局组织同步客户端', clientSecret: 'sct_org_1a2b3c4d5e6f', clientType: '机构申请', approvalStatus: '已通过', allData: '是', allApis: '否', syncRangeTypes: [], schoolNames: '', orgNames: '玉林市博白县教育局', apiIds: [], deadline: '2029-12-31', authScopeText: '机构：玉林市博白县教育局', useStatus: '使用中', enableStatus: '启用', whiteList: 'https://bjedu.gx.cn', remark: '组织同步申请审批通过后自动生成' },
+  { clientId: 'client_a1b2c3', clientName: '南宁市第三中学统一认证客户端', clientSecret: 'sct_8f3a2b1c7d4e5f60', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], maxCalls: { 1: 500, 4: 1000 }, deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://edu.gxschool.edu.cn', remark: '南宁市第三中学统一认证回调' },
+  { clientId: 'client_d4e5f6', clientName: '桂林市育才小学教务客户端', clientSecret: 'sct_1c5e8a2b7d3f6a09', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '桂林市育才小学', orgNames: '', apiIds: [], maxCalls: {}, deadline: '2029-08-18', authScopeText: '学校：桂林市育才小学', useStatus: '未使用', enableStatus: '停用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://ylxx.guilin.edu.cn', remark: '桂林市育才小学教务系统' },
+  { clientId: 'client_g7h8i9', clientName: '柳州市第十二中学门户客户端', clientSecret: 'sct_5b7d9f1c3e5a7b94', clientType: '平台授权', approvalStatus: '已通过', allData: '是', allApis: '是', syncRangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], maxCalls: {}, deadline: '2029-08-18', authScopeText: '全部数据', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://lz12.gxedu.edu.cn', remark: '柳州市第十二中学门户登录' },
+  { clientId: 'client_j1k2l3', clientName: '北海市第一小学单点登录客户端', clientSecret: 'sct_3d5f7a9c1b3e5d80', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '北海市第一小学', orgNames: '', apiIds: [3], maxCalls: { 3: 200 }, deadline: '2029-08-18', authScopeText: '学校：北海市第一小学', useStatus: '未使用', enableStatus: '停用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: 'https://bohyd.gxedu.edu.cn', remark: '北海市第一小学单点登录' },
+  { clientId: 'client_m4n5o6', clientName: '梧州市高级中学数据对接客户端', clientSecret: 'sct_6a8c0e2f4d6b8a03', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '梧州市高级中学', orgNames: '', apiIds: [], maxCalls: {}, deadline: '2029-08-18', authScopeText: '学校：梧州市高级中学', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://wzgx.gxedu.edu.cn/oauth/callback', logoutRedirectUri: 'https://wzgx.gxedu.edu.cn/oauth/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://wzgx.gxedu.edu.cn', remark: '梧州市高级中学数据对接' },
+  { clientId: 'client_p7q8r9', clientName: '钦州市第二中学教务客户端', clientSecret: 'sct_9b1d3f5a7c9e1f42', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '钦州市第二中学', orgNames: '', apiIds: [2], maxCalls: { 2: 300 }, deadline: '2029-08-18', authScopeText: '学校：钦州市第二中学', useStatus: '未使用', enableStatus: '停用', authType: 'client_credentials', redirectUri: 'https://qzez.gxedu.edu.cn/sso/cb', logoutRedirectUri: 'https://qzez.gxedu.edu.cn/sso/lo', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://qzez.gxedu.edu.cn', remark: '钦州市第二中学教务对接' },
+  { clientId: 'gc_orgapply01', clientName: '玉林市博白县教育局组织同步客户端', clientSecret: 'sct_org_1a2b3c4d5e6f', clientType: '机构申请', approvalStatus: '已通过', allData: '是', allApis: '否', syncRangeTypes: [], schoolNames: '', orgNames: '玉林市博白县教育局', apiIds: [], maxCalls: {}, deadline: '2029-12-31', authScopeText: '机构：玉林市博白县教育局', useStatus: '使用中', enableStatus: '启用', whiteList: 'https://bjedu.gx.cn', remark: '组织同步申请审批通过后自动生成' },
 ];
 
 // 数据授权管理模块已移除（原授权管理-数据授权管理 P34）；应用级数据授权统一在应用管理（P28All）与客户端授权（P30/P30View）中维护
@@ -3305,13 +3305,13 @@ const PLATFORM_APPS = [
  * 一条记录 = 一个应用对一个接口的授权；appId 与 PLATFORM_APPS.appId 一致（如 '1002'），apiId 引用 APIS.id
  * （均为平台对外可见且「是否需要授权=是」的接口）；status：启用 / 停用——取消授权仅置为停用（数据保留，可重新启用） */
 const P28_APP_IF_AUTH = [
-  { id: 1, appId: '1002', apiId: 1, deadline: '2029-08-18', authTime: '2026-08-18 10:20', status: '启用' },  // 校园通（广西云启）· 学生信息查询
-  { id: 2, appId: '1002', apiId: 5, deadline: '2029-08-18', authTime: '2026-08-18 10:20', status: '启用' },  // 校园通（广西云启）· 教学计划
-  { id: 3, appId: '1005', apiId: 1, deadline: '2029-07-20', authTime: '2026-07-20 15:30', status: '启用' },  // 排课系统（个人开发者 王磊）· 学生信息查询
-  { id: 4, appId: '1005', apiId: 3, deadline: '2029-07-20', authTime: '2026-07-20 15:30', status: '启用' },  // 排课系统（个人开发者 王磊）· 成绩上报
-  { id: 5, appId: '1007', apiId: 5, deadline: '2029-09-01', authTime: '2026-09-01 09:10', status: '停用' },  // 校园OA（南宁智课教育）· 教学计划（样例已停用）
-  { id: 6, appId: '1001', apiId: 1, deadline: '2029-09-04', authTime: '2026-09-05 10:30', status: '启用' },  // 课堂互动助手（南宁智课教育）· 学生信息查询接口
-  { id: 7, appId: '1001', apiId: 5, deadline: '2029-09-04', authTime: '2026-09-05 10:30', status: '启用' },  // 课堂互动助手（南宁智课教育）· 教学计划接口
+  { id: 1, appId: '1002', apiId: 1, maxCalls: 500, deadline: '2029-08-18', authTime: '2026-08-18 10:20', status: '启用' },  // 校园通（广西云启）· 学生信息查询
+  { id: 2, appId: '1002', apiId: 5, maxCalls: 1000, deadline: '2029-08-18', authTime: '2026-08-18 10:20', status: '启用' },  // 校园通（广西云启）· 教学计划
+  { id: 3, appId: '1005', apiId: 1, maxCalls: 200, deadline: '2029-07-20', authTime: '2026-07-20 15:30', status: '启用' },  // 排课系统（个人开发者 王磊）· 学生信息查询
+  { id: 4, appId: '1005', apiId: 3, maxCalls: 300, deadline: '2029-07-20', authTime: '2026-07-20 15:30', status: '启用' },  // 排课系统（个人开发者 王磊）· 成绩上报
+  { id: 5, appId: '1007', apiId: 5, maxCalls: 100, deadline: '2029-09-01', authTime: '2026-09-01 09:10', status: '停用' },  // 校园OA（南宁智课教育）· 教学计划（样例已停用）
+  { id: 6, appId: '1001', apiId: 1, maxCalls: 800, deadline: '2029-09-04', authTime: '2026-09-05 10:30', status: '启用' },  // 课堂互动助手（南宁智课教育）· 学生信息查询接口
+  { id: 7, appId: '1001', apiId: 5, maxCalls: 600, deadline: '2029-09-04', authTime: '2026-09-05 10:30', status: '启用' },  // 课堂互动助手（南宁智课教育）· 教学计划接口
 ];
 
 /* 应用级数据授权记录（超管应用管理 P28All 操作列「数据授权」新增，独立于客户端授权 P30 等既有授权流程）
@@ -3480,10 +3480,12 @@ app.component('P28ApiAuth', {
   data() {
     const appId = (this.ctx && this.ctx.appId) || '';
     const recs = P28_APP_IF_AUTH.filter(x => x.appId === appId && x.status === '启用');
+    const maxCallsMap = {};
+    recs.forEach(r => { maxCallsMap[r.apiId] = r.maxCalls || ''; });
     return {
       filterApisPage: 1, filterApisSize: 10,
       appId,
-      form: { apiIds: recs.map(r => r.apiId), deadline: recs.length ? (recs[recs.length - 1].deadline || '') : '' },
+      form: { apiIds: recs.map(r => r.apiId), maxCalls: maxCallsMap, deadline: recs.length ? (recs[recs.length - 1].deadline || '') : '' },
       apiDialog: false,
       tempApiIds: [],
       apiKeyword: '',
@@ -3501,8 +3503,12 @@ app.component('P28ApiAuth', {
   methods: {
     openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiKeyword = ''; this.apiDialog = true; },
     onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
-    saveApiDialog() { this.form.apiIds = [...this.tempApiIds]; this.apiDialog = false; },
-    removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); },
+    saveApiDialog() {
+      this.form.apiIds = [...this.tempApiIds];
+      this.tempApiIds.forEach(id => { if (this.form.maxCalls[id] === undefined) this.form.maxCalls[id] = ''; });
+      this.apiDialog = false;
+    },
+    removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); delete this.form.maxCalls[id]; },
     disabledDate(time) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
@@ -3523,8 +3529,8 @@ app.component('P28ApiAuth', {
       const now = this.nowStr(), base = Date.now();
       chosen.forEach((apiId, i) => {
         const r = P28_APP_IF_AUTH.find(x => x.appId === this.appId && x.apiId === apiId);
-        if (r) { r.deadline = this.form.deadline; r.authTime = now; r.status = '启用'; }
-        else { P28_APP_IF_AUTH.push({ id: base + i, appId: this.appId, apiId, deadline: this.form.deadline, authTime: now, status: '启用' }); }
+        if (r) { r.deadline = this.form.deadline; r.authTime = now; r.status = '启用'; r.maxCalls = this.form.maxCalls[apiId] || 0; }
+        else { P28_APP_IF_AUTH.push({ id: base + i, appId: this.appId, apiId, maxCalls: this.form.maxCalls[apiId] || 0, deadline: this.form.deadline, authTime: now, status: '启用' }); }
       });
       this.$message.success('接口授权已保存，厂商可调用所选接口');
       this.$root.go('P28All');
@@ -3544,9 +3550,19 @@ app.component('P28ApiAuth', {
         <el-form-item label="授权接口" required>
           <div style="width:100%">
             <el-button type="primary" plain @click="openApiDialog">选择授权接口（已选 {{ form.apiIds.length }}）</el-button>
-            <div v-if="chosenApis.length" style="margin-top:8px">
-              <el-tag v-for="a in chosenApis" :key="a.id" closable @close="removeApi(a.id)" style="margin:2px 8px 2px 0">{{ a.name }}</el-tag>
-            </div>
+            <el-table v-if="chosenApis.length" :data="chosenApis" border size="small" style="margin-top:10px;width:100%">
+              <el-table-column prop="name" label="接口名称" min-width="180"></el-table-column>
+              <el-table-column label="最大调用量/日" width="180">
+                <template #default="s">
+                  <el-input-number v-model="form.maxCalls[s.row.id]" :min="0" :step="100" controls-position="right" placeholder="请输入" style="width:140px"></el-input-number>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="70">
+                <template #default="s">
+                  <el-button link type="danger" size="small" @click="removeApi(s.row.id)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
             <div style="color:#909399;font-size:12px;margin-top:6px;line-height:1.5">授权接口为平台对外可见且需授权（「是否需要授权=是」）的接口；保存即生效，无审批环节</div>
           </div>
         </el-form-item>
@@ -3736,7 +3752,7 @@ app.component('P28AuthCancel', {
     const buildIfRows = (aid) => P28_APP_IF_AUTH.filter(x => x.appId === aid).map(r => {
       const a = APIS.find(x => x.id === r.apiId) || {};
       return {
-        id: r.id, apiId: r.apiId, name: a.name || ('接口' + r.apiId), service: a.service || '—', type: a.type || '—', deadline: r.deadline || '—', status: r.status || '启用' };
+        id: r.id, apiId: r.apiId, name: a.name || ('接口' + r.apiId), service: a.service || '—', type: a.type || '—', maxCalls: r.maxCalls != null ? r.maxCalls : '—', deadline: r.deadline || '—', status: r.status || '启用' };
     });
     return {
       appId,
@@ -3812,6 +3828,7 @@ app.component('P28AuthCancel', {
             <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
             <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
             <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
+            <el-table-column prop="maxCalls" label="最大调用量/日" width="120"></el-table-column>
             <el-table-column label="授权截止时间" width="130"><template #default="s">{{ s.row.deadline }}</template></el-table-column>
             <el-table-column label="状态" width="90" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
             <el-table-column label="操作" width="110" align="center">
@@ -3862,7 +3879,7 @@ app.component('P28AuthView', {
     const buildIfRows = (aid) => P28_APP_IF_AUTH.filter(x => x.appId === aid).map(r => {
       const a = APIS.find(x => x.id === r.apiId) || {};
       return {
-        id: r.id, apiId: r.apiId, name: a.name || ('接口' + r.apiId), service: a.service || '—', type: a.type || '—', deadline: r.deadline || '—', status: r.status || '启用' };
+        id: r.id, apiId: r.apiId, name: a.name || ('接口' + r.apiId), service: a.service || '—', type: a.type || '—', maxCalls: r.maxCalls != null ? r.maxCalls : '—', deadline: r.deadline || '—', status: r.status || '启用' };
     });
     return {
       appId,
@@ -3898,6 +3915,7 @@ app.component('P28AuthView', {
             <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
             <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
             <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
+            <el-table-column prop="maxCalls" label="最大调用量/日" width="120"></el-table-column>
             <el-table-column label="授权截止时间" width="130"><template #default="s">{{ s.row.deadline }}</template></el-table-column>
             <el-table-column label="状态" width="90" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
           </el-table>
@@ -4452,6 +4470,7 @@ app.component('P28ApplyApi', {
       appName: app ? app.name : (this.ctx && this.ctx.appId) || '',
       apiDialog: false,
       chosenApiIds: ids.slice(),
+      tempApiIds: [],
       apiPage: 1,
       apiPageSize: 5,
       deadline: '',
@@ -4485,8 +4504,18 @@ app.component('P28ApplyApi', {
     pagedChosen() { return this.chosenApis.slice((this.apiPage - 1) * this.apiPageSize, this.apiPage * this.apiPageSize); },
   },
   methods: {
-    openApiDialog() { this.apiDialog = true; },
-    onApiChange(rows) { this.chosenApiIds = rows.map(r => r.id); },
+    openApiDialog() {
+      this.tempApiIds = [...this.chosenApiIds];
+      this.apiDialog = true;
+      this.$nextTick(() => {
+        const table = this.$refs.apiSelectTable;
+        if (!table) return;
+        table.clearSelection();
+        this.visibleApis.forEach(row => { if (this.tempApiIds.includes(row.id)) table.toggleRowSelection(row, true); });
+      });
+    },
+    onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
+    saveApiDialog() { this.chosenApiIds = [...this.tempApiIds]; this.apiDialog = false; },
     removeApi(id) { this.chosenApiIds = this.chosenApiIds.filter(x => x !== id); },
     disabledDate(time) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -4547,8 +4576,8 @@ app.component('P28ApplyApi', {
       <div v-if="passedApiNames.length" style="background:#fdf6ec;border:1px solid #f5dab1;color:#b88230;padding:8px 12px;border-radius:4px;font-size:12px;line-height:1.6;margin-bottom:10px">
         以下接口已在本开发者名下应用中申请审批通过，不可重复申请，已置灰不可勾选：{{ passedApiNames.join('、') }}
       </div>
-      <el-table :data="pageSlice(visibleApis, 'visibleApis')" stripe @selection-change="onApiChange" :selectable="row => !passedApiNames.includes(row.name)">
-        <el-table-column type="selection" width="50"></el-table-column>
+      <el-table ref="apiSelectTable" :data="pageSlice(visibleApis, 'visibleApis')" stripe @selection-change="onApiChange" :row-key="r => r.id">
+        <el-table-column type="selection" width="50" :reserve-selection="true" :selectable="row => !passedApiNames.includes(row.name)"></el-table-column>
         <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
         <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
         <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
@@ -4557,7 +4586,7 @@ app.component('P28ApplyApi', {
       <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="visibleApis.length" :page-size="visibleApisSize" :current-page="visibleApisPage" @current-change="visibleApisPage=$event"></el-pagination>
       <template #footer>
         <el-button @click="apiDialog=false">取消</el-button>
-        <el-button type="primary" @click="apiDialog=false">确定</el-button>
+        <el-button type="primary" @click="saveApiDialog">确定</el-button>
       </template>
     </el-dialog>
 
@@ -4826,9 +4855,9 @@ app.component('P30View', {
     },
     apiAuthRows() {
       const r = this.viewRow; if (!r) return [];
-      if (r.allApis === '是') return APIS.filter(a => a.visible).map(a => ({ id: a.id, name: a.name, apiAbility: a.apiType, type: a.type }));
+      if (r.allApis === '是') return APIS.filter(a => a.visible).map(a => ({ id: a.id, name: a.name, apiAbility: a.apiType, type: a.type, freq: (r.maxCalls || {})[a.id] || '—' }));
       const ids = (r.apiIds || []);
-      return APIS.filter(a => ids.includes(a.id)).map(a => ({ id: a.id, name: a.name, apiAbility: a.apiType, type: a.type }));
+      return APIS.filter(a => ids.includes(a.id)).map(a => ({ id: a.id, name: a.name, apiAbility: a.apiType, type: a.type, freq: (r.maxCalls || {})[a.id] || '—' }));
     },
     pagedDataAuth() {
       const rows = this.dataAuthRows;
@@ -4908,6 +4937,7 @@ app.component('P30View', {
         <div style="font-weight:600;margin:16px 0 8px">接口授权</div>
         <el-table :data="pagedApiAuth" border size="small">
           <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
+          <el-table-column prop="freq" label="最大调用量/日" width="140"></el-table-column>
           <el-table-column prop="apiAbility" label="接口平台" min-width="140"></el-table-column>
           <el-table-column prop="type" label="数据敏感等级" width="110"></el-table-column>
           <el-table-column label="查看文档" width="100" align="center">
@@ -5080,6 +5110,7 @@ app.component('P31B', {
       form: {
         allApis: row.allApis || '否',
         apiIds: row.apiIds ? [...row.apiIds] : [],
+        maxCalls: row.maxCalls ? { ...row.maxCalls } : {},
       },
       apiDialog: false,
       tempApiIds: [],
@@ -5098,13 +5129,18 @@ app.component('P31B', {
   methods: {
     openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiDialog = true; },
     onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
-    saveApiDialog() { this.form.apiIds = [...this.tempApiIds]; this.apiDialog = false; },
-    removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); },
+    saveApiDialog() {
+      this.form.apiIds = [...this.tempApiIds];
+      this.tempApiIds.forEach(id => { if (this.form.maxCalls[id] === undefined) this.form.maxCalls[id] = ''; });
+      this.apiDialog = false;
+    },
+    removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); delete this.form.maxCalls[id]; },
     submit() {
       if (this.form.allApis === '否' && !this.form.apiIds.length) { this.$message.warning('请至少选择一个授权接口'); return; }
       const row = this.row;
       row.allApis = this.form.allApis;
       row.apiIds = [...this.form.apiIds];
+      row.maxCalls = { ...this.form.maxCalls };
       this.$message.success('接口授权已保存');
       this.$root.go('P30');
     },
@@ -5127,10 +5163,20 @@ app.component('P31B', {
         </el-form-item>
         <el-form-item v-if="showApiScope" label="授权接口" required>
           <div style="width:100%">
-            <el-button type="primary" plain @click="openApiDialog">选择授权接口</el-button>
-            <div v-if="chosenApis.length" style="margin-top:8px">
-              <el-tag v-for="a in chosenApis" :key="a.id" closable @close="removeApi(a.id)" style="margin:0 8px 8px 0">{{ a.name }}</el-tag>
-            </div>
+            <el-button type="primary" plain @click="openApiDialog">选择授权接口（已选 {{ chosenApis.length }}）</el-button>
+            <el-table v-if="chosenApis.length" :data="chosenApis" border size="small" style="margin-top:10px;width:100%">
+              <el-table-column prop="name" label="接口名称" min-width="180"></el-table-column>
+              <el-table-column label="最大调用量/日" width="180">
+                <template #default="s">
+                  <el-input-number v-model="form.maxCalls[s.row.id]" :min="0" :step="100" controls-position="right" placeholder="请输入" style="width:140px"></el-input-number>
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="70">
+                <template #default="s">
+                  <el-button link type="danger" size="small" @click="removeApi(s.row.id)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
             <div v-else style="color:#c0c4cc;font-size:12px;margin-top:8px">尚未选择授权接口</div>
           </div>
         </el-form-item>
