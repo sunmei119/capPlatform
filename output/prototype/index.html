@@ -355,7 +355,7 @@ const SUBACCOUNTS = [
 
 // 客户端授权关联（桂教通超管维护）
 const CLIENT_AUTH = [
-  { clientId: 'client_a1b2c3', clientName: '南宁市第三中学统一认证客户端', clientSecret: 'sct_8f3a2b1c7d4e5f60', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], maxCalls: { 1: 500, 4: 1000 }, deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://edu.gxschool.edu.cn', remark: '南宁市第三中学统一认证回调', stoppedIf: { 4: true } },
+  { clientId: 'client_a1b2c3', clientName: '南宁市第三中学统一认证客户端', clientSecret: 'sct_8f3a2b1c7d4e5f60', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '南宁市第三中学', orgNames: '', apiIds: [1, 4], maxCalls: { 1: 500, 4: 1000 }, deadline: '2029-08-18', authScopeText: '学校：南宁市第三中学', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://edu.gxschool.edu.cn/sso/callback', logoutRedirectUri: 'https://edu.gxschool.edu.cn/sso/logout', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://edu.gxschool.edu.cn', remark: '南宁市第三中学统一认证回调' },
   { clientId: 'client_d4e5f6', clientName: '桂林市育才小学教务客户端', clientSecret: 'sct_1c5e8a2b7d3f6a09', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '是', syncRangeTypes: ['学校'], schoolNames: '桂林市育才小学', orgNames: '', apiIds: [], maxCalls: {}, deadline: '2029-08-18', authScopeText: '学校：桂林市育才小学', useStatus: '未使用', enableStatus: '停用', authType: 'client_credentials', redirectUri: 'https://ylxx.guilin.edu.cn/oauth/cb', logoutRedirectUri: 'https://ylxx.guilin.edu.cn/oauth/logout', accessTokenExp: 3600, refreshTokenExp: 1209600, whiteList: 'https://ylxx.guilin.edu.cn', remark: '桂林市育才小学教务系统' },
   { clientId: 'client_g7h8i9', clientName: '柳州市第十二中学门户客户端', clientSecret: 'sct_5b7d9f1c3e5a7b94', clientType: '平台授权', approvalStatus: '已通过', allData: '是', allApis: '是', syncRangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], maxCalls: {}, deadline: '2029-08-18', authScopeText: '全部数据', useStatus: '使用中', enableStatus: '启用', authType: 'authorization_code', redirectUri: 'https://lz12.gxedu.edu.cn/login/redirect', logoutRedirectUri: 'https://lz12.gxedu.edu.cn/login/out', accessTokenExp: 7200, refreshTokenExp: 2592000, whiteList: 'https://lz12.gxedu.edu.cn', remark: '柳州市第十二中学门户登录' },
   { clientId: 'client_j1k2l3', clientName: '北海市第一小学单点登录客户端', clientSecret: 'sct_3d5f7a9c1b3e5d80', clientType: '平台授权', approvalStatus: '已通过', allData: '否', allApis: '否', syncRangeTypes: ['学校'], schoolNames: '北海市第一小学', orgNames: '', apiIds: [3], maxCalls: { 3: 200 }, deadline: '2029-08-18', authScopeText: '学校：北海市第一小学', useStatus: '未使用', enableStatus: '停用', authType: 'implicit', redirectUri: 'https://bohyd.gxedu.edu.cn/sso/back', logoutRedirectUri: 'https://bohyd.gxedu.edu.cn/sso/end', accessTokenExp: 1800, refreshTokenExp: 0, whiteList: 'https://bohyd.gxedu.edu.cn', remark: '北海市第一小学单点登录' },
@@ -364,39 +364,68 @@ const CLIENT_AUTH = [
   { clientId: 'gc_orgapply01', clientName: '玉林市博白县教育局组织同步客户端', clientSecret: 'sct_org_1a2b3c4d5e6f', clientType: '机构申请', approvalStatus: '已通过', allData: '是', allApis: '否', syncRangeTypes: [], schoolNames: '', orgNames: '玉林市博白县教育局', apiIds: [], maxCalls: {}, deadline: '2029-12-31', authScopeText: '机构：玉林市博白县教育局', useStatus: '使用中', enableStatus: '启用', whiteList: 'https://bjedu.gx.cn', remark: '组织同步申请审批通过后自动生成' },
 ];
 
-// 客户端授权记录行展开（P30View 查看 / P30AuthCancel 取消授权 共用同一份口径）
+const _splitNamesX = (s) => String(s || '').split(/[;；]/).map(x => x.trim()).filter(Boolean);
+
+// 客户端授权记录行展开（P30View 查看 / P30AuthCancel 取消授权 共用同一份口径，随授权配置实时派生，无状态列）
 // 接口授权记录：一条 = 该客户端当前授权的一个接口（「是否全部接口=是」时按平台可见接口逐条展开）
 // 数据授权记录：一条 = 该客户端当前授权的一个数据单位（学校/教育局，一次录入多个单位按单位拆分；「是否全部数据=是」时为一条「全部数据」全区记录）
-// 记录状态（启用/停用）：取消授权仅把对应记录置为「停用」（记录保留、数据仍在），停用记录可重新「启用」；
-//   停用/启用由客户端对象上的 stoppedIf（按接口 apiId）/ stoppedDa（按数据单位 key）标记，不在 P31/P31B 配置字段上删除数据
 function clientApiAuthRows(clientId) {
   const c = CLIENT_AUTH.find(x => x.clientId === clientId);
   if (!c) return [];
-  const stopped = c.stoppedIf || {};
   let apis;
   if (c.allApis === '是') apis = APIS.filter(a => a.visible);
   else apis = APIS.filter(a => (c.apiIds || []).includes(a.id));
   return apis.map(a => {
     const freq = (c.maxCalls || {})[a.id];
-    return { id: a.id, name: a.name, apiAbility: a.apiType, type: a.type, freq: freq != null ? freq : '—', status: stopped[a.id] ? '停用' : '启用' };
+    return { id: a.id, name: a.name, apiAbility: a.apiType, type: a.type, freq: freq != null ? freq : '—' };
   });
 }
 function clientDataAuthRows(clientId) {
   const c = CLIENT_AUTH.find(x => x.clientId === clientId);
   if (!c) return [];
-  const stopped = c.stoppedDa || {};
   const dl = c.deadline || '—';
-  const splitNames = (s) => String(s || '').split(/[;；]/).map(x => x.trim()).filter(Boolean);
   const rows = [];
   if (c.allData === '是') {
-    rows.push({ key: '*', rangeType: '全部数据', schoolNames: '全部学校', orgNames: '全部机构', deadline: dl, status: stopped['*'] ? '停用' : '启用' });
+    rows.push({ key: '*', rangeType: '全部数据', schoolNames: '全部学校', orgNames: '全部机构', deadline: dl });
   } else {
     const types = (c.syncRangeTypes || []);
-    if (types.includes('学校')) splitNames(c.schoolNames).forEach(s => { const k = '学校|' + s; rows.push({ key: k, rangeType: '学校', schoolNames: s, orgNames: '', deadline: dl, status: stopped[k] ? '停用' : '启用' }); });
-    if (types.includes('教育局')) splitNames(c.orgNames).forEach(o => { const k = '教育局|' + o; rows.push({ key: k, rangeType: '教育局', schoolNames: '', orgNames: o, deadline: dl, status: stopped[k] ? '停用' : '启用' }); });
-    if (!rows.length) rows.push({ key: 'none', rangeType: '—', schoolNames: c.schoolNames || '—', orgNames: c.orgNames || '—', deadline: dl, status: '启用' });
+    if (types.includes('学校')) _splitNamesX(c.schoolNames).forEach(s => rows.push({ key: '学校|' + s, rangeType: '学校', schoolNames: s, orgNames: '', deadline: dl }));
+    if (types.includes('教育局')) _splitNamesX(c.orgNames).forEach(o => rows.push({ key: '教育局|' + o, rangeType: '教育局', schoolNames: '', orgNames: o, deadline: dl }));
   }
   return rows;
+}
+
+// 取消授权 = 移除授权：把该接口授权记录从客户端当前授权集合中移除（记录不再展示，客户端不再具备该授权）
+// 「是否全部接口=是」时取消其中一条，转为「否」并保留其余接口；如需恢复请重新做「接口授权」配置
+function revokeClientIfGrant(clientId, apiId) {
+  const c = CLIENT_AUTH.find(x => x.clientId === clientId);
+  if (!c) return;
+  const granted = c.allApis === '是' ? APIS.filter(a => a.visible).map(a => a.id) : (c.apiIds || []).slice();
+  c.allApis = '否';
+  c.apiIds = granted.filter(id => id !== apiId);
+  if (c.maxCalls) delete c.maxCalls[apiId];
+}
+// 取消授权 = 移除授权：把该数据单位授权记录从客户端数据授权范围中移除（记录不再展示，客户端不再获取该单位数据）
+// 「是否全部数据=是」时取消整块「全部数据」授权；如需恢复请重新做「数据授权」配置
+function revokeClientDataGrant(clientId, key) {
+  const c = CLIENT_AUTH.find(x => x.clientId === clientId);
+  if (!c) return;
+  if (c.allData === '是') {
+    c.allData = '否';
+    c.syncRangeTypes = [];
+    c.schoolNames = '';
+    c.orgNames = '';
+  } else {
+    const parts = String(key).split('|');
+    const type = parts[0];
+    const name = parts[1];
+    if (type === '学校') c.schoolNames = _splitNamesX(c.schoolNames).filter(n => n !== name).join(';');
+    if (type === '教育局') c.orgNames = _splitNamesX(c.orgNames).filter(n => n !== name).join(';');
+    const keep = (c.syncRangeTypes || []).slice();
+    if (!_splitNamesX(c.schoolNames).length) c.syncRangeTypes = keep.filter(t => t !== '学校');
+    if (!_splitNamesX(c.orgNames).length) c.syncRangeTypes = keep.filter(t => t !== '教育局');
+  }
+  if (c.authScopeText) c.authScopeText = '';
 }
 
 // 数据授权管理模块已移除（原授权管理-数据授权管理 P34）；应用级数据授权统一在应用管理（P28All）与客户端授权（P30/P30View）中维护
@@ -414,11 +443,11 @@ const DATA_SYNC_APPS = [
 
 // 数据表管理（桂教通超管维护，用于数据回流时下拉选择数据表key）
 const DATA_TABLES = [
-  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', desc: '记录学生学籍基本信息', status: '启用', createTime: '2026-08-01 10:00' },
-  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', desc: '记录学生各科成绩明细', status: '启用', createTime: '2026-08-02 14:00' },
-  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', desc: '记录教师考勤打卡数据', status: '停用', createTime: '2026-08-03 09:00' },
-  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', desc: '记录课程相关文档资源', status: '启用', createTime: '2026-08-05 11:00' },
-  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', desc: '记录学生日常考勤签到', status: '启用', createTime: '2026-08-10 15:00' },
+  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', desc: '记录学生学籍基本信息', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '启用', createTime: '2026-08-01 10:00' },
+  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', desc: '记录学生各科成绩明细', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '启用', createTime: '2026-08-02 14:00' },
+  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', desc: '记录教师考勤打卡数据', tableJson: '{\n  "teacherId": "教师工号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '停用', createTime: '2026-08-03 09:00' },
+  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', desc: '记录课程相关文档资源', tableJson: '{\n  "resourceId": "资源标识",\n  "courseId": "课程标识",\n  "title": "资源名称"\n}', status: '启用', createTime: '2026-08-05 11:00' },
+  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', desc: '记录学生日常考勤签到', tableJson: '{\n  "studentId": "学号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '启用', createTime: '2026-08-10 15:00' },
 ];
 
 // 数据回流管理（桂教通超管发起，开发者管理员响应，双方共维护同一份数据）
@@ -4962,7 +4991,6 @@ app.component('P30View', {
               <el-table-column label="查看文档" width="100" align="center">
                 <template #default="{row}"><el-button link type="primary" @click="$root.go('P06', { apiId: row.id })">查看文档</el-button></template>
               </el-table-column>
-              <el-table-column label="状态" width="90" align="center"><template #default="{row}"><st-tag :v="row.status"></st-tag></template></el-table-column>
             </el-table>
             <el-pagination
               layout="total, prev, pager, next"
@@ -4975,7 +5003,6 @@ app.component('P30View', {
               <el-table-column label="学校名称" min-width="160"><template #default="{row}"><span>{{ row.schoolNames || '—' }}</span></template></el-table-column>
               <el-table-column label="机构名称" min-width="160"><template #default="{row}"><span>{{ row.orgNames || '—' }}</span></template></el-table-column>
               <el-table-column label="授权截止时间" width="120"><template #default="{row}"><span>{{ row.deadline || '—' }}</span></template></el-table-column>
-              <el-table-column label="状态" width="90" align="center"><template #default="{row}"><st-tag :v="row.status"></st-tag></template></el-table-column>
             </el-table>
             <el-pagination
               layout="total, prev, pager, next"
@@ -4991,12 +5018,12 @@ app.component('P30View', {
 
 /* =====================================================================
  * P30AuthCancel 超管-客户端取消授权（由 P30 操作列「取消授权」进入，仅该客户端）
- * 界面同「查看」（P30View）的授权记录展示，但不展示客户端信息区块；
- * 两个 Tab：接口授权记录 / 数据授权记录；均含「状态（启用/停用）」列并分页（每页 5 条）
- * 接口授权记录：一条 = 该客户端当前授权的一个接口
+ * 界面同「查看」（P30View）的授权记录展示，但不展示客户端信息区块；不展示「状态」列
+ * 两个 Tab：接口授权记录 / 数据授权记录；分页（每页 5 条）
+ * 接口授权记录：一条 = 该客户端当前授权的一个接口（「是否全部接口=是」时按平台可见接口逐条展开）
  * 数据授权记录：一条 = 该客户端当前授权的一个数据单位（学校/教育局；「全部数据」为一条全区记录）
- * 取消授权 = 将对应记录状态置为「停用」（记录保留、数据仍在），停用期间客户端不可调用对应接口 /
- * 不可获取对应机构或学校的数据；「停用」记录可重新「启用」
+ * 取消授权 = 把该记录从客户端当前授权中移除（记录不再展示，客户端不再具备该接口 / 该数据范围授权；
+ * 如需恢复需重新做「接口授权/数据授权」配置）；行内单条取消 + 工具栏「全部取消」「批量取消（勾选）」均二次确认
  * ===================================================================== */
 app.component('P30AuthCancel', {
   props: ['ctx'],
@@ -5022,90 +5049,70 @@ app.component('P30AuthCancel', {
   },
   methods: {
     onTab() { this.ifPage = 1; this.daPage = 1; this.selIf = []; this.selDa = []; },
-    onIfSelect(rows) { this.selIf = (rows || []).filter(r => r.status === '启用'); },
-    onDaSelect(rows) { this.selDa = (rows || []).filter(r => r.status === '启用'); },
-    // 取消授权 = 置为停用（记录保留、数据仍在），可重新启用
-    toggleIf(row) {
-      const c = CLIENT_AUTH.find(x => x.clientId === this.clientId);
-      const next = row.status === '启用' ? '停用' : '启用';
-      const isCancel = next === '停用';
-      this.$confirm(
-        isCancel ? '确认取消该接口的授权？取消后该授权将停用（记录保留、数据仍在），停用期间客户端将不可调用对应接口。'
-                 : '确认启用该接口的授权？启用后客户端可调用对应接口。',
-        isCancel ? '取消接口授权' : '启用接口授权',
-        { type: 'warning', confirmButtonText: isCancel ? '取消授权' : '启用', cancelButtonText: '再想想' }
-      ).then(() => {
-        if (c) {
-          if (!c.stoppedIf) c.stoppedIf = {};
-          if (next === '停用') c.stoppedIf[row.id] = true; else delete c.stoppedIf[row.id];
-        }
+    onIfSelect(rows) { this.selIf = rows || []; },
+    onDaSelect(rows) { this.selDa = rows || []; },
+    // 单条取消 = 移除该授权记录（二次确认）
+    cancelIf(row) {
+      this.$confirm('确认取消该接口的授权？取消后该接口将从该客户端的授权记录中移除，客户端将不可再调用该接口；如需恢复请重新进行「接口授权」配置。', '取消接口授权', { type: 'warning', confirmButtonText: '取消授权', cancelButtonText: '再想想' }).then(() => {
+        revokeClientIfGrant(this.clientId, row.id);
         this.ifRows = clientApiAuthRows(this.clientId);
         this.selIf = [];
-        this.$message.success(isCancel ? '已取消接口授权（状态置为停用，记录保留）' : '已启用接口授权');
+        this.ifPage = 1;
+        this.$message.success('已取消接口授权（记录已移除）');
       }).catch(() => {});
     },
-    toggleDa(row) {
-      const c = CLIENT_AUTH.find(x => x.clientId === this.clientId);
-      const next = row.status === '启用' ? '停用' : '启用';
-      const isCancel = next === '停用';
-      this.$confirm(
-        isCancel ? '确认取消该数据授权？取消后该授权将停用（记录保留、数据仍在），停用期间客户端将不可获取对应机构或学校的数据。'
-                 : '确认启用该数据授权？启用后客户端可获取对应机构或学校的数据。',
-        isCancel ? '取消数据授权' : '启用数据授权',
-        { type: 'warning', confirmButtonText: isCancel ? '取消授权' : '启用', cancelButtonText: '再想想' }
-      ).then(() => {
-        if (c) {
-          if (!c.stoppedDa) c.stoppedDa = {};
-          if (next === '停用') c.stoppedDa[row.key] = true; else delete c.stoppedDa[row.key];
-        }
+    cancelDa(row) {
+      this.$confirm('确认取消该数据授权？取消后该记录将从该客户端的授权记录中移除，客户端将不可再获取对应机构或学校的数据；如需恢复请重新进行「数据授权」配置。', '取消数据授权', { type: 'warning', confirmButtonText: '取消授权', cancelButtonText: '再想想' }).then(() => {
+        revokeClientDataGrant(this.clientId, row.key);
         this.daRows = clientDataAuthRows(this.clientId);
         this.selDa = [];
-        this.$message.success(isCancel ? '已取消数据授权（状态置为停用，记录保留）' : '已启用数据授权');
+        this.daPage = 1;
+        this.$message.success('已取消数据授权（记录已移除）');
       }).catch(() => {});
     },
-    // 全部取消：把该 Tab 当前所有「启用」记录一次置为停用（二次确认）
+    // 全部取消：把该 Tab 当前全部授权记录一次移除（二次确认）
     cancelAllIf() {
-      const rows = this.ifRows.filter(r => r.status === '启用');
-      if (!rows.length) { this.$message.warning('当前没有可取消的接口授权记录'); return; }
-      this.$confirm('确认全部取消该客户端的接口授权？共 ' + rows.length + ' 条接口授权记录将被置为停用（记录保留、数据仍在），停用期间客户端将不可调用这些接口。', '全部取消接口授权', { type: 'warning', confirmButtonText: '全部取消', cancelButtonText: '再想想' }).then(() => {
-        const c = CLIENT_AUTH.find(x => x.clientId === this.clientId);
-        if (c) { if (!c.stoppedIf) c.stoppedIf = {}; rows.forEach(r => { c.stoppedIf[r.id] = true; }); }
+      const rows = this.ifRows.slice();
+      if (!rows.length) { this.$message.warning('当前没有接口授权记录'); return; }
+      this.$confirm('确认全部取消该客户端的接口授权？共 ' + rows.length + ' 条接口授权记录将被移除，客户端将不可再调用这些接口。', '全部取消接口授权', { type: 'warning', confirmButtonText: '全部取消', cancelButtonText: '再想想' }).then(() => {
+        rows.forEach(r => revokeClientIfGrant(this.clientId, r.id));
         this.ifRows = clientApiAuthRows(this.clientId);
         this.selIf = [];
-        this.$message.success('已全部取消接口授权（共 ' + rows.length + ' 条置为停用，记录保留）');
+        this.ifPage = 1;
+        this.$message.success('已全部取消接口授权（共 ' + rows.length + ' 条记录已移除）');
       }).catch(() => {});
     },
     cancelSelIf() {
-      const rows = this.selIf.filter(r => r.status === '启用');
+      const rows = this.selIf.slice();
       if (!rows.length) { this.$message.warning('请先勾选需要取消的接口授权记录'); return; }
-      this.$confirm('确认取消选中的 ' + rows.length + ' 条接口授权？取消后将被置为停用（记录保留、数据仍在），停用期间客户端将不可调用对应接口。', '批量取消接口授权', { type: 'warning', confirmButtonText: '取消授权', cancelButtonText: '再想想' }).then(() => {
-        const c = CLIENT_AUTH.find(x => x.clientId === this.clientId);
-        if (c) { if (!c.stoppedIf) c.stoppedIf = {}; rows.forEach(r => { c.stoppedIf[r.id] = true; }); }
+      this.$confirm('确认取消选中的 ' + rows.length + ' 条接口授权？取消后这些记录将从该客户端的授权中移除，客户端将不可再调用对应接口。', '批量取消接口授权', { type: 'warning', confirmButtonText: '取消授权', cancelButtonText: '再想想' }).then(() => {
+        rows.forEach(r => revokeClientIfGrant(this.clientId, r.id));
         this.ifRows = clientApiAuthRows(this.clientId);
         this.selIf = [];
-        this.$message.success('已取消选中的 ' + rows.length + ' 条接口授权（置为停用，记录保留）');
+        this.ifPage = 1;
+        this.$message.success('已取消选中的 ' + rows.length + ' 条接口授权（记录已移除）');
       }).catch(() => {});
     },
     cancelAllDa() {
-      const rows = this.daRows.filter(r => r.status === '启用');
-      if (!rows.length) { this.$message.warning('当前没有可取消的数据授权记录'); return; }
-      this.$confirm('确认全部取消该客户端的数据授权？共 ' + rows.length + ' 条数据授权记录将被置为停用（记录保留、数据仍在），停用期间客户端将不可获取对应机构或学校的数据。', '全部取消数据授权', { type: 'warning', confirmButtonText: '全部取消', cancelButtonText: '再想想' }).then(() => {
-        const c = CLIENT_AUTH.find(x => x.clientId === this.clientId);
-        if (c) { if (!c.stoppedDa) c.stoppedDa = {}; rows.forEach(r => { c.stoppedDa[r.key] = true; }); }
+      const rows = this.daRows.slice();
+      if (!rows.length) { this.$message.warning('当前没有数据授权记录'); return; }
+      this.$confirm('确认全部取消该客户端的数据授权？共 ' + rows.length + ' 条数据授权记录将被移除，客户端将不可再获取对应机构或学校的数据。', '全部取消数据授权', { type: 'warning', confirmButtonText: '全部取消', cancelButtonText: '再想想' }).then(() => {
+        rows.forEach(r => revokeClientDataGrant(this.clientId, r.key));
         this.daRows = clientDataAuthRows(this.clientId);
         this.selDa = [];
-        this.$message.success('已全部取消数据授权（共 ' + rows.length + ' 条置为停用，记录保留）');
+        this.daPage = 1;
+        this.$message.success('已全部取消数据授权（共 ' + rows.length + ' 条记录已移除）');
       }).catch(() => {});
     },
     cancelSelDa() {
-      const rows = this.selDa.filter(r => r.status === '启用');
+      const rows = this.selDa.slice();
       if (!rows.length) { this.$message.warning('请先勾选需要取消的数据授权记录'); return; }
-      this.$confirm('确认取消选中的 ' + rows.length + ' 条数据授权？取消后将被置为停用（记录保留、数据仍在），停用期间客户端将不可获取对应机构或学校的数据。', '批量取消数据授权', { type: 'warning', confirmButtonText: '取消授权', cancelButtonText: '再想想' }).then(() => {
-        const c = CLIENT_AUTH.find(x => x.clientId === this.clientId);
-        if (c) { if (!c.stoppedDa) c.stoppedDa = {}; rows.forEach(r => { c.stoppedDa[r.key] = true; }); }
+      this.$confirm('确认取消选中的 ' + rows.length + ' 条数据授权？取消后这些记录将从该客户端的授权中移除，客户端将不可再获取对应机构或学校的数据。', '批量取消数据授权', { type: 'warning', confirmButtonText: '取消授权', cancelButtonText: '再想想' }).then(() => {
+        rows.forEach(r => revokeClientDataGrant(this.clientId, r.key));
         this.daRows = clientDataAuthRows(this.clientId);
         this.selDa = [];
-        this.$message.success('已取消选中的 ' + rows.length + ' 条数据授权（置为停用，记录保留）');
+        this.daPage = 1;
+        this.$message.success('已取消选中的 ' + rows.length + ' 条数据授权（记录已移除）');
       }).catch(() => {});
     },
     back() { this.$root.go('P30'); },
@@ -5113,20 +5120,20 @@ app.component('P30AuthCancel', {
   template: `
   <div>
     <div class="card" style="background:#eef6ff;border:1px solid #bcd9f7;color:#2c5fa8;font-size:13px;line-height:1.6;padding:10px 14px">
-      客户端ID：{{ clientId || '—' }}。以下为该客户端当前的接口授权记录与数据授权记录；「取消授权」将对应授权置为「停用」（记录保留、数据仍在），停用期间该客户端将不可再调用对应接口 / 获取对应机构或学校的数据；可随时重新「启用」。
+      客户端ID：{{ clientId || '—' }}。以下为该客户端当前的接口授权记录与数据授权记录；「取消授权」会把对应授权记录从该客户端授权中移除（记录不再展示，客户端将不可再调用对应接口 / 获取对应机构或学校的数据）；如需恢复请重新进行「数据授权/接口授权」配置。
     </div>
     <div style="height:14px"></div>
     <div class="card">
       <el-tabs v-model="active" @tab-change="onTab">
         <el-tab-pane :label="'接口授权记录（' + ifRows.length + '）'" name="if">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-            <span style="color:#909399;font-size:12px">勾选启用中的记录可批量取消（取消后置为停用，记录保留、数据仍在，可重新「启用」）</span>
+            <span style="color:#909399;font-size:12px">勾选授权记录可批量移除（取消后记录不再展示；如需恢复请重新做「接口授权」配置）</span>
             <div style="flex:1"></div>
-            <el-button size="small" plain type="warning" :disabled="!ifRows.some(r => r.status==='启用')" @click="cancelAllIf">全部取消</el-button>
+            <el-button size="small" plain type="warning" :disabled="!ifRows.length" @click="cancelAllIf">全部取消</el-button>
             <el-button size="small" type="warning" :disabled="!selIf.length" @click="cancelSelIf">批量取消（已选 {{ selIf.length }}）</el-button>
           </div>
-          <el-table :data="pagedIf" border size="small" @selection-change="onIfSelect">
-            <el-table-column type="selection" width="48" :selectable="r => r.status==='启用'"></el-table-column>
+          <el-table :data="pagedIf" border size="small" @selection-change="onIfSelect" :row-key="r => r.id">
+            <el-table-column type="selection" width="48"></el-table-column>
             <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
             <el-table-column prop="freq" label="最大调用量/日" width="140"></el-table-column>
             <el-table-column prop="apiAbility" label="接口平台" min-width="130"></el-table-column>
@@ -5134,12 +5141,8 @@ app.component('P30AuthCancel', {
             <el-table-column label="查看文档" width="100" align="center">
               <template #default="s"><el-button link type="primary" @click="$root.go('P06', { apiId: s.row.id })">查看文档</el-button></template>
             </el-table-column>
-            <el-table-column label="状态" width="90" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
-            <el-table-column label="操作" width="110" align="center">
-              <template #default="s">
-                <el-button v-if="s.row.status==='启用'" link type="warning" @click="toggleIf(s.row)">取消授权</el-button>
-                <el-button v-else link type="success" @click="toggleIf(s.row)">启用</el-button>
-              </template>
+            <el-table-column label="操作" width="100" align="center">
+              <template #default="s"><el-button link type="warning" @click="cancelIf(s.row)">取消授权</el-button></template>
             </el-table-column>
           </el-table>
           <div v-if="!ifRows.length" style="color:#909399;text-align:center;padding:24px 0">暂无接口授权记录</div>
@@ -5147,23 +5150,19 @@ app.component('P30AuthCancel', {
         </el-tab-pane>
         <el-tab-pane v-if="showDataAuth" :label="'数据授权记录（' + daRows.length + '）'" name="da">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-            <span style="color:#909399;font-size:12px">勾选启用中的记录可批量取消（取消后置为停用，记录保留、数据仍在，可重新「启用」）</span>
+            <span style="color:#909399;font-size:12px">勾选授权记录可批量移除（取消后记录不再展示；如需恢复请重新做「数据授权」配置）</span>
             <div style="flex:1"></div>
-            <el-button size="small" plain type="warning" :disabled="!daRows.some(r => r.status==='启用')" @click="cancelAllDa">全部取消</el-button>
+            <el-button size="small" plain type="warning" :disabled="!daRows.length" @click="cancelAllDa">全部取消</el-button>
             <el-button size="small" type="warning" :disabled="!selDa.length" @click="cancelSelDa">批量取消（已选 {{ selDa.length }}）</el-button>
           </div>
-          <el-table :data="pagedDa" border size="small" @selection-change="onDaSelect">
-            <el-table-column type="selection" width="48" :selectable="r => r.status==='启用'"></el-table-column>
+          <el-table :data="pagedDa" border size="small" @selection-change="onDaSelect" :row-key="r => r.key">
+            <el-table-column type="selection" width="48"></el-table-column>
             <el-table-column label="同步范围类型" width="110"><template #default="s"><span>{{ s.row.rangeType }}</span></template></el-table-column>
             <el-table-column label="学校名称" min-width="170"><template #default="s"><span>{{ s.row.schoolNames || '—' }}</span></template></el-table-column>
             <el-table-column label="机构名称" min-width="170"><template #default="s"><span>{{ s.row.orgNames || '—' }}</span></template></el-table-column>
             <el-table-column label="授权截止时间" width="120"><template #default="s"><span>{{ s.row.deadline || '—' }}</span></template></el-table-column>
-            <el-table-column label="状态" width="90" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
-            <el-table-column label="操作" width="110" align="center">
-              <template #default="s">
-                <el-button v-if="s.row.status==='启用'" link type="warning" @click="toggleDa(s.row)">取消授权</el-button>
-                <el-button v-else link type="success" @click="toggleDa(s.row)">启用</el-button>
-              </template>
+            <el-table-column label="操作" width="100" align="center">
+              <template #default="s"><el-button link type="warning" @click="cancelDa(s.row)">取消授权</el-button></template>
             </el-table-column>
           </el-table>
           <div v-if="!daRows.length" style="color:#909399;text-align:center;padding:24px 0">暂无数据授权记录</div>
@@ -5723,15 +5722,12 @@ app.component('P36Form', {
         pushMethod: row ? (row.pushMethod || '全量') : '全量',
         uniqueField: row ? (row.uniqueField || '') : '',
         docs: row ? (row.docs || []).map(d => ({ ...d })) : [],
-        scopes: row ? (row.scopes || []).map(s => ({ ...s, tableFile: s.tableFile ? { ...s.tableFile } : null, previewText: '', previewError: false })) : [{ tableKey: '', tableJson: '', tableFile: null, previewText: '', previewError: false }],
+        scopes: row ? (row.scopes || []).map(s => ({ ...s })) : [{ tableKey: '', tableJson: '' }],
         authKey: row ? (row.authKey || '') : '',
         domain: row ? (row.domain || '') : '',
         reason: row ? (row.reason || '') : '',
         disclaimer: row ? true : false,
       },
-      editors: {},
-      jsonDialogVisible: false,
-      jsonDialogIndex: -1,
       tableKeyOptions: DATA_TABLES.filter(t => t.status === '启用'),
       appOptions: APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30),
       appLoading: false,
@@ -5741,92 +5737,30 @@ app.component('P36Form', {
       declText: `一、使用范围\n1. 您仅可在本平台授权及审批同意的数据范围内使用相关数据，不得超出审批同意的数据类型、用途及处理方式。\n2. 您应确保数据使用行为符合本平台及所接入业务系统的相关管理规范。\n\n二、数据安全义务\n1. 您应对获取的数据采取必要的技术与管理措施，防止数据泄露、篡改、丢失或非法使用。\n2. 未经授权，不得将数据用于与申请用途无关的场景，不得向第三方提供、出售或交换数据。\n\n三、保密义务\n您对在接入与使用过程中知悉的平台技术信息、数据规范及其他保密信息负有保密义务，未经书面许可不得对外披露。\n\n四、禁止行为\n1. 不得逆向工程、破解、绕过平台安全限制或实施任何危害平台安全的操作。\n2. 不得通过爬虫、刷量、伪造请求等方式干扰平台正常运行。\n\n五、数据保留与销毁\n您应在业务目的实现后及时删除或匿名化处理所获取的个人信息与敏感数据，不得长期留存。\n\n六、合规要求\n您处理个人信息时，应符合《个人信息保护法》等相关法律法规，并已取得必要的授权与同意。\n\n七、责任承担\n因您违反上述约定造成平台或第三方损失的，您应承担相应法律责任与赔偿责任。\n\n八、其他\n本声明解释权归平台运营方所有，平台有权根据管理需要更新本声明并另行通知。`,
     };
   },
-  mounted() {
-    this.$nextTick(() => this.initScopeEditors());
-  },
-  beforeUnmount() {
-    Object.keys(this.editors).forEach(k => { try { this.editors[k].destroy(); } catch (e) {} });
-    this.editors = {};
-  },
   computed: {
     syncApis() {
       return APIS.filter(a => a.visible && a.source === 'platform');
+    },
+    tableJsonMap() {
+      const m = {};
+      DATA_TABLES.forEach(t => { if (t.tableJson) m[t.tableKey] = t.tableJson; });
+      return m;
     },
   },
   methods: {
     apiById(id) {
       return APIS.find(a => a.id === id);
     },
-    initScopeEditors() {
-      if (this.isView) return;
-      const self = this;
-      this.form.scopes.forEach((s, i) => {
-        const container = document.getElementById('scope-json-editor-' + i);
-        if (!container) return;
-        if (this.editors[i]) {
-          try { this.editors[i].set(JSON.parse(s.tableJson || '{}')); } catch (e) {}
-          return;
-        }
-        let defaultJson = {};
-        try { defaultJson = JSON.parse(s.tableJson || '{}'); } catch (e) { defaultJson = {}; }
-        const ed = new JSONEditor(container, {
-          mode: 'code',
-          modes: ['code', 'tree', 'table'],
-          theme: 'jse-theme-default',
-          mainMenuBar: [
-            { text: '格式化', className: 'jsoneditor-menu-btn', title: '格式化 JSON 并输出到预览框', click: function() { self.formatScope(i); } },
-            { text: '清空', className: 'jsoneditor-menu-btn', title: '清空内容', click: function() { self.clearScope(i); } },
-            { text: '复制结果', className: 'jsoneditor-menu-btn', title: '复制 JSON 到剪贴板', click: function() { self.copyScope(i); } },
-          ],
-          statusBar: true,
-          search: true,
-        });
-        try { ed.set(defaultJson); } catch (e) {}
-        this.editors[i] = ed;
-        this.formatScope(i);
-      });
-    },
-    getScopeText(i) {
-      const ed = this.editors[i];
-      if (ed) { try { return ed.getText(); } catch (e) { return ''; } }
-      return this.form.scopes[i] ? this.form.scopes[i].tableJson || '' : '';
-    },
-    /* 格式化：将当前范围编辑框文本解析为标准 JSON 格式并输出到预览框；校验失败则在预览框提示 */
-    formatScope(i) {
-      const s = this.form.scopes[i];
-      if (!s) return;
-      const raw = this.getScopeText(i);
-      if (!raw || !raw.trim()) { s.previewText = ''; s.previewError = false; return; }
-      try {
-        const val = JSON.parse(raw);
-        s.previewText = JSON.stringify(val, null, 2);
-        s.previewError = false;
-      } catch (e) {
-        s.previewError = true;
-        s.previewText = 'JSON 格式校验未通过：\n' + (e && e.message ? e.message : String(e));
-      }
-    },
-    clearScope(i) {
-      const ed = this.editors[i];
-      if (ed) { try { ed.setText('{}'); } catch (e) {} }
-      const s = this.form.scopes[i];
-      if (s) { s.previewText = ''; s.previewError = false; }
-    },
-    copyScope(i) {
-      const txt = this.getScopeText(i);
-      if (!txt) { this.$message.warning('暂无内容可复制'); return; }
-      navigator.clipboard.writeText(txt).then(() => this.$message.success('已复制')).catch(() => this.$message.error('复制失败'));
+    // 选择数据表key后自动带出该数据表配置的表json（只读快照，本页不可编辑表json）
+    onKeyChange(scope) {
+      scope.tableJson = this.tableJsonMap[scope.tableKey] || '';
     },
     addScope() {
-      this.form.scopes.push({ tableKey: '', tableJson: '', tableFile: null, previewText: '', previewError: false });
-      this.$nextTick(() => this.initScopeEditors());
+      this.form.scopes.push({ tableKey: '', tableJson: '' });
     },
     removeScope(index) {
-      if (this.editors[index]) { try { this.editors[index].destroy(); } catch (e) {} }
       this.form.scopes.splice(index, 1);
-      if (!this.form.scopes.length) this.form.scopes.push({ tableKey: '', tableJson: '', uniqueField: '', tableFile: null, previewText: '', previewError: false });
-      this.editors = {};
-      this.$nextTick(() => this.initScopeEditors());
+      if (!this.form.scopes.length) this.form.scopes.push({ tableKey: '', tableJson: '' });
     },
     addDoc() {
       const idx = this.form.docs.length + 1;
@@ -5852,39 +5786,6 @@ app.component('P36Form', {
         this.devLoading = false;
       }, 300);
     },
-    openJsonDialog(i) {
-      this.jsonDialogIndex = i;
-      this.jsonDialogVisible = true;
-      this.$nextTick(() => this.initScopeEditors());
-    },
-    confirmJson() {
-      const i = this.jsonDialogIndex;
-      const s = this.form.scopes[i];
-      if (!s) return;
-      const raw = this.getScopeText(i);
-      if (!raw || !raw.trim()) { ElMessage.warning('请输入表json内容'); return; }
-      try {
-        const v = JSON.parse(raw);
-        if (typeof v !== 'object' || v === null || Array.isArray(v)) { ElMessage.warning('表json必须为合法JSON对象'); return; }
-        s.tableJson = JSON.stringify(v, null, 2);
-        s.previewText = s.tableJson;
-        s.previewError = false;
-        this.jsonDialogVisible = false;
-        ElMessage.success('表json已保存');
-      } catch (e) {
-        ElMessage.error('JSON格式校验未通过：' + (e.message || String(e)));
-      }
-    },
-    addTableFile(i) {
-      const scope = this.form.scopes[i];
-      if (!scope) return;
-      const idx = i + 1;
-      scope.tableFile = { name: '数据表结构文件' + idx + '.xlsx', url: 'https://via.placeholder.com/360x240/f0f2f5/909399?text=XLSX' };
-    },
-    removeTableFile(i) {
-      const scope = this.form.scopes[i];
-      if (scope) scope.tableFile = null;
-    },
     submit() {
       if (this.isUpload) {
         if (!this.form.docs.length) { this.$message.warning('请上传至少一个对接文档'); return; }
@@ -5906,16 +5807,16 @@ app.component('P36Form', {
         if (!this.form.uniqueField || !this.form.uniqueField.trim()) { this.$message.warning('请输入唯一字段'); return; }
         if (this.form.uniqueField.trim().includes(',')) { this.$message.warning('唯一字段仅支持填写一个字段名'); return; }
         let ok = true;
-        this.form.scopes.forEach((s, i) => {
-          if (!s.tableKey.trim()) { ok = false; return; }
-          const raw = s.tableJson || '';
-          if (!raw || !raw.trim()) { ok = false; return; }
+        this.form.scopes.forEach((s) => {
+          const tbl = DATA_TABLES.find(t => t.tableKey === s.tableKey);
+          const raw = (tbl && tbl.tableJson) || '';
+          if (!tbl || !raw || !raw.trim()) { ok = false; return; }
           try {
             const v = JSON.parse(raw);
             if (typeof v !== 'object' || v === null || Array.isArray(v)) { ok = false; return; }
           } catch (e) { ok = false; }
         });
-        if (!ok) { this.$message.warning('请为每条同步范围选择数据表key、填写唯一字段，并通过弹窗配置合法的表json（JSON对象）'); return; }
+        if (!ok) { this.$message.warning('请为每条同步范围选择已配置表json的数据表key；如需调整表json，请先在「数据表管理」中维护'); return; }
       }
       if (!this.form.reason.trim()) { this.$message.warning('请填写申请理由'); return; }
       if (!this.form.disclaimer) { this.$message.warning('请同意免责声明'); return; }
@@ -5935,7 +5836,7 @@ app.component('P36Form', {
         pushMethod: this.form.pushMethod,
         uniqueField: this.form.dockingType === '开发者主动推送' ? this.form.uniqueField.trim() : '',
         docs: [],
-        scopes: this.form.dockingType === '开发者主动推送' ? this.form.scopes.map((s, i) => ({ tableKey: s.tableKey.trim(), tableJson: s.tableJson || '', tableFile: s.tableFile ? { ...s.tableFile } : null })) : [],
+        scopes: this.form.dockingType === '开发者主动推送' ? this.form.scopes.map(s => ({ tableKey: s.tableKey.trim(), tableJson: s.tableJson || '' })) : [],
         authKey: this.form.authKey || '',
         domain: this.form.dockingType === '开发者提供接口' ? (this.form.domain || '').trim() : '',
         reason: this.form.reason,
@@ -6041,30 +5942,19 @@ app.component('P36Form', {
                   <el-button v-if="!isView && form.scopes.length > 1" link type="danger" size="small" @click="removeScope(i)">删除</el-button>
                 </div>
                 <el-form-item label="数据表key" required :label-width="100" style="margin-bottom:10px">
-                  <el-select v-if="!isView" v-model="scope.tableKey" filterable placeholder="请搜索选择数据表" style="width:100%">
+                  <el-select v-if="!isView" v-model="scope.tableKey" filterable placeholder="请搜索选择数据表" style="width:100%" @change="onKeyChange(scope)">
                     <el-option v-for="t in tableKeyOptions" :key="t.id" :label="t.tableKey + ' — ' + t.tableName" :value="t.tableKey"></el-option>
                   </el-select>
                   <div v-else class="ro-text">{{ scope.tableKey || '—' }}</div>
                 </el-form-item>
                 <el-form-item label="表json" required :label-width="100" style="margin-bottom:10px">
                   <template v-if="!isView">
-                    <div style="display:flex;align-items:center;gap:10px">
-                      <el-button type="primary" plain @click="openJsonDialog(i)">编辑表json</el-button>
-                      <span :style="{ color: scope.tableJson ? '#67c23a' : '#909399', fontSize: '13px' }">{{ scope.tableJson ? '已配置 ✓' : '未配置' }}</span>
+                    <div style="width:100%">
+                      <div v-if="scope.tableJson" class="ro-text" style="white-space:pre-wrap;background:#f5f7fa;border:1px solid #e4e7ed;border-radius:4px;padding:8px 10px;max-height:180px;overflow:auto;font-size:12px;line-height:1.6">{{ scope.tableJson }}</div>
+                      <div v-else style="color:#c0c4cc;font-size:13px">选择数据表key后自动带出该数据表配置的表json；若未带出，请先在「数据表管理」中为该数据表维护表json（本页不可编辑表json）</div>
                     </div>
                   </template>
                   <div v-else class="ro-text" style="white-space:pre-wrap">{{ scope.tableJson || '—' }}</div>
-                </el-form-item>
-                <el-form-item label="数据表文件" :label-width="100" style="margin-bottom:0">
-                  <template v-if="!isView">
-                    <div v-if="scope.tableFile" style="display:flex;align-items:center;gap:6px;background:#f5f7fa;padding:6px 12px;border-radius:4px;margin-bottom:6px">
-                      <span style="font-size:13px">{{ scope.tableFile.name }}</span>
-                      <el-button link type="danger" size="small" @click="removeTableFile(i)">删除</el-button>
-                    </div>
-                    <el-button v-else type="primary" plain @click="addTableFile(i)">+ 上传数据表文件</el-button>
-                    <div style="color:#909399;font-size:12px;line-height:1.5">选填；上传后后端以文件生成表结构（支持 Excel、CSV）</div>
-                  </template>
-                  <div v-else class="ro-text">{{ scope.tableFile ? scope.tableFile.name : '—' }}</div>
                 </el-form-item>
               </div>
               <el-button v-if="!isView" type="primary" plain @click="addScope">+ 添加数据表</el-button>
@@ -6107,22 +5997,6 @@ app.component('P36Form', {
       </template>
     </el-dialog>
 
-    <el-dialog title="编辑表json" v-model="jsonDialogVisible" width="780px" :close-on-click-modal="false" destroy-on-close>
-      <template v-if="jsonDialogIndex >= 0 && form.scopes[jsonDialogIndex]">
-        <div style="margin-bottom:10px">
-          <el-button size="small" @click="formatScope(jsonDialogIndex)">格式化</el-button>
-          <el-button size="small" @click="clearScope(jsonDialogIndex)">清空</el-button>
-          <el-button size="small" @click="copyScope(jsonDialogIndex)">复制结果</el-button>
-        </div>
-        <div :id="'scope-json-editor-' + jsonDialogIndex" style="border:1px solid #dcdfe6;border-radius:4px;height:280px;width:100%"></div>
-        <div style="font-weight:600;margin:14px 0 6px">输出预览（只读）</div>
-        <pre :style="{ border:'1px solid ' + (form.scopes[jsonDialogIndex].previewError ? '#f56c6c' : '#e4e7ed'), borderRadius:'4px', background: form.scopes[jsonDialogIndex].previewError ? '#fef0f0' : '#fafafa', color: form.scopes[jsonDialogIndex].previewError ? '#f56c6c' : '#303133', margin:0, padding:'10px 12px', minHeight:'80px', maxHeight:'180px', width:'100%', overflow:'auto', whiteSpace:'pre-wrap', wordBreak:'break-all', fontSize:'13px', lineHeight:'1.6', boxSizing:'border-box' }">{{ form.scopes[jsonDialogIndex].previewText || '（点击「格式化」按钮后将在此展示标准 JSON 格式）' }}</pre>
-      </template>
-      <template #footer>
-        <el-button @click="jsonDialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="confirmJson">确定</el-button>
-      </template>
-    </el-dialog>
   </div>`,
 });
 
@@ -6246,7 +6120,9 @@ app.component('P37', {
       q: { tableKey: '', tableName: '' },
       formVisible: false,
       formTitle: '新增数据表',
-      form: { id: null, tableKey: '', tableName: '', desc: '' },
+      form: { id: null, tableKey: '', tableName: '', desc: '', tableJson: '' },
+      jsonOk: false,
+      jsonError: '',
     };
   },
   computed: {
@@ -6266,28 +6142,51 @@ app.component('P37', {
     resetQ() { this.q = { tableKey: '', tableName: '' }; },
     isProtected(row) { return row.status === '启用' || this.usedTableKeys.has(row.tableKey); },
     openAdd() {
-      this.form = { id: null, tableKey: '', tableName: '', desc: '' };
+      this.form = { id: null, tableKey: '', tableName: '', desc: '', tableJson: '' };
       this.formTitle = '新增数据表';
+      this.jsonOk = false;
+      this.jsonError = '';
       this.formVisible = true;
     },
     openEdit(row) {
-      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, desc: row.desc || '' };
+      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, desc: row.desc || '', tableJson: row.tableJson || '' };
       this.formTitle = '编辑数据表';
+      this.jsonOk = false;
+      this.jsonError = '';
       this.formVisible = true;
+    },
+    // 表json：可编辑文本框输入 + 「校验」校验；保存时同样要求校验通过（合法 JSON 对象）
+    validateJson() {
+      const raw = (this.form.tableJson || '').trim();
+      if (!raw) { this.jsonOk = false; this.jsonError = '请输入表json内容'; this.$message.warning('请输入表json内容'); return; }
+      try {
+        const v = JSON.parse(raw);
+        if (typeof v !== 'object' || v === null || Array.isArray(v)) throw new Error('表json必须为合法JSON对象');
+        this.form.tableJson = JSON.stringify(v, null, 2);
+        this.jsonOk = true;
+        this.jsonError = '';
+        this.$message.success('表json校验通过（合法 JSON 对象）');
+      } catch (e) {
+        this.jsonOk = false;
+        this.jsonError = 'JSON 校验未通过：' + ((e && e.message) ? e.message : String(e));
+        this.$message.error(this.jsonError);
+      }
     },
     saveForm() {
       if (!this.form.tableKey.trim()) return ElMessage.warning('请输入数据表key');
       if (!this.form.tableName.trim()) return ElMessage.warning('请输入数据库表名称');
+      this.validateJson();
+      if (!this.jsonOk) return ElMessage.warning('请先通过「校验」确认表json 为合法 JSON 对象');
       if (this.form.id) {
         const row = this.rows.find(r => r.id === this.form.id);
-        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim() }); }
+        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
         const src = DATA_TABLES.find(r => r.id === this.form.id);
-        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim() }); }
+        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
         ElMessage.success('编辑成功');
       } else {
         if (DATA_TABLES.some(r => r.tableKey === this.form.tableKey.trim())) return ElMessage.warning('数据表key已存在');
         const newId = DATA_TABLES.length ? Math.max(...DATA_TABLES.map(r => r.id)) + 1 : 1;
-        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
+        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson, status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
         DATA_TABLES.unshift(rec);
         this.rows.unshift(rec);
         ElMessage.success('新增成功');
@@ -6349,7 +6248,7 @@ app.component('P37', {
       </el-table>
       <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end" />
     </div>
-    <el-dialog v-model="formVisible" :title="formTitle" width="500px" :close-on-click-modal="false">
+    <el-dialog v-model="formVisible" :title="formTitle" width="760px" :close-on-click-modal="false">
       <el-form label-width="120px">
         <el-form-item label="数据表key" required>
           <el-input v-model="form.tableKey" placeholder="请输入数据表key" maxlength="64" :disabled="!!form.id" />
@@ -6359,6 +6258,18 @@ app.component('P37', {
         </el-form-item>
         <el-form-item label="业务场景说明">
           <el-input v-model="form.desc" type="textarea" :rows="3" placeholder="请输入业务场景说明（选填）" maxlength="200" show-word-limit />
+        </el-form-item>
+        <el-form-item label="表json" required>
+          <div style="width:100%">
+            <el-input v-model="form.tableJson" type="textarea" :rows="8" spellcheck="false" placeholder='请输入表结构 JSON，如：{"studentId":"学号"}（合法 JSON 对象）' style="font-family:Consolas,Monaco,monospace"></el-input>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+              <el-button size="small" type="primary" plain @click="validateJson">校验</el-button>
+              <span v-if="jsonOk" style="color:#67c23a;font-size:13px">✓ 表json 为合法 JSON 对象</span>
+              <span v-else-if="jsonError" style="color:#f56c6c;font-size:13px">{{ jsonError }}</span>
+              <span v-else style="color:#909399;font-size:13px">可编辑输入框：直接粘贴/修改表结构 JSON，点击「校验」检查是否为合法 JSON 对象</span>
+            </div>
+            <div style="color:#909399;font-size:12px;line-height:1.5;margin-top:6px">维护数据表的表结构 JSON（合法 JSON 对象）；数据回流新增选择该数据表 key 时自动带出。</div>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
