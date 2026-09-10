@@ -469,6 +469,41 @@ const DATA_BACKFLOW = [
   { id: 4, name: '教师考勤回流', appId: '1001', appName: '课堂互动助手', devId: 1, devName: '南宁智课教育科技有限公司', dockingType: '开发者提供接口', pushMethod: '增量', docs: [], authKey: '', domain: '', syncStatus: '待对接', applyTime: '2026-09-05 11:00' },
 ];
 
+/* 接口分类（授权接口弹窗的查询条件；与接口新增/编辑的接口分类同口径） */
+const API_CATEGORY_OPTIONS = ['基础服务', '业务服务', '数据服务'];
+
+/* 数据项说明（数据授权记录查看 P10Auth「数据清单」列展示；按接口名称给出数据项说明） */
+const DATA_ITEM_DESC = {
+  '学生信息查询接口': '学生学籍基础信息（学号、姓名、班级、年级、就读状态）',
+  '考勤数据接口': '学生/教职工日常考勤打卡记录（考勤日期、考勤状态）',
+  '成绩上报接口': '学生各科考试成绩明细（学号、学科、成绩、考试标识）',
+  '课程同步接口': '课程基础信息（课程标识、课程名称、授课教师、课时）',
+  '教学计划接口': '学校教学计划安排（年级、学科、教学进度）',
+  '本校选课接口': '本校学生选课记录（学生、课程、选课时间）',
+  '本校成绩查询接口': '本校学生成绩查询数据（学号、学科、成绩）',
+};
+
+/* 学校 / 机构可选列表（数据授权表单的「学校名称 / 机构名称」改为可搜索多选后使用；
+ * 搜索时最多返回 50 条匹配结果） */
+const SCHOOL_OPTIONS = (() => {
+  const cities = ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市', '防城港市'];
+  const names = ['第一中学', '第二中学', '第三中学', '高级中学', '实验中学', '实验小学', '第一小学', '第二小学'];
+  const arr = [];
+  cities.forEach(c => names.forEach(n => arr.push(c + n)));
+  return arr;
+})();
+const ORG_OPTIONS = (() => {
+  const cities = ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市', '防城港市'];
+  const arr = [];
+  cities.forEach(c => { arr.push(c + '教育局'); arr.push(c + '教师进修学校'); arr.push(c + '职业技术教育中心'); arr.push(c + '招生考试院'); });
+  return arr;
+})();
+// 名称搜索：按关键字模糊匹配，最多返回 50 条
+function searchNameOptions(all, kw) {
+  const k = (kw || '').trim();
+  return all.filter(x => !k || x.includes(k)).slice(0, 50);
+}
+
 const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待对接':'warning', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
 
 const app = Vue.createApp({
@@ -2221,13 +2256,13 @@ app.component('P08Auth', {
   props: ['ctx'],
   data() {
     return {
-      curRowsPage: 1, curRowsSize: 20, q:{ name:'', appId:'', status:'' }, showKey:{} };
+      curRowsPage: 1, curRowsSize: 20, q:{ orgName:'', appId:'', status:'' }, showKey:{} };
   },
   computed: {
     isDev(){ return this.$root.role==='dev'; },
     // 所有记录（授权记录 + 已审批通过）合并为单一列表，按机构拆分，一个机构一条
     allRows(){
-      const arr = API_APPS.filter(r=> (!this.q.name||r.apis.some(a=>a.name.includes(this.q.name))) && (!this.q.appId||r.appId.includes(this.q.appId)) && (!this.q.status||r.status===this.q.status));
+      const arr = API_APPS.filter(r=> (!this.q.orgName||String(r.orgs||'').includes(this.q.orgName)) && (!this.q.appId||r.appId.includes(this.q.appId)) && (!this.q.status||r.status===this.q.status));
       return arr.flatMap(r=>this.splitOrgs(r));
     },
     curRows(){
@@ -2254,13 +2289,13 @@ app.component('P08Auth', {
   template: `
   <div>
     <div class="toolbar">
-      <span class="q-label">接口名称</span><el-input v-model="q.name" placeholder="请输入接口名称" clearable style="width:150px"></el-input>
+      <span class="q-label">机构名称</span><el-input v-model="q.orgName" placeholder="请输入机构名称" clearable style="width:150px"></el-input>
       <span class="q-label">应用ID</span><el-input v-model="q.appId" placeholder="请输入应用ID" clearable style="width:130px"></el-input>
       <span class="q-label">审批状态</span><el-select v-model="q.status" placeholder="请选择" clearable style="width:110px">
         <el-option label="未审批" value="未审批"></el-option><el-option label="已审批" value="已审批"></el-option><el-option label="已驳回" value="已驳回"></el-option>
       </el-select>
       <el-button type="primary">查询</el-button>
-      <el-button @click="q.name='';q.appId='';q.status=''">重置</el-button>
+      <el-button @click="q.orgName='';q.appId='';q.status=''">重置</el-button>
       <span style="color:#909399;font-size:12px">未审批及最新时间优先排序</span>
     </div>
     <div class="card">
@@ -2390,6 +2425,7 @@ app.component('P09Auth', {
     suiteKeyOf(appId){ const a = (APP_LIST||[]).find(x=>x.appId===appId); return a ? a.suiteKey : ''; },
     docOf(api){ const a = (APIS||[]).find(x=>x.service===api.service); return a ? (a.doc||'') : ''; },
     openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
+    dataItemDescOf(api){ return (api && (api.desc || DATA_ITEM_DESC[api.name])) || '—'; },
     beforeCredUpload(file){
       const isLt10M = file.size / 1024 / 1024 < 10;
       if(!isLt10M){ this.$message.error('单个图片不可超过 10MB'); }
@@ -2431,16 +2467,13 @@ app.component('P09Auth', {
           <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (row.whiteList||[]).join('、') || '—' }}</div></el-form-item></el-col>
         </el-row>
       </el-form>
-      <div style="font-weight:600;margin:8px 0 12px">申请接口（共 {{ row.apis.length }} 个）</div>
+      <div style="font-weight:600;margin:8px 0 12px">数据清单（共 {{ row.apis.length }} 条）</div>
       <el-table :data="row.apis.slice((apiPage-1)*apiPageSize, apiPage*apiPageSize)" border size="small" style="margin-bottom:8px">
-        <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
-        <el-table-column prop="service" label="接口服务名" min-width="140"></el-table-column>
-        <el-table-column prop="apiType" label="接口平台" width="100"></el-table-column>
-        <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
-        <el-table-column prop="category" label="接口分类" width="120"></el-table-column>
-        <el-table-column label="最大调用量/日" width="110">
-          <template #default="s"><div class="ro-text">{{ s.row.maxCalls }}</div></template>
+        <el-table-column prop="name" label="数据明细" min-width="180"></el-table-column>
+        <el-table-column label="数据项说明" min-width="260" show-overflow-tooltip>
+          <template #default="s"><span>{{ dataItemDescOf(s.row) }}</span></template>
         </el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
         <el-table-column label="文档链接" min-width="130">
           <template #default="s">
             <el-link v-if="docOf(s.row)" type="primary" @click="openDoc(s.row)">查看文档</el-link>
@@ -2573,6 +2606,7 @@ app.component('P10Auth', {
     previewCred(f){ if (f && f.url) window.open(f.url); },
     docOf(api){ const a = (APIS||[]).find(x=>x.service===api.service); return a ? (a.doc||'') : ''; },
     openDoc(api){ const u = this.docOf(api); if(u) window.open(u, '_blank'); },
+    dataItemDescOf(api){ return (api && (api.desc || DATA_ITEM_DESC[api.name])) || '—'; },
   },
   template: `
   <div>
@@ -2584,23 +2618,18 @@ app.component('P10Auth', {
           <el-col :span="12"><el-form-item label="开发者名称"><div class="ro-text">{{ row.vendor }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="同步范围类型"><div class="ro-text">{{ (row.rangeTypes||[]).join('、') || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="机构名称"><div class="ro-text">{{ row.orgs || '—' }}</div></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="是否包含下级"><div class="ro-text">{{ row.includeSub || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="授权截止时间"><div class="ro-text">{{ row.deadline || '—' }}</div></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="申请时间"><div class="ro-text">{{ row.applyTime }}</div></el-form-item></el-col>
           <el-col :span="24"><el-form-item label="申请理由"><div class="ro-text">{{ row.reason }}</div></el-form-item></el-col>
-          <el-col :span="24"><el-form-item label="白名单"><div class="ro-text">{{ (row.whiteList||[]).join('、') || '—' }}</div></el-form-item></el-col>
         </el-row>
       </el-form>
-      <div style="font-weight:600;margin:8px 0 12px">申请接口（共 {{ row.apis.length }} 个）</div>
+      <div style="font-weight:600;margin:8px 0 12px">数据清单（共 {{ row.apis.length }} 条）</div>
       <el-table :data="row.apis.slice((apiPage-1)*apiPageSize, apiPage*apiPageSize)" border size="small" style="margin-bottom:8px">
-        <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
-        <el-table-column prop="service" label="接口服务名" min-width="140"></el-table-column>
-        <el-table-column prop="apiType" label="接口平台" width="100"></el-table-column>
-        <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
-        <el-table-column prop="category" label="接口分类" width="120"></el-table-column>
-        <el-table-column label="最大调用量/日" width="110">
-          <template #default="s"><div class="ro-text">{{ s.row.maxCalls }}</div></template>
+        <el-table-column prop="name" label="数据明细" min-width="180"></el-table-column>
+        <el-table-column label="数据项说明" min-width="260" show-overflow-tooltip>
+          <template #default="s"><span>{{ dataItemDescOf(s.row) }}</span></template>
         </el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
         <el-table-column label="文档链接" min-width="130">
           <template #default="s">
             <el-link v-if="docOf(s.row)" type="primary" @click="openDoc(s.row)">查看文档</el-link>
@@ -3557,6 +3586,8 @@ app.component('P28ApiAuth', {
       apiDialog: false,
       tempApiIds: [],
       apiKeyword: '',
+      apiCategory: '',
+      categoryOptions: API_CATEGORY_OPTIONS,
     };
   },
   computed: {
@@ -3564,12 +3595,15 @@ app.component('P28ApiAuth', {
     needAuthApis() { return APIS.filter(a => a.visible && a.needAuth); },
     filterApis() {
       const kw = (this.apiKeyword || '').trim().toLowerCase();
-      return this.needAuthApis.filter(a => !kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw));
+      return this.needAuthApis.filter(a =>
+        (!kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw)) &&
+        (!this.apiCategory || a.apiCategory === this.apiCategory)
+      );
     },
     chosenApis() { return APIS.filter(a => this.form.apiIds.includes(a.id)); },
   },
   methods: {
-    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiKeyword = ''; this.apiDialog = true; },
+    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiKeyword = ''; this.apiCategory = ''; this.apiDialog = true; },
     onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
     saveApiDialog() {
       this.form.apiIds = [...this.tempApiIds];
@@ -3646,9 +3680,13 @@ app.component('P28ApiAuth', {
     </div>
 
     <el-dialog title="选择授权接口" v-model="apiDialog" width="760px">
-      <div style="margin-bottom:10px">
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:280px"></el-input>
-        <span style="color:#909399;font-size:12px;margin-left:10px">可选范围为平台对外可见且需授权（「是否需要授权=是」）的接口</span>
+        <span class="q-label">接口分类</span>
+        <el-select v-model="apiCategory" placeholder="请选择" clearable style="width:150px">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
+        <span style="color:#909399;font-size:12px">可选范围为平台对外可见且需授权（「是否需要授权=是」）的接口</span>
       </div>
       <el-table :data="pageSlice(filterApis, 'filterApis')" border size="small" @selection-change="onApiChange" :row-key="r => r.id">
         <el-table-column type="selection" :reserve-selection="true" width="45"></el-table-column>
@@ -3680,21 +3718,54 @@ app.component('P28DataAuth', {
       filteredApisPage: 1, filteredApisSize: 10,
       appId,
       f: { rangeTypes: [], schoolNames: '', orgNames: '', apiIds: [], deadline: '' },
-      apiDialog: { visible: false, keyword: '' },
+      apiDialog: { visible: false, keyword: '', category: '' },
       tempApiIds: [],
+      categoryOptions: API_CATEGORY_OPTIONS,
+      schoolOptions: SCHOOL_OPTIONS.slice(0, 50),
+      orgOptions: ORG_OPTIONS.slice(0, 50),
+      schoolLoading: false,
+      orgLoading: false,
     };
   },
   computed: {
     appObj() { return PLATFORM_APPS.find(x => x.appId === this.appId); },
     showSchool() { return this.f.rangeTypes.includes('学校'); },
     showOrg() { return this.f.rangeTypes.includes('教育局'); },
+    // 学校/机构名称：可搜索多选，值以英文分号(;)拼接保存（与原多行文本口径一致）
+    schoolNameList: {
+      get() { return _splitNamesX(this.f.schoolNames || ''); },
+      set(v) { this.f.schoolNames = (v || []).join(';'); },
+    },
+    orgNameList: {
+      get() { return _splitNamesX(this.f.orgNames || ''); },
+      set(v) { this.f.orgNames = (v || []).join(';'); },
+    },
     filteredApis() {
       const kw = (this.apiDialog.keyword || '').trim();
-      return APIS.filter(a => a.visible !== false && (!kw || a.name.includes(kw)));
+      return APIS.filter(a => a.visible !== false && (!kw || a.name.includes(kw)) && (!this.apiDialog.category || a.apiCategory === this.apiDialog.category));
     },
+    chosenApis() { return APIS.filter(a => this.f.apiIds.includes(a.id)); },
   },
   methods: {
     apiNameOf(id) { const a = APIS.find(x => x.id === id); return a ? a.name : ''; },
+    searchSchools(kw) {
+      this.schoolLoading = true;
+      setTimeout(() => {
+        const matched = searchNameOptions(SCHOOL_OPTIONS, kw);
+        const sel = this.schoolNameList;
+        this.schoolOptions = [...sel, ...matched.filter(x => !sel.includes(x))];
+        this.schoolLoading = false;
+      }, 200);
+    },
+    searchOrgs(kw) {
+      this.orgLoading = true;
+      setTimeout(() => {
+        const matched = searchNameOptions(ORG_OPTIONS, kw);
+        const sel = this.orgNameList;
+        this.orgOptions = [...sel, ...matched.filter(x => !sel.includes(x))];
+        this.orgLoading = false;
+      }, 200);
+    },
     disabledDate(time) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
@@ -3703,11 +3774,13 @@ app.component('P28DataAuth', {
     openApiDialog() {
       this.apiDialog.visible = true;
       this.apiDialog.keyword = '';
+      this.apiDialog.category = '';
       this.tempApiIds = [...this.f.apiIds];
       this.$nextTick(() => {
-        if (this.$refs.apiTable) {
-          this.filteredApis.forEach(r => { if (this.tempApiIds.includes(r.id)) this.$refs.apiTable.toggleRowSelection(r, true); });
-        }
+        const table = this.$refs.apiTable;
+        if (!table) return;
+        table.clearSelection();
+        this.filteredApis.forEach(r => { if (this.tempApiIds.includes(r.id)) table.toggleRowSelection(r, true); });
       });
     },
     onApiSelect(sel) { this.tempApiIds = sel.map(r => r.id); },
@@ -3757,17 +3830,30 @@ app.component('P28DataAuth', {
           <div style="color:#909399;font-size:12px;line-height:1.5">可多选；勾选「学校」时展示学校名称，勾选「教育局」时展示机构名称</div>
         </el-form-item>
         <el-form-item v-if="showSchool" label="学校名称" required>
-          <el-input v-model="f.schoolNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入学校名称，多个学校用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学"></el-input>
+          <el-select v-model="schoolNameList" multiple filterable remote clearable :remote-method="searchSchools" :loading="schoolLoading" placeholder="搜索并选择学校名称（最多展示 50 条）" style="width:100%">
+            <el-option v-for="s in schoolOptions" :key="s" :label="s" :value="s"></el-option>
+          </el-select>
+          <div style="color:#909399;font-size:12px;line-height:1.5">支持多选；按名称模糊搜索，最多展示 50 条匹配结果</div>
         </el-form-item>
         <el-form-item v-if="showOrg" label="机构名称" required>
-          <el-input v-model="f.orgNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;桂林市教育局"></el-input>
+          <el-select v-model="orgNameList" multiple filterable remote clearable :remote-method="searchOrgs" :loading="orgLoading" placeholder="搜索并选择机构名称（最多展示 50 条）" style="width:100%">
+            <el-option v-for="o in orgOptions" :key="o" :label="o" :value="o"></el-option>
+          </el-select>
+          <div style="color:#909399;font-size:12px;line-height:1.5">支持多选；按名称模糊搜索，最多展示 50 条匹配结果</div>
         </el-form-item>
         <el-form-item label="授权接口" required>
           <div style="width:100%">
             <el-button type="primary" plain @click="openApiDialog">选择接口（已选 {{ f.apiIds.length }} 个）</el-button>
-            <div v-if="f.apiIds.length" style="margin-top:8px">
-              <el-tag v-for="id in f.apiIds" :key="id" closable @close="removeApi(id)" style="margin:2px 8px 2px 0">{{ apiNameOf(id) }}</el-tag>
-            </div>
+            <el-table v-if="chosenApis.length" :data="chosenApis" border size="small" style="margin-top:10px;width:100%">
+              <el-table-column prop="name" label="接口名称" min-width="180"></el-table-column>
+              <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
+              <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
+              <el-table-column label="操作" width="70">
+                <template #default="s">
+                  <el-button link type="danger" size="small" @click="removeApi(s.row.id)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
           </div>
         </el-form-item>
         <el-form-item label="授权截止时间" required>
@@ -3784,12 +3870,16 @@ app.component('P28DataAuth', {
     <el-dialog title="选择授权接口" v-model="apiDialog.visible" width="720px">
       <div class="toolbar">
         <span class="q-label">接口名称</span><el-input v-model="apiDialog.keyword" placeholder="请输入接口名称" clearable style="width:180px"></el-input>
-        <el-button @click="apiDialog.keyword=''">重置</el-button>
+        <span class="q-label">接口分类</span>
+        <el-select v-model="apiDialog.category" placeholder="请选择" clearable style="width:140px">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
+        <el-button @click="apiDialog.keyword='';apiDialog.category=''">重置</el-button>
         <div style="flex:1"></div>
         <span style="color:#909399;font-size:12px">已选 {{ tempApiIds.length }} 个接口</span>
       </div>
-      <el-table :data="pageSlice(filteredApis, 'filteredApis')" border size="small" ref="apiTable" @selection-change="onApiSelect" style="margin-top:4px">
-        <el-table-column type="selection" width="45"></el-table-column>
+      <el-table :data="pageSlice(filteredApis, 'filteredApis')" border size="small" ref="apiTable" @selection-change="onApiSelect" :row-key="r => r.id" style="margin-top:4px">
+        <el-table-column type="selection" width="45" :reserve-selection="true"></el-table-column>
         <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
         <el-table-column prop="service" label="接口服务名" min-width="140"></el-table-column>
         <el-table-column prop="type" label="数据敏感等级" width="110"></el-table-column>
@@ -3944,10 +4034,11 @@ app.component('P28AuthView', {
   props: ['ctx'],
   data() {
     const appId = (this.ctx && this.ctx.appId) || '';
-    const buildIfRows = (aid) => P28_APP_IF_AUTH.filter(x => x.appId === aid).map(r => {
+    // 查看页仅展示「启用」的有效授权记录（已取消/停用的记录不在本页展示）
+    const buildIfRows = (aid) => P28_APP_IF_AUTH.filter(x => x.appId === aid && x.status === '启用').map(r => {
       const a = APIS.find(x => x.id === r.apiId) || {};
       return {
-        id: r.id, apiId: r.apiId, name: a.name || ('接口' + r.apiId), service: a.service || '—', type: a.type || '—', maxCalls: r.maxCalls != null ? r.maxCalls : '—', deadline: r.deadline || '—', status: r.status || '启用' };
+        id: r.id, apiId: r.apiId, name: a.name || ('接口' + r.apiId), service: a.service || '—', type: a.type || '—', maxCalls: r.maxCalls != null ? r.maxCalls : '—', deadline: r.deadline || '—' };
     });
     return {
       appId,
@@ -3956,7 +4047,7 @@ app.component('P28AuthView', {
       ifPage: 1,
       daPage: 1,
       ifRows: buildIfRows(appId),
-      daRows: P28_APP_DATA_AUTH.filter(x => x.appId === appId).map(x => ({ ...x })),
+      daRows: P28_APP_DATA_AUTH.filter(x => x.appId === appId && x.status === '启用').map(x => ({ ...x })),
     };
   },
   computed: {
@@ -3973,7 +4064,7 @@ app.component('P28AuthView', {
   template: `
   <div>
     <div class="card" style="background:#eef6ff;border:1px solid #bcd9f7;color:#2c5fa8;font-size:13px;line-height:1.6;padding:10px 14px">
-      应用名称：{{ appObj ? appObj.name : (appId || '—') }}　｜　所属厂商：{{ appObj ? appObj.vendor : '—' }}。以下为该应用的全部授权记录（接口授权记录 + 数据授权记录），仅用于查看；如需取消 / 启用授权，请在「取消授权」页面操作。
+      应用名称：{{ appObj ? appObj.name : (appId || '—') }}　｜　所属厂商：{{ appObj ? appObj.vendor : '—' }}。以下为该应用当前有效的授权记录（所有审批通过的接口授权记录 + 数据授权记录），仅用于查看；如需取消 / 启用授权，请在「取消授权」页面操作。
     </div>
     <div style="height:14px"></div>
     <div class="card">
@@ -3985,7 +4076,6 @@ app.component('P28AuthView', {
             <el-table-column prop="type" label="数据敏感等级" width="120"></el-table-column>
             <el-table-column prop="maxCalls" label="最大调用量/日" width="120"></el-table-column>
             <el-table-column label="授权截止时间" width="130"><template #default="s">{{ s.row.deadline }}</template></el-table-column>
-            <el-table-column label="状态" width="90" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
           </el-table>
           <div v-if="!ifRows.length" style="color:#909399;text-align:center;padding:24px 0">暂无接口授权记录</div>
           <el-pagination v-if="ifRows.length > pageSize" layout="total, prev, pager, next" :total="ifRows.length" :page-size="pageSize" :current-page="ifPage" @current-change="ifPage=$event" style="margin-top:10px"></el-pagination>
@@ -3996,7 +4086,6 @@ app.component('P28AuthView', {
             <el-table-column label="机构名称" min-width="200"><template #default="s">{{ s.row.orgName }}</template></el-table-column>
             <el-table-column label="授权的接口" min-width="200"><template #default="s">{{ apiNamesOf(s.row) }}</template></el-table-column>
             <el-table-column label="授权截止时间" width="130"><template #default="s"><span>{{ s.row.deadline || '—' }}</span></template></el-table-column>
-            <el-table-column label="状态" width="90" align="center"><template #default="s"><st-tag :v="s.row.status"/></template></el-table-column>
           </el-table>
           <div v-if="!daRows.length" style="color:#909399;text-align:center;padding:24px 0">暂无数据授权记录</div>
           <el-pagination v-if="daRows.length > pageSize" layout="total, prev, pager, next" :total="daRows.length" :page-size="pageSize" :current-page="daPage" @current-change="daPage=$event" style="margin-top:10px"></el-pagination>
@@ -4349,9 +4438,14 @@ app.component('P28Apply', {
       apiDialog: false,
       declVisible: false,
       chosenApiIds: [],
-      apiMaxCalls: {},     // 接口id -> 该接口的最大调用量/日
       apiPage: 1,
       apiPageSize: 5,
+      apiCategory: '',
+      categoryOptions: API_CATEGORY_OPTIONS,
+      schoolOptions: SCHOOL_OPTIONS.slice(0, 50),
+      orgOptions: ORG_OPTIONS.slice(0, 50),
+      schoolLoading: false,
+      orgLoading: false,
       form: {
         syncRangeTypes: ['学校'],
         schoolNames: '',
@@ -4396,12 +4490,50 @@ app.component('P28Apply', {
     showSchool() { return this.form.syncRangeTypes.includes('学校'); },
     showOrg() { return this.form.syncRangeTypes.includes('教育局'); },
     pagedChosen() { return this.chosenApis.slice((this.apiPage - 1) * this.apiPageSize, this.apiPage * this.apiPageSize); },
+    // 授权接口弹窗候选：在可选范围基础上按「接口分类」筛选
+    dlgVisibleApis() { const c = this.apiCategory; return c ? this.visibleApis.filter(a => a.apiCategory === c) : this.visibleApis; },
+    // 学校/机构名称：可搜索多选，值以英文分号(;)拼接保存（与原多行文本口径一致）
+    schoolNameList: {
+      get() { return _splitNamesX(this.form.schoolNames || ''); },
+      set(v) { this.form.schoolNames = (v || []).join(';'); },
+    },
+    orgNameList: {
+      get() { return _splitNamesX(this.form.orgNames || ''); },
+      set(v) { this.form.orgNames = (v || []).join(';'); },
+    },
   },
   methods: {
-    openApiDialog() { this.apiDialog = true; },
+    openApiDialog() {
+      this.apiCategory = '';
+      this.apiDialog = true;
+      // 回显已勾选的接口（跨页/筛选保留）
+      this.$nextTick(() => {
+        const table = this.$refs.apiApplyTable;
+        if (!table) return;
+        table.clearSelection();
+        this.dlgVisibleApis.forEach(row => { if (this.chosenApiIds.includes(row.id)) table.toggleRowSelection(row, true); });
+      });
+    },
+    searchSchools(kw) {
+      this.schoolLoading = true;
+      setTimeout(() => {
+        const matched = searchNameOptions(SCHOOL_OPTIONS, kw);
+        const sel = this.schoolNameList;
+        this.schoolOptions = [...sel, ...matched.filter(x => !sel.includes(x))];
+        this.schoolLoading = false;
+      }, 200);
+    },
+    searchOrgs(kw) {
+      this.orgLoading = true;
+      setTimeout(() => {
+        const matched = searchNameOptions(ORG_OPTIONS, kw);
+        const sel = this.orgNameList;
+        this.orgOptions = [...sel, ...matched.filter(x => !sel.includes(x))];
+        this.orgLoading = false;
+      }, 200);
+    },
     onApiChange(rows) {
       this.chosenApiIds = rows.map(r => r.id);
-      rows.forEach(r => { if (this.apiMaxCalls[r.id] == null) { this.apiMaxCalls[r.id] = r.maxCalls || 10000; } });
     },
     removeApi(id) { this.chosenApiIds = this.chosenApiIds.filter(x => x !== id); },
     onRangeChange() {
@@ -4415,8 +4547,6 @@ app.component('P28Apply', {
     },
     submit() {
       if (!this.chosenApiIds.length) { this.$message.warning('请至少选择一个授权接口'); return; }
-      const badQuota = this.chosenApis.find(a => !this.apiMaxCalls[a.id] || !Number.isInteger(this.apiMaxCalls[a.id]) || this.apiMaxCalls[a.id] <= 0);
-      if (badQuota) { this.$message.warning('请为每个授权接口填写正整数的最大调用量/日'); return; }
       if (!this.form.deadline) { this.$message.warning('请选择授权截止时间'); return; }
       if (this.form.syncRangeTypes.includes('学校') && !this.form.schoolNames.trim()) { this.$message.warning('请填写学校名称'); return; }
       if (this.form.syncRangeTypes.includes('教育局') && !this.form.orgNames.trim()) { this.$message.warning('请填写机构名称'); return; }
@@ -4440,13 +4570,6 @@ app.component('P28Apply', {
               <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
               <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
               <el-table-column prop="type" label="数据敏感等级" width="110"></el-table-column>
-              <el-table-column label="最大调用量/日" width="170">
-                <template #default="s">
-                  <el-input v-model.number="apiMaxCalls[s.row.id]" placeholder="请输入正整数" size="small" style="width:130px">
-                    <template #append>次</template>
-                  </el-input>
-                </template>
-              </el-table-column>
               <el-table-column label="操作" width="70">
                 <template #default="s">
                   <el-button link type="danger" size="small" @click="removeApi(s.row.id)">删除</el-button>
@@ -4455,7 +4578,7 @@ app.component('P28Apply', {
             </el-table>
             <el-pagination v-if="chosenApis.length > apiPageSize" layout="prev, pager, next" :total="chosenApis.length" :page-size="apiPageSize" :current-page="apiPage" @current-change="apiPage=$event" style="margin-top:8px"></el-pagination>
             <div style="color:#909399;font-size:12px;margin-top:6px;line-height:1.6">
-              授权接口可选范围为本开发者名下应用已申请审批通过的接口：{{ myPassedApiNames.join('、') || '暂无（请先在「接口申请」中为该应用申请接口并经桂教通超管审批通过）' }}；最大调用量/日按接口维度分别设置（正整数），接口名称不可编辑
+              授权接口可选范围为本开发者名下应用已申请审批通过的接口：{{ myPassedApiNames.join('、') || '暂无（请先在「接口申请」中为该应用申请接口并经桂教通超管审批通过）' }}；接口名称不可编辑
             </div>
           </div>
         </el-form-item>
@@ -4472,10 +4595,16 @@ app.component('P28Apply', {
           </div>
         </el-form-item>
         <el-form-item label="学校名称" required v-if="showSchool">
-          <el-input type="textarea" :rows="3" v-model="form.schoolNames" placeholder="请输入学校名称，多个学校用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学" style="width:65%"></el-input>
+          <el-select v-model="schoolNameList" multiple filterable remote clearable :remote-method="searchSchools" :loading="schoolLoading" placeholder="搜索并选择学校名称（最多展示 50 条）" style="width:65%">
+            <el-option v-for="s in schoolOptions" :key="s" :label="s" :value="s"></el-option>
+          </el-select>
+          <div style="color:#909399;font-size:12px;margin-top:4px">支持多选；按名称模糊搜索，最多展示 50 条匹配结果</div>
         </el-form-item>
         <el-form-item label="机构名称" required v-if="showOrg">
-          <el-input type="textarea" :rows="3" v-model="form.orgNames" placeholder="请输入机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;桂林市教育局" style="width:65%"></el-input>
+          <el-select v-model="orgNameList" multiple filterable remote clearable :remote-method="searchOrgs" :loading="orgLoading" placeholder="搜索并选择机构名称（最多展示 50 条）" style="width:65%">
+            <el-option v-for="o in orgOptions" :key="o" :label="o" :value="o"></el-option>
+          </el-select>
+          <div style="color:#909399;font-size:12px;margin-top:4px">支持多选；按名称模糊搜索，最多展示 50 条匹配结果</div>
           <div style="color:#909399;font-size:12px;margin-top:4px">
             必填；按机构名称精确匹配其机构管理员；提交后审批仅推送给所列机构管理员；勾选【教育局】时，数据范围默认同步其下属机构
           </div>
@@ -4502,14 +4631,21 @@ app.component('P28Apply', {
       <div v-else style="background:#fdf6ec;border:1px solid #f5dab1;color:#b88230;padding:8px 12px;border-radius:4px;font-size:12px;line-height:1.6;margin-bottom:10px">
         暂无已审批通过的接口可授权：请先在「应用管理 → 接口申请」中为该应用提交接口申请，经桂教通超管审批通过后再发起数据授权申请
       </div>
-      <el-table :data="pageSlice(visibleApis, 'visibleApis')" stripe @selection-change="onApiChange">
-        <el-table-column type="selection" width="50"></el-table-column>
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="q-label">接口分类</span>
+        <el-select v-model="apiCategory" placeholder="请选择" clearable style="width:160px">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
+        <span style="color:#909399;font-size:12px">按接口分类筛选可选接口</span>
+      </div>
+      <el-table ref="apiApplyTable" :data="pageSlice(dlgVisibleApis, 'visibleApis')" stripe @selection-change="onApiChange" :row-key="r => r.id">
+        <el-table-column type="selection" width="50" :reserve-selection="true"></el-table-column>
         <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
         <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
         <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
         <el-table-column label="请求方式" width="110"><template #default="s">{{ s.row.methods.join('、') }}</template></el-table-column>
       </el-table>
-      <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="visibleApis.length" :page-size="visibleApisSize" :current-page="visibleApisPage" @current-change="visibleApisPage=$event"></el-pagination>
+      <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="dlgVisibleApis.length" :page-size="visibleApisSize" :current-page="visibleApisPage" @current-change="visibleApisPage=$event"></el-pagination>
       <template #footer>
         <el-button @click="apiDialog=false">取消</el-button>
         <el-button type="primary" @click="apiDialog=false">确定</el-button>
@@ -4542,6 +4678,8 @@ app.component('P28ApplyApi', {
       apiDialog: false,
       chosenApiIds: ids.slice(),
       tempApiIds: [],
+      apiCategory: '',
+      categoryOptions: API_CATEGORY_OPTIONS,
       apiPage: 1,
       apiPageSize: 5,
       deadline: '',
@@ -4557,6 +4695,8 @@ app.component('P28ApplyApi', {
   computed: {
     chosenApis() { return APIS.filter(a => this.chosenApiIds.includes(a.id)); },
     visibleApis() { return APIS.filter(a => a.visible && a.needAuth); },
+    // 授权接口弹窗候选：在可选范围基础上按「接口分类」筛选
+    dlgVisibleApis() { const c = this.apiCategory; return c ? this.visibleApis.filter(a => a.apiCategory === c) : this.visibleApis; },
     // 当前申请应用归属的开发者（vendor 取值见 PLATFORM_APPS，与 API_REQS.vendor 一致）
     myVendor() {
       const app = (this.$root.apps || []).find(x => x.appId === (this.ctx && this.ctx.appId));
@@ -4577,12 +4717,13 @@ app.component('P28ApplyApi', {
   methods: {
     openApiDialog() {
       this.tempApiIds = [...this.chosenApiIds];
+      this.apiCategory = '';
       this.apiDialog = true;
       this.$nextTick(() => {
         const table = this.$refs.apiSelectTable;
         if (!table) return;
         table.clearSelection();
-        this.visibleApis.forEach(row => { if (this.tempApiIds.includes(row.id)) table.toggleRowSelection(row, true); });
+        this.dlgVisibleApis.forEach(row => { if (this.tempApiIds.includes(row.id)) table.toggleRowSelection(row, true); });
       });
     },
     onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
@@ -4647,14 +4788,21 @@ app.component('P28ApplyApi', {
       <div v-if="passedApiNames.length" style="background:#fdf6ec;border:1px solid #f5dab1;color:#b88230;padding:8px 12px;border-radius:4px;font-size:12px;line-height:1.6;margin-bottom:10px">
         以下接口已在本开发者名下应用中申请审批通过，不可重复申请，已置灰不可勾选：{{ passedApiNames.join('、') }}
       </div>
-      <el-table ref="apiSelectTable" :data="pageSlice(visibleApis, 'visibleApis')" stripe @selection-change="onApiChange" :row-key="r => r.id">
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="q-label">接口分类</span>
+        <el-select v-model="apiCategory" placeholder="请选择" clearable style="width:160px">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
+        <span style="color:#909399;font-size:12px">按接口分类筛选可选接口</span>
+      </div>
+      <el-table ref="apiSelectTable" :data="pageSlice(dlgVisibleApis, 'visibleApis')" stripe @selection-change="onApiChange" :row-key="r => r.id">
         <el-table-column type="selection" width="50" :reserve-selection="true" :selectable="row => !passedApiNames.includes(row.name)"></el-table-column>
         <el-table-column prop="name" label="接口名称" min-width="160"></el-table-column>
         <el-table-column prop="service" label="接口服务名" min-width="150"></el-table-column>
         <el-table-column prop="type" label="数据敏感等级" width="100"></el-table-column>
         <el-table-column label="请求方式" width="110"><template #default="s">{{ s.row.methods.join('、') }}</template></el-table-column>
       </el-table>
-      <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="visibleApis.length" :page-size="visibleApisSize" :current-page="visibleApisPage" @current-change="visibleApisPage=$event"></el-pagination>
+      <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="dlgVisibleApis.length" :page-size="visibleApisSize" :current-page="visibleApisPage" @current-change="visibleApisPage=$event"></el-pagination>
       <template #footer>
         <el-button @click="apiDialog=false">取消</el-button>
         <el-button type="primary" @click="saveApiDialog">确定</el-button>
@@ -5204,6 +5352,12 @@ app.component('P31', {
       apiDialog: false,
       tempApiIds: [],
       apiKeyword: '',
+      apiCategory: '',
+      categoryOptions: API_CATEGORY_OPTIONS,
+      schoolOptions: SCHOOL_OPTIONS.slice(0, 50),
+      orgOptions: ORG_OPTIONS.slice(0, 50),
+      schoolLoading: false,
+      orgLoading: false,
     };
   },
   computed: {
@@ -5213,9 +5367,21 @@ app.component('P31', {
     visibleApis() { return APIS.filter(a => a.visible && a.needAuth); },
     filterApis() {
       const kw = (this.apiKeyword || '').trim().toLowerCase();
-      return this.visibleApis.filter(a => !kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw));
+      return this.visibleApis.filter(a =>
+        (!kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw)) &&
+        (!this.apiCategory || a.apiCategory === this.apiCategory)
+      );
     },
     chosenApis() { return APIS.filter(a => this.form.apiIds.includes(a.id)); },
+    // 学校/机构名称：可搜索多选，值以英文分号(;)拼接保存（与原多行文本口径一致）
+    schoolNameList: {
+      get() { return _splitNamesX(this.form.schoolNames || ''); },
+      set(v) { this.form.schoolNames = (v || []).join(';'); },
+    },
+    orgNameList: {
+      get() { return _splitNamesX(this.form.orgNames || ''); },
+      set(v) { this.form.orgNames = (v || []).join(';'); },
+    },
   },
   methods: {
     disabledDate(time) {
@@ -5223,7 +5389,25 @@ app.component('P31', {
       const max = new Date(today); max.setFullYear(max.getFullYear() + 3);
       return time.getTime() < today.getTime() || time.getTime() > max.getTime();
     },
-    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiDialog = true; },
+    searchSchools(kw) {
+      this.schoolLoading = true;
+      setTimeout(() => {
+        const matched = searchNameOptions(SCHOOL_OPTIONS, kw);
+        const sel = this.schoolNameList;
+        this.schoolOptions = [...sel, ...matched.filter(x => !sel.includes(x))];
+        this.schoolLoading = false;
+      }, 200);
+    },
+    searchOrgs(kw) {
+      this.orgLoading = true;
+      setTimeout(() => {
+        const matched = searchNameOptions(ORG_OPTIONS, kw);
+        const sel = this.orgNameList;
+        this.orgOptions = [...sel, ...matched.filter(x => !sel.includes(x))];
+        this.orgLoading = false;
+      }, 200);
+    },
+    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiKeyword = ''; this.apiCategory = ''; this.apiDialog = true; },
     onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
     saveApiDialog() { this.form.apiIds = [...this.tempApiIds]; this.apiDialog = false; },
     removeApi(id) { this.form.apiIds = this.form.apiIds.filter(x => x !== id); },
@@ -5270,10 +5454,16 @@ app.component('P31', {
             <div style="color:#909399;font-size:12px;line-height:1.5">可多选；勾选「学校」时展示学校名称，勾选「教育局」时展示机构名称</div>
           </el-form-item>
           <el-form-item v-if="showSchool" label="学校名称" required>
-            <el-input v-model="form.schoolNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入学校名称，多个学校用英文分号（;）隔开，如：南宁市教育局;南宁市第三中学"></el-input>
+            <el-select v-model="schoolNameList" multiple filterable remote clearable :remote-method="searchSchools" :loading="schoolLoading" placeholder="搜索并选择学校名称（最多展示 50 条）" style="width:100%">
+              <el-option v-for="s in schoolOptions" :key="s" :label="s" :value="s"></el-option>
+            </el-select>
+            <div style="color:#909399;font-size:12px;line-height:1.5">支持多选；按名称模糊搜索，最多展示 50 条匹配结果</div>
           </el-form-item>
           <el-form-item v-if="showOrg" label="机构名称" required>
-            <el-input v-model="form.orgNames" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入机构名称，多个机构用英文分号（;）隔开，如：南宁市教育局;桂林市教育局"></el-input>
+            <el-select v-model="orgNameList" multiple filterable remote clearable :remote-method="searchOrgs" :loading="orgLoading" placeholder="搜索并选择机构名称（最多展示 50 条）" style="width:100%">
+              <el-option v-for="o in orgOptions" :key="o" :label="o" :value="o"></el-option>
+            </el-select>
+            <div style="color:#909399;font-size:12px;line-height:1.5">支持多选；按名称模糊搜索，最多展示 50 条匹配结果</div>
           </el-form-item>
         </template>
         <el-form-item label="授权截止时间" required>
@@ -5298,8 +5488,12 @@ app.component('P31', {
     </div>
 
     <el-dialog title="选择授权接口" v-model="apiDialog" width="760px">
-      <div style="margin-bottom:10px">
-        <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:260px"></el-input>
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:240px"></el-input>
+        <span class="q-label">接口分类</span>
+        <el-select v-model="apiCategory" placeholder="请选择" clearable style="width:150px">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
       </div>
       <el-table :data="pageSlice(filterApis, 'filterApis')" border size="small" @selection-change="onApiChange" :row-key="r => r.id">
         <el-table-column type="selection" :reserve-selection="true" width="45"></el-table-column>
@@ -5338,19 +5532,24 @@ app.component('P31B', {
       apiDialog: false,
       tempApiIds: [],
       apiKeyword: '',
+      apiCategory: '',
+      categoryOptions: API_CATEGORY_OPTIONS,
     };
   },
   computed: {
     visibleApis() { return APIS.filter(a => a.visible && a.needAuth); },
     filterApis() {
       const kw = (this.apiKeyword || '').trim().toLowerCase();
-      return this.visibleApis.filter(a => !kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw));
+      return this.visibleApis.filter(a =>
+        (!kw || (a.name || '').toLowerCase().includes(kw) || (a.service || '').toLowerCase().includes(kw)) &&
+        (!this.apiCategory || a.apiCategory === this.apiCategory)
+      );
     },
     chosenApis() { return APIS.filter(a => this.form.apiIds.includes(a.id)); },
     showApiScope() { return this.form.allApis === '否'; },
   },
   methods: {
-    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiDialog = true; },
+    openApiDialog() { this.tempApiIds = [...this.form.apiIds]; this.apiKeyword = ''; this.apiCategory = ''; this.apiDialog = true; },
     onApiChange(rows) { this.tempApiIds = rows.map(r => r.id); },
     saveApiDialog() {
       this.form.apiIds = [...this.tempApiIds];
@@ -5411,8 +5610,12 @@ app.component('P31B', {
     </div>
 
     <el-dialog title="选择授权接口" v-model="apiDialog" width="760px">
-      <div style="margin-bottom:10px">
-        <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:260px"></el-input>
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <el-input v-model="apiKeyword" placeholder="搜索接口名称/服务名" clearable style="width:240px"></el-input>
+        <span class="q-label">接口分类</span>
+        <el-select v-model="apiCategory" placeholder="请选择" clearable style="width:150px">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
       </div>
       <el-table :data="pageSlice(filterApis, 'filterApis')" border size="small" @selection-change="onApiChange" :row-key="r => r.id">
         <el-table-column type="selection" :reserve-selection="true" width="45"></el-table-column>
