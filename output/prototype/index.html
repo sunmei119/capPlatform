@@ -39,6 +39,9 @@
     .rich-text-view code { background: #f5f7fa; padding: 2px 4px; border-radius: 3px; color: #c7254e; }
     .rich-text-view table { border-collapse: collapse; margin: 8px 0; }
     .rich-text-view table td, .rich-text-view table th { border: 1px solid #dcdfe6; padding: 6px 10px; }
+    .biz-node { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 14px; padding-right: 6px; }
+    .biz-node-ops { margin-left: auto; display: none; gap: 2px; }
+    .biz-node:hover .biz-node-ops { display: inline-flex; }
     .scope-bar { display: flex; align-items: center; gap: 12px; margin-left: 16px; }
     .brand-title { font-weight: 700; font-size: 16px; }
     .role-tag { margin-left: auto; }
@@ -129,6 +132,7 @@ const MENU_TREE = {
       { label: '数据回流管理', page: 'P36Admin' },
       { label: '数据回流明细', page: 'P36Detail' },
       { label: '数据表管理', page: 'P37' },
+      { label: '业务数据表关联', page: 'P38' },
     ]},
     { label: '审批管理', children: [
       { label: '接口申请审批', page: 'P08' },
@@ -173,7 +177,7 @@ const PAGE_TITLES = {
   P30: '客户端授权管理', P30View: '客户端信息查看', P30AuthCancel: '取消授权', P31: '数据授权配置', P31B: '接口授权配置',
   P32: '组织同步申请',
   P36: '数据回流管理', P36Form: '数据回流管理', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看',
-  P37: '数据表管理',
+  P37: '数据表管理', P38: '业务数据表关联',
   P41: '组织同步审批',
 };
 
@@ -448,6 +452,23 @@ const DATA_TABLES = [
   { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', desc: '记录教师考勤打卡数据', tableJson: '{\n  "teacherId": "教师工号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '停用', createTime: '2026-08-03 09:00' },
   { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', desc: '记录课程相关文档资源', tableJson: '{\n  "resourceId": "资源标识",\n  "courseId": "课程标识",\n  "title": "资源名称"\n}', status: '启用', createTime: '2026-08-05 11:00' },
   { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', desc: '记录学生日常考勤签到', tableJson: '{\n  "studentId": "学号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '启用', createTime: '2026-08-10 15:00' },
+];
+
+// 业务树（业务数据表关联 P38 左侧树形业务；tableKeys 为该业务节点关联的数据表key，来源数据表管理 P37）
+const BIZ_TREE = [
+  { id: 1, parentId: null, name: '学籍管理', code: 'biz_student', sort: 1, status: '启用', tableKeys: [], children: [
+    { id: 11, parentId: 1, name: '学生基本信息', code: 'student_base', sort: 1, status: '启用', tableKeys: ['tbl_student_base'] },
+    { id: 12, parentId: 1, name: '学籍异动', code: 'student_change', sort: 2, status: '启用', tableKeys: [] },
+  ]},
+  { id: 2, parentId: null, name: '成绩管理', code: 'biz_score', sort: 2, status: '启用', tableKeys: [], children: [
+    { id: 21, parentId: 2, name: '考试成绩', code: 'exam_score', sort: 1, status: '启用', tableKeys: ['tbl_score'] },
+    { id: 22, parentId: 2, name: '成绩分析', code: 'score_analysis', sort: 2, status: '停用', tableKeys: [] },
+  ]},
+  { id: 3, parentId: null, name: '考勤管理', code: 'biz_attend', sort: 3, status: '启用', tableKeys: [], children: [
+    { id: 31, parentId: 3, name: '学生考勤', code: 'stu_attend', sort: 1, status: '启用', tableKeys: ['tbl_attendance'] },
+    { id: 32, parentId: 3, name: '教师考勤', code: 'teacher_attend', sort: 2, status: '启用', tableKeys: ['tbl_teacher_attend'] },
+  ]},
+  { id: 4, parentId: null, name: '课程资源', code: 'biz_course', sort: 4, status: '启用', tableKeys: ['tbl_course_resource'] },
 ];
 
 // 数据回流管理（桂教通超管发起，开发者管理员响应，双方共维护同一份数据）
@@ -6478,6 +6499,242 @@ app.component('P37', {
       <template #footer>
         <el-button @click="formVisible=false">取消</el-button>
         <el-button type="primary" @click="saveForm">确定</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P38 业务数据表关联（桂教通超管·授权管理）
+ * 布局同接口能力管理（P35）：左侧树形业务树（新增/编辑/停用），
+ * 右侧为选中业务关联的数据表（关联/移出），点击业务节点切换右侧列表。
+ * ===================================================================== */
+app.component('P38', {
+  data() {
+    return {
+      tree: BIZ_TREE,
+      activeId: BIZ_TREE.length ? BIZ_TREE[0].id : null,
+      expandedKeys: BIZ_TREE.map(n => n.id),
+      filterText: '',
+      bizDlg: false, bizTitle: '新增业务',
+      bizForm: { id: null, parentId: null, name: '', code: '', sort: 1 },
+      linkDlg: false, selMap: {},
+      linkedPage: 1, linkedSize: 10, availPage: 1, availSize: 10,
+      availQuery: { tableKey: '', tableName: '' },
+    };
+  },
+  computed: {
+    activeNode() { return this.findNode(this.tree, this.activeId); },
+    linkedTables() {
+      const n = this.activeNode;
+      return n ? DATA_TABLES.filter(t => (n.tableKeys || []).includes(t.tableKey)) : [];
+    },
+    availableTables() {
+      const n = this.activeNode;
+      if (!n) return [];
+      const keyQ = (this.availQuery.tableKey || '').trim();
+      const nameQ = (this.availQuery.tableName || '').trim();
+      return DATA_TABLES.filter(t =>
+        t.status === '启用' && !(n.tableKeys || []).includes(t.tableKey) &&
+        (!keyQ || (t.tableKey || '').includes(keyQ)) &&
+        (!nameQ || (t.tableName || '').includes(nameQ)));
+    },
+  },
+  watch: {
+    filterText(v) { if (this.$refs.bizTree) this.$refs.bizTree.filter(v); },
+    availQuery: { handler() { this.availPage = 1; }, deep: true },
+  },
+  methods: {
+    findNode(list, id) {
+      for (const n of list || []) {
+        if (n.id === id) return n;
+        const hit = this.findNode(n.children, id);
+        if (hit) return hit;
+      }
+      return null;
+    },
+    flatNodes(list) {
+      const out = [];
+      (list || []).forEach(n => { out.push(n); out.push(...this.flatNodes(n.children)); });
+      return out;
+    },
+    filterNode(value, data) {
+      if (!value) return true;
+      return (data.name || '').includes(value) || (data.code || '').includes(value);
+    },
+    onNodeClick(node) { this.activeId = node.id; this.linkedPage = 1; },
+    openAdd(parent) {
+      this.bizForm = { id: null, parentId: parent ? parent.id : null, name: '', code: '', sort: 1 };
+      this.bizTitle = parent ? '新增子业务' : '新增业务';
+      this.bizDlg = true;
+    },
+    openEdit(node) {
+      this.bizForm = { id: node.id, parentId: node.parentId || null, name: node.name, code: node.code, sort: node.sort };
+      this.bizTitle = '编辑业务';
+      this.bizDlg = true;
+    },
+    saveBiz() {
+      const name = (this.bizForm.name || '').trim();
+      const code = (this.bizForm.code || '').trim();
+      if (!name) return ElMessage.warning('请输入业务名称');
+      if (!code) return ElMessage.warning('请输入业务编码');
+      const all = this.flatNodes(this.tree);
+      if (all.some(n => n.code === code && n.id !== this.bizForm.id)) return ElMessage.warning('业务编码已存在');
+      if (this.bizForm.id) {
+        const node = this.findNode(this.tree, this.bizForm.id);
+        if (node) Object.assign(node, { name, code, sort: this.bizForm.sort });
+        ElMessage.success('编辑成功');
+      } else {
+        const parent = this.bizForm.parentId ? this.findNode(this.tree, this.bizForm.parentId) : null;
+        const node = { id: Date.now(), parentId: parent ? parent.id : null, name, code, sort: this.bizForm.sort, status: '启用', tableKeys: [] };
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(node);
+        } else {
+          this.tree.push(node);
+        }
+        if (parent && !this.expandedKeys.includes(parent.id)) this.expandedKeys.push(parent.id);
+        ElMessage.success('新增成功');
+      }
+      this.bizDlg = false;
+    },
+    toggleStatus(node) {
+      const next = node.status === '启用' ? '停用' : '启用';
+      const msg = next === '停用'
+        ? '停用后该业务不可再关联新的数据表，已有数据不受影响。确定停用业务「' + node.name + '」？'
+        : '确定启用业务「' + node.name + '」？';
+      ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
+        node.status = next;
+        ElMessage.success(next + '成功');
+      }).catch(() => {});
+    },
+    resetAvailQuery() { this.availQuery = { tableKey: '', tableName: '' }; },
+    queryAvailable() { this.availPage = 1; },
+    openLinkTable() {
+      const n = this.activeNode;
+      if (!n) return;
+      if (n.status !== '启用') return ElMessage.warning('停用的业务不可关联数据表');
+      this.selMap = {};
+      this.availQuery = { tableKey: '', tableName: '' };
+      this.availPage = 1;
+      this.linkDlg = true;
+    },
+    // 表格启用 reserve-selection，翻页/换查询条件时已勾选的行保持选中（selMap 记录全部勾选项）
+    onTableSelect(sel) {
+      const map = {};
+      sel.forEach(r => { map[r.tableKey] = r; });
+      this.selMap = map;
+    },
+    confirmLink() {
+      const n = this.activeNode;
+      const tempKeys = Object.keys(this.selMap);
+      if (!tempKeys.length) return ElMessage.warning('请至少选择一个数据表');
+      n.tableKeys = (n.tableKeys || []).concat(tempKeys.filter(k => !(n.tableKeys || []).includes(k)));
+      this.linkDlg = false;
+      ElMessage.success('关联成功');
+    },
+    removeTable(row) {
+      const n = this.activeNode;
+      ElMessageBox.confirm('确认将数据表「' + row.tableKey + '」移出业务「' + n.name + '」？', '提示', { type: 'warning' })
+        .then(() => {
+          n.tableKeys = (n.tableKeys || []).filter(k => k !== row.tableKey);
+          ElMessage.success('移出成功');
+        }).catch(() => {});
+    },
+  },
+  template: `
+  <div>
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <!-- 左侧：树形业务树 -->
+      <div class="card" style="width:340px;flex-shrink:0">
+        <div class="toolbar" style="margin-bottom:12px">
+          <span style="font-weight:600">业务树</span>
+          <div style="flex:1"></div>
+          <el-button type="primary" size="small" @click="openAdd(null)">新增业务</el-button>
+        </div>
+        <el-input v-model="filterText" placeholder="输入业务名称/编码筛选" clearable size="small" style="margin-bottom:10px"></el-input>
+        <el-tree ref="bizTree" :data="tree" node-key="id" :props="{label:'name',children:'children'}"
+          :default-expanded-keys="expandedKeys" :current-node-key="activeId" :filter-node-method="filterNode" :expand-on-click-node="false"
+          highlight-current @node-click="onNodeClick">
+          <template #default="{ data }">
+            <span class="biz-node">
+              <span :style="data.status==='停用' ? 'color:#c0c4cc' : ''">{{ data.name }}</span>
+              <span class="biz-node-ops">
+                <el-button link type="primary" size="small" @click.stop="openAdd(data)">新增</el-button>
+                <el-button link type="primary" size="small" @click.stop="openEdit(data)">编辑</el-button>
+                <el-button link :type="data.status==='启用'?'warning':'success'" size="small" @click.stop="toggleStatus(data)">{{ data.status==='启用'?'停用':'启用' }}</el-button>
+              </span>
+            </span>
+          </template>
+        </el-tree>
+      </div>
+      <!-- 右侧：选中业务关联的数据表 -->
+      <div class="card" style="flex:1;min-width:0">
+        <template v-if="activeNode">
+          <div class="toolbar" style="margin-bottom:12px">
+            <span style="font-weight:600">{{ activeNode.name }} — 关联数据表（{{ linkedTables.length }}）</span>
+            <div style="flex:1"></div>
+            <el-button type="primary" :disabled="activeNode.status!=='启用'" @click="openLinkTable">新增关联</el-button>
+          </div>
+          <el-table :data="pageSlice(linkedTables, 'linked')" border empty-text="暂无关联数据表">
+            <el-table-column prop="tableKey" label="数据表key" min-width="150"></el-table-column>
+            <el-table-column prop="tableName" label="数据库表名称" min-width="140"></el-table-column>
+            <el-table-column prop="desc" label="业务场景说明" min-width="160" show-overflow-tooltip></el-table-column>
+            <el-table-column label="表json" min-width="110">
+              <template #default="{row}">
+                <el-tooltip :content="row.tableJson || '—'" placement="top" effect="light">
+                  <span style="color:#409eff;cursor:pointer">查看表json</span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column label="数据表状态" width="100" align="center">
+              <template #default="{row}"><st-tag :v="row.status" /></template>
+            </el-table-column>
+            <el-table-column label="操作" width="80">
+              <template #default="{row}">
+                <el-button link type="danger" @click="removeTable(row)">移出</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="linkedTables.length" :page-size="linkedSize" :current-page="linkedPage" @current-change="linkedPage=$event"></el-pagination>
+        </template>
+        <div v-else style="color:#909399;text-align:center;padding:60px 0">请先在左侧选择业务</div>
+      </div>
+    </div>
+    <!-- 新增/编辑业务弹窗 -->
+    <el-dialog v-model="bizDlg" :title="bizTitle" width="480px" destroy-on-close>
+      <el-form label-width="100px">
+        <el-form-item label="父级业务">
+          <el-tree-select v-model="bizForm.parentId" :data="tree" :props="{label:'name',children:'children'}" :render-after-expand="false"
+            check-strictly node-key="id" clearable placeholder="顶级业务可不选择" style="width:100%"></el-tree-select>
+        </el-form-item>
+        <el-form-item label="业务名称" required><el-input v-model="bizForm.name" maxlength="50" placeholder="请输入业务名称"></el-input></el-form-item>
+        <el-form-item label="业务编码" required><el-input v-model="bizForm.code" maxlength="50" placeholder="全局唯一编码"></el-input></el-form-item>
+        <el-form-item label="排序"><el-input-number v-model="bizForm.sort" :min="0" controls-position="right"></el-input-number></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="bizDlg=false">取消</el-button>
+        <el-button type="primary" @click="saveBiz">确定</el-button>
+      </template>
+    </el-dialog>
+    <!-- 新增关联弹窗 -->
+    <el-dialog v-model="linkDlg" title="新增关联" width="680px">
+      <div class="toolbar" style="margin-bottom:10px">
+        <el-input v-model="availQuery.tableKey" placeholder="数据表key" clearable style="width:180px"></el-input>
+        <el-input v-model="availQuery.tableName" placeholder="数据库表名称" clearable style="width:180px;margin-left:8px"></el-input>
+        <el-button type="primary" style="margin-left:8px" @click="queryAvailable">查询</el-button>
+        <el-button @click="resetAvailQuery">重置</el-button>
+      </div>
+      <el-table :data="pageSlice(availableTables, 'avail')" border row-key="tableKey" ref="tableRef" @selection-change="onTableSelect" height="340">
+        <el-table-column type="selection" width="55" reserve-selection></el-table-column>
+        <el-table-column prop="tableKey" label="数据表key" min-width="160"></el-table-column>
+        <el-table-column prop="tableName" label="数据库表名称" min-width="160"></el-table-column>
+        <el-table-column prop="desc" label="业务场景说明" min-width="180" show-overflow-tooltip></el-table-column>
+      </el-table>
+      <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="availableTables.length" :page-size="availSize" :current-page="availPage" @current-change="availPage=$event"></el-pagination>
+      <template #footer>
+        <el-button @click="linkDlg=false">取消</el-button>
+        <el-button type="primary" @click="confirmLink">确定</el-button>
       </template>
     </el-dialog>
   </div>`,
