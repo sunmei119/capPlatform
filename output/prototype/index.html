@@ -445,17 +445,17 @@ const DATA_SYNC_APPS = [
   { id: 7, orgId: 'ORG007', orgName: '青秀区实验小学', applicant: '林珊', applyTime: '2026-08-11 09:50', sysName: '家校互动平台', contact: '何军', phone: '13233334444', whiteList: [{ protocol: 'http://', domain: 'jx.qx.edu.cn' }], status: '已驳回', opinion: '不通过', opinionNote: '业务系统对接人信息不完整，请补充后重新提交', approver: '王超管', approveTime: '2026-08-12 17:30' },
 ];
 
-// 数据表管理（桂教通超管维护，用于数据回流时下拉选择数据表key）
+// 数据表管理（桂教通超管维护，用于数据回流时下拉选择数据表key；appId/appName 为该数据表归属应用）
 const DATA_TABLES = [
-  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', desc: '记录学生学籍基本信息', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '启用', createTime: '2026-08-01 10:00' },
-  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', desc: '记录学生各科成绩明细', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '启用', createTime: '2026-08-02 14:00' },
-  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', desc: '记录教师考勤打卡数据', tableJson: '{\n  "teacherId": "教师工号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '停用', createTime: '2026-08-03 09:00' },
-  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', desc: '记录课程相关文档资源', tableJson: '{\n  "resourceId": "资源标识",\n  "courseId": "课程标识",\n  "title": "资源名称"\n}', status: '启用', createTime: '2026-08-05 11:00' },
-  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', desc: '记录学生日常考勤签到', tableJson: '{\n  "studentId": "学号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '启用', createTime: '2026-08-10 15:00' },
+  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', appId: '1001', appName: '课堂互动助手', desc: '记录学生学籍基本信息', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '启用', createTime: '2026-08-01 10:00' },
+  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', appId: '1001', appName: '课堂互动助手', desc: '记录学生各科成绩明细', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '启用', createTime: '2026-08-02 14:00' },
+  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', appId: '1003', appName: '英语听说训练', desc: '记录教师考勤打卡数据', tableJson: '{\n  "teacherId": "教师工号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '停用', createTime: '2026-08-03 09:00' },
+  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', appId: '1005', appName: '排课系统', desc: '记录课程相关文档资源', tableJson: '{\n  "resourceId": "资源标识",\n  "courseId": "课程标识",\n  "title": "资源名称"\n}', status: '启用', createTime: '2026-08-05 11:00' },
+  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', appId: '1006', appName: '成绩分析', desc: '记录学生日常考勤签到', tableJson: '{\n  "studentId": "学号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '启用', createTime: '2026-08-10 15:00' },
 ];
 
-// 业务树（业务数据表关联 P38 左侧树形业务；tableKeys 为该业务节点关联的数据表key，来源数据表管理 P37）
-const BIZ_TREE = [
+// 数据目录（业务数据表关联 P38 左侧树形目录，最多四级；tableKeys 为该目录关联的数据表key，来源数据表管理 P37）
+const DIR_TREE = [
   { id: 1, parentId: null, name: '学籍管理', code: 'biz_student', sort: 1, status: '启用', tableKeys: [], children: [
     { id: 11, parentId: 1, name: '学生基本信息', code: 'student_base', sort: 1, status: '启用', tableKeys: ['tbl_student_base'] },
     { id: 12, parentId: 1, name: '学籍异动', code: 'student_change', sort: 2, status: '启用', tableKeys: [] },
@@ -5971,6 +5971,10 @@ app.component('P36Form', {
       return m;
     },
   },
+  watch: {
+    'form.dockingType'(v) { if (v === '开发者主动推送') this.syncAppFromTable(); },
+    'form.scopes': { handler() { this.syncAppFromTable(); }, deep: true },
+  },
   methods: {
     apiById(id) {
       return APIS.find(a => a.id === id);
@@ -5978,6 +5982,20 @@ app.component('P36Form', {
     // 选择数据表key后自动带出该数据表配置的表json（只读快照，本页不可编辑表json）
     onKeyChange(scope) {
       scope.tableJson = this.tableJsonMap[scope.tableKey] || '';
+      this.syncAppFromTable();
+    },
+    isPush() { return !this.isView && !this.isUpload && this.form.dockingType === '开发者主动推送'; },
+    onAppChange() {
+      const a = APP_LIST.find(x => x.appId === this.form.appId);
+      this.form.appName = a ? a.appName : '';
+    },
+    // 对接方式为「开发者主动推送」时，应用名称只读，根据所选数据表回填该数据表归属的应用
+    syncAppFromTable() {
+      if (!this.isPush()) return;
+      const scope = (this.form.scopes || []).find(s => s && s.tableKey);
+      const tbl = scope ? DATA_TABLES.find(t => t.tableKey === scope.tableKey) : null;
+      this.form.appId = tbl ? (tbl.appId || '') : '';
+      this.form.appName = tbl ? (tbl.appName || '') : '';
     },
     addScope() {
       this.form.scopes.push({ tableKey: '', tableJson: '' });
@@ -6023,7 +6041,9 @@ app.component('P36Form', {
         return;
       }
       if (!this.form.name.trim()) { this.$message.warning('请输入名称'); return; }
-      if (!this.form.appId) { this.$message.warning('请选择应用名称'); return; }
+      if (this.form.dockingType === '开发者主动推送') {
+        if (!this.form.appName) { this.$message.warning('应用名称由所选数据表自动回填，请先选择已维护应用名称的数据表'); return; }
+      } else if (!this.form.appId) { this.$message.warning('请选择应用名称'); return; }
       if (!this.form.devName) { this.$message.warning('请选择开发者'); return; }
       if (this.form.dockingType === '开发者提供接口') {
         if (this.form.domain && !/^https?:\/\//i.test(this.form.domain.trim())) { this.$message.warning('对接域名需以 http:// 或 https:// 开头'); return; }
@@ -6086,10 +6106,16 @@ app.component('P36Form', {
         </el-form-item>
         <el-form-item label="应用名称" required>
           <template v-if="!isView && !isUpload">
-            <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%">
-              <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
-            </el-select>
-            <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用</div>
+            <template v-if="form.dockingType === '开发者主动推送'">
+              <el-input v-model="form.appName" readonly placeholder="根据所选数据表自动回填"></el-input>
+              <div style="color:#909399;font-size:12px;line-height:1.5">对接方式为「开发者主动推送」时应用名称只读，根据所选数据表自动回填该数据表归属的应用</div>
+            </template>
+            <template v-else>
+              <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%" @change="onAppChange">
+                <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
+              </el-select>
+              <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用</div>
+            </template>
           </template>
           <div v-else class="ro-text">{{ form.appName || '—' }}</div>
         </el-form-item>
@@ -6344,7 +6370,9 @@ app.component('P37', {
       q: { tableKey: '', tableName: '' },
       formVisible: false,
       formTitle: '新增数据表',
-      form: { id: null, tableKey: '', tableName: '', desc: '', tableJson: '' },
+      form: { id: null, tableKey: '', tableName: '', appId: '', appName: '', desc: '', tableJson: '' },
+      appOptions: APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30),
+      appLoading: false,
       jsonOk: false,
       jsonError: '',
     };
@@ -6365,15 +6393,29 @@ app.component('P37', {
   methods: {
     resetQ() { this.q = { tableKey: '', tableName: '' }; },
     isProtected(row) { return row.status === '启用' || this.usedTableKeys.has(row.tableKey); },
+    // 应用名称：根据应用名称模糊匹配，最多展示 30 个匹配应用（候选不含生态应用，与数据回流新增一致）
+    searchApps(q) {
+      this.appLoading = true;
+      setTimeout(() => {
+        this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用' && (!q || a.appName.includes(q))).slice(0, 30);
+        this.appLoading = false;
+      }, 300);
+    },
+    onAppChange(appId) {
+      const app = APP_LIST.find(a => a.appId === appId);
+      this.form.appName = app ? app.appName : '';
+    },
     openAdd() {
-      this.form = { id: null, tableKey: '', tableName: '', desc: '', tableJson: '' };
+      this.form = { id: null, tableKey: '', tableName: '', appId: '', appName: '', desc: '', tableJson: '' };
+      this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30);
       this.formTitle = '新增数据表';
       this.jsonOk = false;
       this.jsonError = '';
       this.formVisible = true;
     },
     openEdit(row) {
-      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, desc: row.desc || '', tableJson: row.tableJson || '' };
+      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, appId: row.appId || '', appName: row.appName || '', desc: row.desc || '', tableJson: row.tableJson || '' };
+      this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30);
       this.formTitle = '编辑数据表';
       this.jsonOk = false;
       this.jsonError = '';
@@ -6399,18 +6441,19 @@ app.component('P37', {
     saveForm() {
       if (!this.form.tableKey.trim()) return ElMessage.warning('请输入数据表key');
       if (!this.form.tableName.trim()) return ElMessage.warning('请输入数据库表名称');
+      if (!this.form.appId) return ElMessage.warning('请选择应用名称');
       this.validateJson();
       if (!this.jsonOk) return ElMessage.warning('请先通过「校验」确认表json 为合法 JSON 对象');
       if (this.form.id) {
         const row = this.rows.find(r => r.id === this.form.id);
-        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
+        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), appId: this.form.appId, appName: this.form.appName, desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
         const src = DATA_TABLES.find(r => r.id === this.form.id);
-        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
+        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), appId: this.form.appId, appName: this.form.appName, desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
         ElMessage.success('编辑成功');
       } else {
         if (DATA_TABLES.some(r => r.tableKey === this.form.tableKey.trim())) return ElMessage.warning('数据表key已存在');
         const newId = DATA_TABLES.length ? Math.max(...DATA_TABLES.map(r => r.id)) + 1 : 1;
-        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson, status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
+        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), appId: this.form.appId, appName: this.form.appName, desc: this.form.desc.trim(), tableJson: this.form.tableJson, status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
         DATA_TABLES.unshift(rec);
         this.rows.unshift(rec);
         ElMessage.success('新增成功');
@@ -6457,6 +6500,7 @@ app.component('P37', {
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="tableKey" label="数据表key" min-width="160" />
         <el-table-column prop="tableName" label="数据库表名称" min-width="160" />
+        <el-table-column prop="appName" label="应用名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="desc" label="业务场景说明" min-width="200" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{row}"><st-tag :v="row.status" /></template>
@@ -6479,6 +6523,12 @@ app.component('P37', {
         </el-form-item>
         <el-form-item label="数据库表名称" required>
           <el-input v-model="form.tableName" placeholder="请输入数据库表名称" maxlength="100" />
+        </el-form-item>
+        <el-form-item label="应用名称" required>
+          <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" @change="onAppChange" placeholder="请输入应用名称模糊匹配" style="width:100%">
+            <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
+          </el-select>
+          <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用；数据回流（P36Form）选择该数据表时自动回填该应用名称</div>
         </el-form-item>
         <el-form-item label="业务场景说明">
           <el-input v-model="form.desc" type="textarea" :rows="3" placeholder="请输入业务场景说明（选填）" maxlength="200" show-word-limit />
@@ -6506,17 +6556,17 @@ app.component('P37', {
 
 /* =====================================================================
  * P38 业务数据表关联（桂教通超管·授权管理）
- * 布局同接口能力管理（P35）：左侧树形业务树（新增/编辑/停用），
- * 右侧为选中业务关联的数据表（关联/移出），点击业务节点切换右侧列表。
+ * 布局同接口能力管理（P35）：左侧树形数据目录（新增/编辑/停用，最多四级），
+ * 右侧为选中目录关联的数据表（关联/移出，一级目录不可关联），点击目录节点切换右侧列表。
  * ===================================================================== */
 app.component('P38', {
   data() {
     return {
-      tree: BIZ_TREE,
-      activeId: BIZ_TREE.length ? BIZ_TREE[0].id : null,
-      expandedKeys: BIZ_TREE.map(n => n.id),
+      tree: DIR_TREE,
+      activeId: DIR_TREE.length ? DIR_TREE[0].id : null,
+      expandedKeys: DIR_TREE.map(n => n.id),
       filterText: '',
-      bizDlg: false, bizTitle: '新增业务',
+      bizDlg: false, bizTitle: '新增目录',
       bizForm: { id: null, parentId: null, name: '', code: '', sort: 1 },
       linkDlg: false, selMap: {},
       linkedPage: 1, linkedSize: 10, availPage: 1, availSize: 10,
@@ -6553,6 +6603,37 @@ app.component('P38', {
       }
       return null;
     },
+    // 目录层级：顶级为一级；数据目录最多支持四级
+    nodeLevel(id) {
+      const walk = (list, lv) => {
+        for (const n of list || []) {
+          if (n.id === id) return lv;
+          const hit = walk(n.children, lv + 1);
+          if (hit) return hit;
+        }
+        return 0;
+      };
+      return walk(this.tree, 1);
+    },
+    isTopLevel(node) { return !!node && this.nodeLevel(node.id) === 1; },
+    canAddChild(node) { return !!node && this.nodeLevel(node.id) < 4; },
+    // 子树深度（当前节点计 1）
+    subTreeDepth(node) {
+      if (!node) return 0;
+      const kids = node.children || [];
+      return kids.length ? 1 + Math.max(...kids.map(k => this.subTreeDepth(k))) : 1;
+    },
+    isSelfOrDescendant(ancestorId, nodeId) {
+      const node = this.findNode(this.tree, ancestorId);
+      if (!node) return false;
+      return node.id === nodeId || (this.flatNodes(node.children || []).some(n => n.id === nodeId));
+    },
+    detach(list, id) {
+      const idx = (list || []).findIndex(n => n.id === id);
+      if (idx !== -1) { list.splice(idx, 1); return true; }
+      for (const n of list || []) { if (this.detach(n.children, id)) return true; }
+      return false;
+    },
     flatNodes(list) {
       const out = [];
       (list || []).forEach(n => { out.push(n); out.push(...this.flatNodes(n.children)); });
@@ -6564,28 +6645,47 @@ app.component('P38', {
     },
     onNodeClick(node) { this.activeId = node.id; this.linkedPage = 1; },
     openAdd(parent) {
+      if (parent && !this.canAddChild(parent)) return ElMessage.warning('数据目录最多支持四级，该目录下不可再新增子目录');
       this.bizForm = { id: null, parentId: parent ? parent.id : null, name: '', code: '', sort: 1 };
-      this.bizTitle = parent ? '新增子业务' : '新增业务';
+      this.bizTitle = parent ? '新增子目录' : '新增目录';
       this.bizDlg = true;
     },
     openEdit(node) {
       this.bizForm = { id: node.id, parentId: node.parentId || null, name: node.name, code: node.code, sort: node.sort };
-      this.bizTitle = '编辑业务';
+      this.bizTitle = '编辑目录';
       this.bizDlg = true;
     },
     saveBiz() {
       const name = (this.bizForm.name || '').trim();
       const code = (this.bizForm.code || '').trim();
-      if (!name) return ElMessage.warning('请输入业务名称');
-      if (!code) return ElMessage.warning('请输入业务编码');
+      if (!name) return ElMessage.warning('请输入目录名称');
+      if (!code) return ElMessage.warning('请输入目录编码');
       const all = this.flatNodes(this.tree);
-      if (all.some(n => n.code === code && n.id !== this.bizForm.id)) return ElMessage.warning('业务编码已存在');
+      if (all.some(n => n.code === code && n.id !== this.bizForm.id)) return ElMessage.warning('目录编码已存在');
+      const parent = this.bizForm.parentId ? this.findNode(this.tree, this.bizForm.parentId) : null;
+      if (parent && this.isSelfOrDescendant(parent.id, this.bizForm.id)) return ElMessage.warning('父级目录不能选择自身或其子目录');
+      if (parent && this.nodeLevel(parent.id) >= 4) return ElMessage.warning('数据目录最多支持四级，无法在该目录下新增子目录');
+      // 编辑时仅允许将目录移动到不超过四级的父级下（含自身子树深度）
+      if (this.bizForm.id && parent) {
+        const self = this.findNode(this.tree, this.bizForm.id);
+        const depth = this.subTreeDepth(self);
+        if (this.nodeLevel(parent.id) + depth > 4) return ElMessage.warning('移动后目录层级将超过四级，请重新选择父级目录');
+      }
       if (this.bizForm.id) {
         const node = this.findNode(this.tree, this.bizForm.id);
-        if (node) Object.assign(node, { name, code, sort: this.bizForm.sort });
+        const targetParentId = parent ? parent.id : null;
+        if (node) {
+          Object.assign(node, { name, code, sort: this.bizForm.sort });
+          if ((node.parentId || null) !== targetParentId) {
+            this.detach(this.tree, node.id);
+            node.parentId = targetParentId;
+            if (parent) { parent.children = parent.children || []; parent.children.push(node); }
+            else this.tree.push(node);
+            if (parent && !this.expandedKeys.includes(parent.id)) this.expandedKeys.push(parent.id);
+          }
+        }
         ElMessage.success('编辑成功');
       } else {
-        const parent = this.bizForm.parentId ? this.findNode(this.tree, this.bizForm.parentId) : null;
         const node = { id: Date.now(), parentId: parent ? parent.id : null, name, code, sort: this.bizForm.sort, status: '启用', tableKeys: [] };
         if (parent) {
           parent.children = parent.children || [];
@@ -6601,8 +6701,8 @@ app.component('P38', {
     toggleStatus(node) {
       const next = node.status === '启用' ? '停用' : '启用';
       const msg = next === '停用'
-        ? '停用后该业务不可再关联新的数据表，已有数据不受影响。确定停用业务「' + node.name + '」？'
-        : '确定启用业务「' + node.name + '」？';
+        ? '停用后该目录不可再关联新的数据表，已有数据不受影响。确定停用目录「' + node.name + '」？'
+        : '确定启用目录「' + node.name + '」？';
       ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
         node.status = next;
         ElMessage.success(next + '成功');
@@ -6613,7 +6713,8 @@ app.component('P38', {
     openLinkTable() {
       const n = this.activeNode;
       if (!n) return;
-      if (n.status !== '启用') return ElMessage.warning('停用的业务不可关联数据表');
+      if (this.isTopLevel(n)) return ElMessage.warning('一级目录不可关联数据表，请选择二级及以下目录');
+      if (n.status !== '启用') return ElMessage.warning('停用的目录不可关联数据表');
       this.selMap = {};
       this.availQuery = { tableKey: '', tableName: '' };
       this.availPage = 1;
@@ -6635,7 +6736,7 @@ app.component('P38', {
     },
     removeTable(row) {
       const n = this.activeNode;
-      ElMessageBox.confirm('确认将数据表「' + row.tableKey + '」移出业务「' + n.name + '」？', '提示', { type: 'warning' })
+      ElMessageBox.confirm('确认将数据表「' + row.tableKey + '」移出目录「' + n.name + '」？', '提示', { type: 'warning' })
         .then(() => {
           n.tableKeys = (n.tableKeys || []).filter(k => k !== row.tableKey);
           ElMessage.success('移出成功');
@@ -6645,14 +6746,15 @@ app.component('P38', {
   template: `
   <div>
     <div style="display:flex;gap:14px;align-items:flex-start">
-      <!-- 左侧：树形业务树 -->
+      <!-- 左侧：树形数据目录（最多四级） -->
       <div class="card" style="width:340px;flex-shrink:0">
         <div class="toolbar" style="margin-bottom:12px">
-          <span style="font-weight:600">业务树</span>
+          <span style="font-weight:600">数据目录</span>
           <div style="flex:1"></div>
-          <el-button type="primary" size="small" @click="openAdd(null)">新增业务</el-button>
+          <el-button type="primary" size="small" @click="openAdd(null)">新增目录</el-button>
         </div>
-        <el-input v-model="filterText" placeholder="输入业务名称/编码筛选" clearable size="small" style="margin-bottom:10px"></el-input>
+        <el-input v-model="filterText" placeholder="输入目录名称/编码筛选" clearable size="small" style="margin-bottom:10px"></el-input>
+        <div style="color:#909399;font-size:12px;margin-bottom:8px">数据目录最多四级；一级目录不可关联数据表</div>
         <el-tree ref="bizTree" :data="tree" node-key="id" :props="{label:'name',children:'children'}"
           :default-expanded-keys="expandedKeys" :current-node-key="activeId" :filter-node-method="filterNode" :expand-on-click-node="false"
           highlight-current @node-click="onNodeClick">
@@ -6660,7 +6762,7 @@ app.component('P38', {
             <span class="biz-node">
               <span :style="data.status==='停用' ? 'color:#c0c4cc' : ''">{{ data.name }}</span>
               <span class="biz-node-ops">
-                <el-button link type="primary" size="small" @click.stop="openAdd(data)">新增</el-button>
+                <el-button link type="primary" size="small" :disabled="!canAddChild(data)" @click.stop="openAdd(data)">新增</el-button>
                 <el-button link type="primary" size="small" @click.stop="openEdit(data)">编辑</el-button>
                 <el-button link :type="data.status==='启用'?'warning':'success'" size="small" @click.stop="toggleStatus(data)">{{ data.status==='启用'?'停用':'启用' }}</el-button>
               </span>
@@ -6674,8 +6776,9 @@ app.component('P38', {
           <div class="toolbar" style="margin-bottom:12px">
             <span style="font-weight:600">{{ activeNode.name }} — 关联数据表（{{ linkedTables.length }}）</span>
             <div style="flex:1"></div>
-            <el-button type="primary" :disabled="activeNode.status!=='启用'" @click="openLinkTable">新增关联</el-button>
+            <el-button type="primary" :disabled="activeNode.status!=='启用' || isTopLevel(activeNode)" @click="openLinkTable">新增关联</el-button>
           </div>
+          <div v-if="isTopLevel(activeNode)" style="color:#909399;font-size:12px;margin-bottom:8px">一级目录不可关联数据表，请在二级及以下目录下关联</div>
           <el-table :data="pageSlice(linkedTables, 'linked')" border empty-text="暂无关联数据表">
             <el-table-column prop="tableKey" label="数据表key" min-width="150"></el-table-column>
             <el-table-column prop="tableName" label="数据库表名称" min-width="140"></el-table-column>
@@ -6698,18 +6801,19 @@ app.component('P38', {
           </el-table>
           <el-pagination style="margin-top:12px" layout="total, prev, pager, next" :total="linkedTables.length" :page-size="linkedSize" :current-page="linkedPage" @current-change="linkedPage=$event"></el-pagination>
         </template>
-        <div v-else style="color:#909399;text-align:center;padding:60px 0">请先在左侧选择业务</div>
+        <div v-else style="color:#909399;text-align:center;padding:60px 0">请先在左侧选择目录</div>
       </div>
     </div>
-    <!-- 新增/编辑业务弹窗 -->
+    <!-- 新增/编辑目录弹窗 -->
     <el-dialog v-model="bizDlg" :title="bizTitle" width="480px" destroy-on-close>
       <el-form label-width="100px">
-        <el-form-item label="父级业务">
+        <el-form-item label="父级目录">
           <el-tree-select v-model="bizForm.parentId" :data="tree" :props="{label:'name',children:'children'}" :render-after-expand="false"
-            check-strictly node-key="id" clearable placeholder="顶级业务可不选择" style="width:100%"></el-tree-select>
+            check-strictly node-key="id" clearable placeholder="一级目录可不选择" style="width:100%"></el-tree-select>
+          <div style="color:#909399;font-size:12px;line-height:1.5">数据目录最多四级；不选择时为一级目录</div>
         </el-form-item>
-        <el-form-item label="业务名称" required><el-input v-model="bizForm.name" maxlength="50" placeholder="请输入业务名称"></el-input></el-form-item>
-        <el-form-item label="业务编码" required><el-input v-model="bizForm.code" maxlength="50" placeholder="全局唯一编码"></el-input></el-form-item>
+        <el-form-item label="目录名称" required><el-input v-model="bizForm.name" maxlength="50" placeholder="请输入目录名称"></el-input></el-form-item>
+        <el-form-item label="目录编码" required><el-input v-model="bizForm.code" maxlength="50" placeholder="全局唯一编码"></el-input></el-form-item>
         <el-form-item label="排序"><el-input-number v-model="bizForm.sort" :min="0" controls-position="right"></el-input-number></el-form-item>
       </el-form>
       <template #footer>
