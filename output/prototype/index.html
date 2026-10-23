@@ -62,7 +62,7 @@
 <div id="app">
   <el-container style="height: 100vh">
     <!-- 顶部 -->
-    <el-header v-if="!standalone" height="56px">
+    <el-header v-if="!standalone && !unitConsole" height="56px">
       <div class="brand-title">能力管理平台</div>
       <div class="scope-bar">
         <span style="color:#909399; font-size:13px">数据范围：{{ scopeLabel }}</span>
@@ -76,7 +76,7 @@
 
     <el-container>
       <!-- 左侧菜单树（二级菜单） -->
-      <el-aside v-if="!standalone" width="260px">
+      <el-aside v-if="!standalone && !unitConsole" width="260px">
         <el-menu :default-active="activeMenu" style="border:none" @select="onMenuSelect">
           <template v-for="item in menuTree" :key="item.label">
             <el-sub-menu v-if="item.children && item.children.length" :index="item.label">
@@ -89,9 +89,9 @@
       </el-aside>
 
       <!-- 主内容 -->
-      <el-main style="padding:0; background:#f5f7fa; overflow:auto">
-        <div class="page-wrap">
-          <el-breadcrumb v-if="!standalone" separator="/" style="margin-bottom:14px">
+      <el-main :style="unitConsole ? 'padding:0; background:#f5f7fa; overflow:auto; height:100vh' : 'padding:0; background:#f5f7fa; overflow:auto'">
+        <div class="page-wrap" :style="unitConsole ? 'padding:0' : ''">
+          <el-breadcrumb v-if="!standalone && !unitConsole" separator="/" style="margin-bottom:14px">
             <el-breadcrumb-item v-if="topMenuLabel">{{ topMenuLabel }}</el-breadcrumb-item>
             <el-breadcrumb-item>{{ activeTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
@@ -115,6 +115,9 @@ const MENU_TREE = {
     { label: '组织同步申请', page: 'P32' },
   ],
   super: [
+    { label: '机构管理', children: [
+      { label: '单位管理', page: 'P40' },
+    ]},
     { label: '开发者管理', children: [
       { label: '开发者管理', page: 'P01' },
       { label: '开发者信息审批', page: 'P01a' },
@@ -133,6 +136,7 @@ const MENU_TREE = {
       { label: '数据回流明细', page: 'P36Detail' },
       { label: '数据表管理', page: 'P37' },
       { label: '业务数据表关联', page: 'P38' },
+      { label: '第三方平台单点对接管理', page: 'P39' },
     ]},
     { label: '审批管理', children: [
       { label: '接口申请审批', page: 'P08' },
@@ -177,7 +181,9 @@ const PAGE_TITLES = {
   P30: '客户端授权管理', P30View: '客户端信息查看', P30AuthCancel: '取消授权', P31: '数据授权配置', P31B: '接口授权配置',
   P32: '组织同步申请',
   P36: '数据回流管理', P36Form: '数据回流管理', P36Admin: '数据回流管理', P36Detail: '数据回流明细', P36DetailView: '回流明细查看',
-  P37: '数据表管理', P38: '业务数据表关联',
+  P37: '数据表管理', P38: '业务数据表关联', P39: '第三方平台单点对接管理', P39Form: '第三方平台单点对接管理',
+  P40: '单位管理', P40Form: '单位新增',
+  P40Org: '部门管理', P40User: '用户管理', P40Sys: '管理员管理',
   P41: '组织同步审批',
 };
 
@@ -445,30 +451,48 @@ const DATA_SYNC_APPS = [
   { id: 7, orgId: 'ORG007', orgName: '青秀区实验小学', applicant: '林珊', applyTime: '2026-08-11 09:50', sysName: '家校互动平台', contact: '何军', phone: '13233334444', whiteList: [{ protocol: 'http://', domain: 'jx.qx.edu.cn' }], status: '已驳回', opinion: '不通过', opinionNote: '业务系统对接人信息不完整，请补充后重新提交', approver: '王超管', approveTime: '2026-08-12 17:30' },
 ];
 
-// 数据表管理（桂教通超管维护，用于数据回流时下拉选择数据表key；appId/appName 为该数据表归属应用）
+// 数据表管理（桂教通超管维护，用于数据回流时下拉选择数据表key；不维护应用名称）
 const DATA_TABLES = [
-  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', appId: '1001', appName: '课堂互动助手', desc: '记录学生学籍基本信息', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '启用', createTime: '2026-08-01 10:00' },
-  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', appId: '1001', appName: '课堂互动助手', desc: '记录学生各科成绩明细', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '启用', createTime: '2026-08-02 14:00' },
-  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', appId: '1003', appName: '英语听说训练', desc: '记录教师考勤打卡数据', tableJson: '{\n  "teacherId": "教师工号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '停用', createTime: '2026-08-03 09:00' },
-  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', appId: '1005', appName: '排课系统', desc: '记录课程相关文档资源', tableJson: '{\n  "resourceId": "资源标识",\n  "courseId": "课程标识",\n  "title": "资源名称"\n}', status: '启用', createTime: '2026-08-05 11:00' },
-  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', appId: '1006', appName: '成绩分析', desc: '记录学生日常考勤签到', tableJson: '{\n  "studentId": "学号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '启用', createTime: '2026-08-10 15:00' },
+  { id: 1, tableKey: 'tbl_student_base', tableName: '学生基本信息表', desc: '记录学生学籍基本信息', tableJson: '{\n  "studentId": "学号",\n  "name": "姓名",\n  "classId": "班级标识",\n  "gradeId": "年级标识"\n}', status: '启用', createTime: '2026-08-01 10:00' },
+  { id: 2, tableKey: 'tbl_score', tableName: '成绩明细表', desc: '记录学生各科成绩明细', tableJson: '{\n  "studentId": "学号",\n  "subjectId": "学科标识",\n  "score": "成绩",\n  "examId": "考试标识"\n}', status: '启用', createTime: '2026-08-02 14:00' },
+  { id: 3, tableKey: 'tbl_teacher_attend', tableName: '教师考勤表', desc: '记录教师考勤打卡数据', tableJson: '{\n  "teacherId": "教师工号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '停用', createTime: '2026-08-03 09:00' },
+  { id: 4, tableKey: 'tbl_course_resource', tableName: '课程资源表', desc: '记录课程相关文档资源', tableJson: '{\n  "resourceId": "资源标识",\n  "courseId": "课程标识",\n  "title": "资源名称"\n}', status: '启用', createTime: '2026-08-05 11:00' },
+  { id: 5, tableKey: 'tbl_attendance', tableName: '学生考勤表', desc: '记录学生日常考勤签到', tableJson: '{\n  "studentId": "学号",\n  "attendDate": "考勤日期",\n  "status": "考勤状态"\n}', status: '启用', createTime: '2026-08-10 15:00' },
 ];
 
-// 数据目录（业务数据表关联 P38 左侧树形目录，最多四级；tableKeys 为该目录关联的数据表key，来源数据表管理 P37）
+// 数据目录（业务数据表关联 P38 左侧树形目录，最多四级，无启用停用状态，支持删除；tableKeys 为该目录关联的数据表key，来源数据表管理 P37）
 const DIR_TREE = [
-  { id: 1, parentId: null, name: '学籍管理', code: 'biz_student', sort: 1, status: '启用', tableKeys: [], children: [
-    { id: 11, parentId: 1, name: '学生基本信息', code: 'student_base', sort: 1, status: '启用', tableKeys: ['tbl_student_base'] },
-    { id: 12, parentId: 1, name: '学籍异动', code: 'student_change', sort: 2, status: '启用', tableKeys: [] },
+  { id: 1, parentId: null, name: '学籍管理', code: 'biz_student', sort: 1, tableKeys: [], children: [
+    { id: 11, parentId: 1, name: '学生基本信息', code: 'student_base', sort: 1, tableKeys: ['tbl_student_base'] },
+    { id: 12, parentId: 1, name: '学籍异动', code: 'student_change', sort: 2, tableKeys: [] },
   ]},
-  { id: 2, parentId: null, name: '成绩管理', code: 'biz_score', sort: 2, status: '启用', tableKeys: [], children: [
-    { id: 21, parentId: 2, name: '考试成绩', code: 'exam_score', sort: 1, status: '启用', tableKeys: ['tbl_score'] },
-    { id: 22, parentId: 2, name: '成绩分析', code: 'score_analysis', sort: 2, status: '停用', tableKeys: [] },
+  { id: 2, parentId: null, name: '成绩管理', code: 'biz_score', sort: 2, tableKeys: [], children: [
+    { id: 21, parentId: 2, name: '考试成绩', code: 'exam_score', sort: 1, tableKeys: ['tbl_score'] },
+    { id: 22, parentId: 2, name: '成绩分析', code: 'score_analysis', sort: 2, tableKeys: [] },
   ]},
-  { id: 3, parentId: null, name: '考勤管理', code: 'biz_attend', sort: 3, status: '启用', tableKeys: [], children: [
-    { id: 31, parentId: 3, name: '学生考勤', code: 'stu_attend', sort: 1, status: '启用', tableKeys: ['tbl_attendance'] },
-    { id: 32, parentId: 3, name: '教师考勤', code: 'teacher_attend', sort: 2, status: '启用', tableKeys: ['tbl_teacher_attend'] },
+  { id: 3, parentId: null, name: '考勤管理', code: 'biz_attend', sort: 3, tableKeys: [], children: [
+    { id: 31, parentId: 3, name: '学生考勤', code: 'stu_attend', sort: 1, tableKeys: ['tbl_attendance'] },
+    { id: 32, parentId: 3, name: '教师考勤', code: 'teacher_attend', sort: 2, tableKeys: ['tbl_teacher_attend'] },
   ]},
-  { id: 4, parentId: null, name: '课程资源', code: 'biz_course', sort: 4, status: '启用', tableKeys: ['tbl_course_resource'] },
+  { id: 4, parentId: null, name: '课程资源', code: 'biz_course', sort: 4, tableKeys: ['tbl_course_resource'] },
+];
+
+// 第三方平台单点对接管理（桂教通超管·授权管理，P39）：维护 标准 OAuth2 / CAS 两种方式的第三方单点接入记录
+const DATA_SSO = [
+  { id: 1, platform: '钉钉（扫码登录）', type: '标准OAuth2', clientId: 'dingoa3k2l9x8q1w7e', clientSecret: 'sec_ding2026abc123', scope: 'userinfo',
+    authorizeUrl: 'https://login.dingtalk.com/oauth2/auth', accessTokenUrl: 'https://api.dingtalk.com/v1.0/oauth2/userAccessToken', accessTokenMatch: 'accessToken',
+    contentType: 'application/json', tokenAuthType: 'Basic', getUserinfoUrl: 'https://api.dingtalk.com/v1.0/contact/users/me', userInfoNeedClientId: 'false',
+    userIdMatch: 'unionId', userNameMatch: 'nick', avatarUrlMatch: 'avatarUrl', logoutUrl: 'https://login.dingtalk.com/logout',
+    status: '启用', remark: '教师端钉钉扫码单点登录', createTime: '2026-09-01 10:00', updateTime: '2026-09-10 14:30' },
+  { id: 2, platform: '校级统一身份认证平台', type: 'CAS', clientId: 'baiteda_sso',
+    authorizeUrl: 'https://cas.gxt.edu.cn/cas/login', ticketMatch: 'ticket', ticketValidateUrl: 'https://cas.gxt.edu.cn/cas/serviceValidate', ticketValidateReturnType: 'xml',
+    userIdMatch: 'id', userNameMatch: 'username', avatarUrlMatch: '',
+    status: '启用', remark: '校级统一身份认证 CAS 对接', createTime: '2026-09-05 09:20', updateTime: '2026-09-12 16:00' },
+  { id: 3, platform: '微信开放平台', type: '标准OAuth2', clientId: 'wx_open_9f8e7d6c', clientSecret: 'sec_wx2026xyz789', scope: 'snsapi_login',
+    authorizeUrl: 'https://open.weixin.qq.com/connect/qrconnect', accessTokenUrl: 'https://api.weixin.qq.com/sns/oauth2/access_token', accessTokenMatch: 'access_token',
+    contentType: 'application/x-www-form-urlencoded', tokenAuthType: '', getUserinfoUrl: 'https://api.weixin.qq.com/sns/userinfo', userInfoNeedClientId: 'false',
+    userIdMatch: 'openid', userNameMatch: 'nickname', avatarUrlMatch: 'headimgurl', logoutUrl: '',
+    status: '停用', remark: '家长端微信扫码登录（暂停使用）', createTime: '2026-09-08 11:00', updateTime: '2026-09-15 10:00' },
 ];
 
 // 数据回流管理（桂教通超管发起，开发者管理员响应，双方共维护同一份数据）
@@ -558,6 +582,7 @@ const app = Vue.createApp({
     },
     activeMenu() { return this.page; },
     currentComp() { return this.page; },
+    unitConsole() { return ['P40Org', 'P40User', 'P40Sys'].includes(this.page); },
   },
   methods: {
     onRoleChange() { this.page = this.role === 'dev' ? 'P16' : (this.role === 'org' ? 'P08Auth' : 'P01'); this.ctx = {}; },
@@ -597,6 +622,8 @@ app.mixin({
       const start = (page - 1) * size;
       return arr.slice(start, start + size);
     },
+    maskPhone(v) { return v && v.length >= 7 ? v.slice(0, 3) + '****' + v.slice(-4) : v; },
+    maskName(v) { if (!v) return v; return v.length <= 1 ? v : v[0] + '*'.repeat(v.length - 2) + v.slice(-1); },
   },
 });
 
@@ -5971,10 +5998,6 @@ app.component('P36Form', {
       return m;
     },
   },
-  watch: {
-    'form.dockingType'(v) { if (v === '开发者主动推送') this.syncAppFromTable(); },
-    'form.scopes': { handler() { this.syncAppFromTable(); }, deep: true },
-  },
   methods: {
     apiById(id) {
       return APIS.find(a => a.id === id);
@@ -5982,20 +6005,10 @@ app.component('P36Form', {
     // 选择数据表key后自动带出该数据表配置的表json（只读快照，本页不可编辑表json）
     onKeyChange(scope) {
       scope.tableJson = this.tableJsonMap[scope.tableKey] || '';
-      this.syncAppFromTable();
     },
-    isPush() { return !this.isView && !this.isUpload && this.form.dockingType === '开发者主动推送'; },
     onAppChange() {
       const a = APP_LIST.find(x => x.appId === this.form.appId);
       this.form.appName = a ? a.appName : '';
-    },
-    // 对接方式为「开发者主动推送」时，应用名称只读，根据所选数据表回填该数据表归属的应用
-    syncAppFromTable() {
-      if (!this.isPush()) return;
-      const scope = (this.form.scopes || []).find(s => s && s.tableKey);
-      const tbl = scope ? DATA_TABLES.find(t => t.tableKey === scope.tableKey) : null;
-      this.form.appId = tbl ? (tbl.appId || '') : '';
-      this.form.appName = tbl ? (tbl.appName || '') : '';
     },
     addScope() {
       this.form.scopes.push({ tableKey: '', tableJson: '' });
@@ -6041,9 +6054,7 @@ app.component('P36Form', {
         return;
       }
       if (!this.form.name.trim()) { this.$message.warning('请输入名称'); return; }
-      if (this.form.dockingType === '开发者主动推送') {
-        if (!this.form.appName) { this.$message.warning('应用名称由所选数据表自动回填，请先选择已维护应用名称的数据表'); return; }
-      } else if (!this.form.appId) { this.$message.warning('请选择应用名称'); return; }
+      if (!this.form.appId) { this.$message.warning('请选择应用名称'); return; }
       if (!this.form.devName) { this.$message.warning('请选择开发者'); return; }
       if (this.form.dockingType === '开发者提供接口') {
         if (this.form.domain && !/^https?:\/\//i.test(this.form.domain.trim())) { this.$message.warning('对接域名需以 http:// 或 https:// 开头'); return; }
@@ -6106,16 +6117,10 @@ app.component('P36Form', {
         </el-form-item>
         <el-form-item label="应用名称" required>
           <template v-if="!isView && !isUpload">
-            <template v-if="form.dockingType === '开发者主动推送'">
-              <el-input v-model="form.appName" readonly placeholder="根据所选数据表自动回填"></el-input>
-              <div style="color:#909399;font-size:12px;line-height:1.5">对接方式为「开发者主动推送」时应用名称只读，根据所选数据表自动回填该数据表归属的应用</div>
-            </template>
-            <template v-else>
-              <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%" @change="onAppChange">
-                <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
-              </el-select>
-              <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用</div>
-            </template>
+            <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" placeholder="请输入应用名称模糊匹配" style="width:100%" @change="onAppChange">
+              <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
+            </el-select>
+            <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用（候选不含生态应用）</div>
           </template>
           <div v-else class="ro-text">{{ form.appName || '—' }}</div>
         </el-form-item>
@@ -6359,7 +6364,7 @@ app.component('P36Admin', {
 
 /* =====================================================================
  * P37 数据表管理（桂教通超管·授权管理）
- * 管理对接的业务场景数据表key与数据库表名称映射，为数据回流下拉选择提供数据源。
+ * 管理对接的业务场景数据表key与数据库表名称映射，为数据回流下拉选择提供数据源（不维护应用名称）。
  * ===================================================================== */
 app.component('P37', {
   props: ['ctx'],
@@ -6370,9 +6375,7 @@ app.component('P37', {
       q: { tableKey: '', tableName: '' },
       formVisible: false,
       formTitle: '新增数据表',
-      form: { id: null, tableKey: '', tableName: '', appId: '', appName: '', desc: '', tableJson: '' },
-      appOptions: APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30),
-      appLoading: false,
+      form: { id: null, tableKey: '', tableName: '', desc: '', tableJson: '' },
       jsonOk: false,
       jsonError: '',
     };
@@ -6393,29 +6396,15 @@ app.component('P37', {
   methods: {
     resetQ() { this.q = { tableKey: '', tableName: '' }; },
     isProtected(row) { return row.status === '启用' || this.usedTableKeys.has(row.tableKey); },
-    // 应用名称：根据应用名称模糊匹配，最多展示 30 个匹配应用（候选不含生态应用，与数据回流新增一致）
-    searchApps(q) {
-      this.appLoading = true;
-      setTimeout(() => {
-        this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用' && (!q || a.appName.includes(q))).slice(0, 30);
-        this.appLoading = false;
-      }, 300);
-    },
-    onAppChange(appId) {
-      const app = APP_LIST.find(a => a.appId === appId);
-      this.form.appName = app ? app.appName : '';
-    },
     openAdd() {
-      this.form = { id: null, tableKey: '', tableName: '', appId: '', appName: '', desc: '', tableJson: '' };
-      this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30);
+      this.form = { id: null, tableKey: '', tableName: '', desc: '', tableJson: '' };
       this.formTitle = '新增数据表';
       this.jsonOk = false;
       this.jsonError = '';
       this.formVisible = true;
     },
     openEdit(row) {
-      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, appId: row.appId || '', appName: row.appName || '', desc: row.desc || '', tableJson: row.tableJson || '' };
-      this.appOptions = APP_LIST.filter(a => a.appAttr !== '生态应用').slice(0, 30);
+      this.form = { id: row.id, tableKey: row.tableKey, tableName: row.tableName, desc: row.desc || '', tableJson: row.tableJson || '' };
       this.formTitle = '编辑数据表';
       this.jsonOk = false;
       this.jsonError = '';
@@ -6441,19 +6430,18 @@ app.component('P37', {
     saveForm() {
       if (!this.form.tableKey.trim()) return ElMessage.warning('请输入数据表key');
       if (!this.form.tableName.trim()) return ElMessage.warning('请输入数据库表名称');
-      if (!this.form.appId) return ElMessage.warning('请选择应用名称');
       this.validateJson();
       if (!this.jsonOk) return ElMessage.warning('请先通过「校验」确认表json 为合法 JSON 对象');
       if (this.form.id) {
         const row = this.rows.find(r => r.id === this.form.id);
-        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), appId: this.form.appId, appName: this.form.appName, desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
+        if (row) { Object.assign(row, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
         const src = DATA_TABLES.find(r => r.id === this.form.id);
-        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), appId: this.form.appId, appName: this.form.appName, desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
+        if (src) { Object.assign(src, { tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson }); }
         ElMessage.success('编辑成功');
       } else {
         if (DATA_TABLES.some(r => r.tableKey === this.form.tableKey.trim())) return ElMessage.warning('数据表key已存在');
         const newId = DATA_TABLES.length ? Math.max(...DATA_TABLES.map(r => r.id)) + 1 : 1;
-        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), appId: this.form.appId, appName: this.form.appName, desc: this.form.desc.trim(), tableJson: this.form.tableJson, status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
+        const rec = { id: newId, tableKey: this.form.tableKey.trim(), tableName: this.form.tableName.trim(), desc: this.form.desc.trim(), tableJson: this.form.tableJson, status: '启用', createTime: new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-') };
         DATA_TABLES.unshift(rec);
         this.rows.unshift(rec);
         ElMessage.success('新增成功');
@@ -6500,7 +6488,6 @@ app.component('P37', {
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="tableKey" label="数据表key" min-width="160" />
         <el-table-column prop="tableName" label="数据库表名称" min-width="160" />
-        <el-table-column prop="appName" label="应用名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="desc" label="业务场景说明" min-width="200" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{row}"><st-tag :v="row.status" /></template>
@@ -6523,12 +6510,6 @@ app.component('P37', {
         </el-form-item>
         <el-form-item label="数据库表名称" required>
           <el-input v-model="form.tableName" placeholder="请输入数据库表名称" maxlength="100" />
-        </el-form-item>
-        <el-form-item label="应用名称" required>
-          <el-select v-model="form.appId" filterable remote :remote-method="searchApps" :loading="appLoading" @change="onAppChange" placeholder="请输入应用名称模糊匹配" style="width:100%">
-            <el-option v-for="a in appOptions" :key="a.appId" :label="a.appName" :value="a.appId"></el-option>
-          </el-select>
-          <div style="color:#909399;font-size:12px;line-height:1.5">根据应用名称模糊匹配，最多展示 30 个匹配应用；数据回流（P36Form）选择该数据表时自动回填该应用名称</div>
         </el-form-item>
         <el-form-item label="业务场景说明">
           <el-input v-model="form.desc" type="textarea" :rows="3" placeholder="请输入业务场景说明（选填）" maxlength="200" show-word-limit />
@@ -6556,7 +6537,7 @@ app.component('P37', {
 
 /* =====================================================================
  * P38 业务数据表关联（桂教通超管·授权管理）
- * 布局同接口能力管理（P35）：左侧树形数据目录（新增/编辑/停用，最多四级），
+ * 布局同接口能力管理（P35）：左侧树形数据目录（新增/编辑/删除，最多四级，无启用停用状态），
  * 右侧为选中目录关联的数据表（关联/移出，一级目录不可关联），点击目录节点切换右侧列表。
  * ===================================================================== */
 app.component('P38', {
@@ -6686,7 +6667,7 @@ app.component('P38', {
         }
         ElMessage.success('编辑成功');
       } else {
-        const node = { id: Date.now(), parentId: parent ? parent.id : null, name, code, sort: this.bizForm.sort, status: '启用', tableKeys: [] };
+        const node = { id: Date.now(), parentId: parent ? parent.id : null, name, code, sort: this.bizForm.sort, tableKeys: [] };
         if (parent) {
           parent.children = parent.children || [];
           parent.children.push(node);
@@ -6698,14 +6679,20 @@ app.component('P38', {
       }
       this.bizDlg = false;
     },
-    toggleStatus(node) {
-      const next = node.status === '启用' ? '停用' : '启用';
-      const msg = next === '停用'
-        ? '停用后该目录不可再关联新的数据表，已有数据不受影响。确定停用目录「' + node.name + '」？'
-        : '确定启用目录「' + node.name + '」？';
-      ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
-        node.status = next;
-        ElMessage.success(next + '成功');
+    // 目录删除：已关联数据表或存在子目录的目录视为已使用，不可删除
+    dirUsedReasons(node) {
+      const reasons = [];
+      if ((node.tableKeys || []).length) reasons.push('已关联 ' + node.tableKeys.length + ' 个数据表');
+      if ((node.children || []).length) reasons.push('存在子目录');
+      return reasons;
+    },
+    deleteNode(node) {
+      const reasons = this.dirUsedReasons(node);
+      if (reasons.length) return ElMessage.warning('该目录不可删除：' + reasons.join('，'));
+      ElMessageBox.confirm('确定删除目录「' + node.name + '」？删除后不可恢复。', '删除确认', { type: 'warning' }).then(() => {
+        this.detach(this.tree, node.id);
+        if (this.activeId === node.id) this.activeId = this.tree.length ? this.tree[0].id : null;
+        ElMessage.success('删除成功');
       }).catch(() => {});
     },
     resetAvailQuery() { this.availQuery = { tableKey: '', tableName: '' }; },
@@ -6714,7 +6701,6 @@ app.component('P38', {
       const n = this.activeNode;
       if (!n) return;
       if (this.isTopLevel(n)) return ElMessage.warning('一级目录不可关联数据表，请选择二级及以下目录');
-      if (n.status !== '启用') return ElMessage.warning('停用的目录不可关联数据表');
       this.selMap = {};
       this.availQuery = { tableKey: '', tableName: '' };
       this.availPage = 1;
@@ -6754,17 +6740,17 @@ app.component('P38', {
           <el-button type="primary" size="small" @click="openAdd(null)">新增目录</el-button>
         </div>
         <el-input v-model="filterText" placeholder="输入目录名称/编码筛选" clearable size="small" style="margin-bottom:10px"></el-input>
-        <div style="color:#909399;font-size:12px;margin-bottom:8px">数据目录最多四级；一级目录不可关联数据表</div>
+        <div style="color:#909399;font-size:12px;margin-bottom:8px">数据目录最多四级；一级目录不可关联数据表；已关联数据表或存在子目录的目录不可删除</div>
         <el-tree ref="bizTree" :data="tree" node-key="id" :props="{label:'name',children:'children'}"
           :default-expanded-keys="expandedKeys" :current-node-key="activeId" :filter-node-method="filterNode" :expand-on-click-node="false"
           highlight-current @node-click="onNodeClick">
           <template #default="{ data }">
             <span class="biz-node">
-              <span :style="data.status==='停用' ? 'color:#c0c4cc' : ''">{{ data.name }}</span>
+              <span>{{ data.name }}</span>
               <span class="biz-node-ops">
                 <el-button link type="primary" size="small" :disabled="!canAddChild(data)" @click.stop="openAdd(data)">新增</el-button>
                 <el-button link type="primary" size="small" @click.stop="openEdit(data)">编辑</el-button>
-                <el-button link :type="data.status==='启用'?'warning':'success'" size="small" @click.stop="toggleStatus(data)">{{ data.status==='启用'?'停用':'启用' }}</el-button>
+                <el-button link type="danger" size="small" @click.stop="deleteNode(data)">删除</el-button>
               </span>
             </span>
           </template>
@@ -6776,7 +6762,7 @@ app.component('P38', {
           <div class="toolbar" style="margin-bottom:12px">
             <span style="font-weight:600">{{ activeNode.name }} — 关联数据表（{{ linkedTables.length }}）</span>
             <div style="flex:1"></div>
-            <el-button type="primary" :disabled="activeNode.status!=='启用' || isTopLevel(activeNode)" @click="openLinkTable">新增关联</el-button>
+            <el-button type="primary" :disabled="isTopLevel(activeNode)" @click="openLinkTable">新增关联</el-button>
           </div>
           <div v-if="isTopLevel(activeNode)" style="color:#909399;font-size:12px;margin-bottom:8px">一级目录不可关联数据表，请在二级及以下目录下关联</div>
           <el-table :data="pageSlice(linkedTables, 'linked')" border empty-text="暂无关联数据表">
@@ -6789,9 +6775,6 @@ app.component('P38', {
                   <span style="color:#409eff;cursor:pointer">查看表json</span>
                 </el-tooltip>
               </template>
-            </el-table-column>
-            <el-table-column label="数据表状态" width="100" align="center">
-              <template #default="{row}"><st-tag :v="row.status" /></template>
             </el-table-column>
             <el-table-column label="操作" width="80">
               <template #default="{row}">
@@ -6841,6 +6824,823 @@ app.component('P38', {
         <el-button type="primary" @click="confirmLink">确定</el-button>
       </template>
     </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P39 第三方平台单点对接管理（桂教通超管·授权管理）
+ * 维护第三方平台单点登录接入记录，对接方式两种：
+ *   标准 OAuth2 授权方式：第三方提供 client_id/client_secret/scope/authorize_url/access_token_url 等参数；
+ *     response_type 固定 code（授权码模式）、grant_type 固定 authorization_code、
+ *     redirect_url 固定格式 https://{租户域名}/ego_base_info/v1/public/sso/custom/oauth/login?code=xxx、
+ *     user_info_auth_type 目前只支持 Bearer。
+ *   CAS 授权方式：第三方提供 client_id/authorize_url/ticket_match/ticket_validate_url 等参数，
+ *     ticket 校验通过后按标准 cas 认证流程发起认证。
+ * ===================================================================== */
+const SSO_OAUTH2_REQUIRED = ['clientId', 'clientSecret', 'authorizeUrl', 'accessTokenUrl', 'accessTokenMatch', 'getUserinfoUrl', 'userIdMatch', 'userNameMatch'];
+const SSO_CAS_REQUIRED = ['clientId', 'authorizeUrl', 'ticketValidateUrl', 'userIdMatch', 'userNameMatch'];
+const SSO_URL_FIELDS = ['authorizeUrl', 'accessTokenUrl', 'getUserinfoUrl', 'logoutUrl', 'ticketValidateUrl'];
+
+// 机构管理→单位管理（桂教通超管，P40/P40Form）：维护单位（供应商/集团校/研学机构/实习单位等）台账
+const UNIT_TYPES = ['供应商', '集团校', '研学机构', '实习单位'];
+const DATA_UNITS = [
+  { id: 1, unitId: '104006533', name: 'AI+代码测试学校', type: '供应商', creditCode: '91450100MA5KX8A72Q', legalRep: '一般学校', phone: '13400009098', manager: '詹丹丹', managerPhone: '13800001111', region: ['广西壮族自治区', '南宁市', '青秀区'], detailAddr: '示例路1号', intro: '', sort: 1, openTime: '2025-04-29', status: '启用' },
+  { id: 2, unitId: '104006533', name: '2016广西壮族自治区教育局', type: '供应商', creditCode: '91450100MA5KX8A72Q', legalRep: '一般学校', phone: '13500001234', manager: '李斯斯', managerPhone: '13800002222', region: ['广西壮族自治区', '南宁市', '兴宁区'], detailAddr: '教育大厦5楼', intro: '', sort: 2, openTime: '2025-04-29', status: '启用' },
+  { id: 3, unitId: '104006533', name: '测试集团校测试', type: '供应商', creditCode: '91450100MA5KX8A72Q', legalRep: '一般学校', phone: '13600005678', manager: '张维一', managerPhone: '13800003333', region: ['广西壮族自治区', '柳州市', '城中区'], detailAddr: '集团校园区', intro: '', sort: 3, openTime: '2025-04-29', status: '启用' },
+  { id: 4, unitId: '104006248', name: '东信数教团队', type: '集团校', creditCode: '91450100MA5KX8A72Q', legalRep: '集团校', phone: '13700009012', manager: '李莉莉', managerPhone: '13800004444', region: ['广西壮族自治区', '桂林市', '秀峰区'], detailAddr: '数教大楼', intro: '', sort: 4, openTime: '2025-04-29', status: '启用' },
+  { id: 5, unitId: '104006298', name: '崇左高级中学25', type: '集团校', creditCode: '91450100MA5KX8A72Q', legalRep: '集团校', phone: '13800007890', manager: '张楠', managerPhone: '13800005555', region: ['广西壮族自治区', '南宁市', '西乡塘区'], detailAddr: '高中路25号', intro: '', sort: 5, openTime: '2025-04-29', status: '启用' },
+  { id: 6, unitId: '104006227', name: '桂林市二中22', type: '研学机构', creditCode: '91450100MA5KX8A72Q', legalRep: '中心校', phone: '13900003456', manager: '刘奕君', managerPhone: '13800006666', region: ['广西壮族自治区', '桂林市', '七星区'], detailAddr: '二中路22号', intro: '', sort: 6, openTime: '2025-04-29', status: '启用' },
+  { id: 7, unitId: '104006225', name: '中职测试学校四', type: '研学机构', creditCode: '91450100MA5KX8A72Q', legalRep: '中心校', phone: '13000001234', manager: '吴丽凡', managerPhone: '13800007777', region: ['广东省', '广州市', '天河区'], detailAddr: '中职园区4号', intro: '', sort: 7, openTime: '2025-04-29', status: '启用' },
+  { id: 8, unitId: '104006227', name: '测试小学集团校江南校区', type: '实习单位', creditCode: '91450100MA5KX8A72Q', legalRep: '一般学校', phone: '13100005678', manager: '曾维维', managerPhone: '13800008888', region: ['广西壮族自治区', '南宁市', '青秀区'], detailAddr: '江南校区', intro: '', sort: 7, openTime: '2025-04-29', status: '启用' },
+  { id: 9, unitId: '104006227', name: '测试小学集团校良庆区', type: '实习单位', creditCode: '91450100MA5KX8A72Q', legalRep: '一般学校', phone: '13200009012', manager: '张优优', managerPhone: '13800009999', region: ['广西壮族自治区', '南宁市', '青秀区'], detailAddr: '良庆区校区', intro: '', sort: 8, openTime: '2025-04-29', status: '停用' },
+  { id: 10, unitId: '104006227', name: '南宁测试学校-修改', type: '实习单位', creditCode: '91450100MA5KX8A72Q', legalRep: '一般学校', phone: '13300003456', manager: '薛恩', managerPhone: '13800000000', region: ['广东省', '深圳市', '南山区'], detailAddr: '测试路9号', intro: '', sort: 9, openTime: '2025-04-29', status: '启用' },
+];
+app.component('P39', {
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: [...DATA_SSO],
+      q: { platform: '', type: '', status: '' },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.platform || r.platform.includes(this.q.platform)) &&
+        (!this.q.type || r.type === this.q.type) &&
+        (!this.q.status || r.status === this.q.status)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { platform: '', type: '', status: '' }; },
+    openAdd() {
+      this.$root.go('P39Form', { from: 'P39' });
+    },
+    openEdit(row) {
+      this.$root.go('P39Form', { id: row.id, from: 'P39' });
+    },
+    toggleStatus(row) {
+      const next = row.status === '启用' ? '停用' : '启用';
+      const msg = next === '停用' ? '停用后该第三方平台将不可单点登录本平台，确定停用？' : '确定启用「' + row.platform + '」的单点对接？';
+      ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
+        row.status = next;
+        const src = DATA_SSO.find(r => r.id === row.id);
+        if (src) { src.status = next; src.updateTime = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-'); }
+        ElMessage.success(next + '成功');
+      }).catch(() => {});
+    },
+    deleteRow(row) {
+      ElMessageBox.confirm('确定删除第三方平台「' + row.platform + '」的单点对接记录？删除后该平台将不可再单点登录，不可恢复。', '删除确认', { type: 'warning' }).then(() => {
+        const idx = DATA_SSO.findIndex(r => r.id === row.id);
+        if (idx !== -1) DATA_SSO.splice(idx, 1);
+        const idx2 = this.rows.findIndex(r => r.id === row.id);
+        if (idx2 !== -1) this.rows.splice(idx2, 1);
+        ElMessage.success('删除成功');
+      }).catch(() => {});
+    },
+  },
+  template: `<div>
+    <div class="toolbar">
+      <el-input v-model="q.platform" placeholder="第三方平台名称" clearable style="width:180px" />
+      <el-select v-model="q.type" placeholder="对接方式" clearable style="width:150px;margin-left:8px">
+        <el-option label="标准OAuth2" value="标准OAuth2"></el-option>
+        <el-option label="CAS" value="CAS"></el-option>
+      </el-select>
+      <el-select v-model="q.status" placeholder="状态" clearable style="width:120px;margin-left:8px">
+        <el-option label="启用" value="启用"></el-option>
+        <el-option label="停用" value="停用"></el-option>
+      </el-select>
+      <el-button type="primary" style="margin-left:8px">查询</el-button>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增单点对接</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="platform" label="第三方平台名称" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="type" label="对接方式" width="120" align="center">
+          <template #default="{row}"><el-tag :type="row.type==='标准OAuth2'?'primary':'success'" size="small">{{ row.type }}</el-tag></template>
+        </el-table-column>
+        <el-table-column prop="clientId" label="client_id" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" width="80" align="center">
+          <template #default="{row}"><st-tag :v="row.status" /></template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="150" />
+        <el-table-column prop="updateTime" label="更新时间" width="150" />
+        <el-table-column label="操作" width="160" fixed="right">
+          <template #default="{row}">
+            <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
+            <el-button :type="row.status==='启用'?'warning':'success'" link @click="toggleStatus(row)">{{ row.status==='启用'?'停用':'启用' }}</el-button>
+            <el-button type="danger" link @click="deleteRow(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end" />
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * P39Form 第三方平台单点对接管理·新增/编辑（桂教通超管·授权管理，新界面方式）
+ * 从 P39 列表「新增单点对接」/「编辑」打开；参数表单与 P39 原来弹窗一致；
+ * 对接方式编辑时不可切换；固定参数 response_type/grant_type/redirect_url/user_info_auth_type 只读展示。
+ * ===================================================================== */
+app.component('P39Form', {
+  props: ['ctx'],
+  data() {
+    const src = this.ctx && this.ctx.id ? DATA_SSO.find(r => r.id === this.ctx.id) : null;
+    const base = { id: null, platform: '', type: '标准OAuth2', remark: '',
+      clientId: '', clientSecret: '', scope: '', authorizeUrl: '', accessTokenUrl: '', accessTokenMatch: '',
+      contentType: 'application/x-www-form-urlencoded', tokenAuthType: '', getUserinfoUrl: '', userInfoNeedClientId: 'false',
+      userIdMatch: '', userNameMatch: '', avatarUrlMatch: '', logoutUrl: '',
+      ticketMatch: 'ticket', ticketValidateUrl: '', ticketValidateReturnType: 'json' };
+    if (src) Object.keys(base).forEach(k => { if (src[k] !== undefined && src[k] !== null) base[k] = src[k]; });
+    return { form: base };
+  },
+  computed: {
+    isEdit() { return !!(this.ctx && this.ctx.id); },
+  },
+  methods: {
+    backTo() { return this.ctx && this.ctx.from ? this.ctx.from : 'P39'; },
+    goBack() { this.$root.go(this.backTo()); },
+    checkUrl(v) { return !v || /^https?:\/\//i.test(v.trim()); },
+    save() {
+      const f = this.form;
+      if (!f.platform.trim()) return ElMessage.warning('请输入第三方平台名称');
+      const req = f.type === '标准OAuth2' ? SSO_OAUTH2_REQUIRED : SSO_CAS_REQUIRED;
+      const labels = { clientId: 'client_id', clientSecret: 'client_secret', authorizeUrl: '授权地址', accessTokenUrl: '获取token的地址', accessTokenMatch: 'token字段的key', getUserinfoUrl: '获取用户数据的接口地址', userIdMatch: '用户id字段的key', userNameMatch: '用户名字段的key', ticketValidateUrl: 'ticket校验地址' };
+      for (const k of req) { if (!String(f[k] || '').trim()) return ElMessage.warning('请输入' + labels[k]); }
+      for (const k of SSO_URL_FIELDS) {
+        if (!this.checkUrl(f[k])) return ElMessage.warning(labels[k] || k + ' 需以 http:// 或 https:// 开头');
+      }
+      const now = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
+      if (f.id) {
+        const rec = DATA_SSO.find(r => r.id === f.id);
+        if (rec) Object.assign(rec, f, { platform: f.platform.trim(), updateTime: now });
+        ElMessage.success('编辑成功');
+      } else {
+        const newId = DATA_SSO.length ? Math.max(...DATA_SSO.map(r => r.id)) + 1 : 1;
+        DATA_SSO.unshift(Object.assign({}, f, { id: newId, platform: f.platform.trim(), createTime: now, updateTime: now }));
+        ElMessage.success('新增成功');
+      }
+      this.$root.go(this.backTo());
+    },
+  },
+  template: `<div>
+    <div class="card" style="max-width:none">
+      <div style="font-weight:600;margin-bottom:14px">{{ isEdit ? '编辑单点对接' : '新增单点对接' }}</div>
+      <el-form label-width="190px">
+        <el-form-item label="第三方平台名称" required>
+          <el-input v-model="form.platform" placeholder="请输入第三方平台名称" maxlength="50" />
+        </el-form-item>
+        <el-form-item label="对接方式" required>
+          <el-radio-group v-model="form.type" :disabled="isEdit">
+            <el-radio label="标准OAuth2">标准OAuth2授权方式</el-radio>
+            <el-radio label="CAS">CAS授权方式</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <template v-if="form.type === '标准OAuth2'">
+          <el-form-item label="client_id" required>
+            <el-input v-model="form.clientId" placeholder="客户端id" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="client_secret" required>
+            <el-input v-model="form.clientSecret" placeholder="客户端密钥" maxlength="100" show-password />
+          </el-form-item>
+          <el-form-item label="scope">
+            <el-input v-model="form.scope" placeholder="授权范围" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="response_type">
+            <el-input model-value="code" readonly>
+              <template #append>固定值，目前只支持授权码模式</template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="grant_type">
+            <el-input model-value="authorization_code" readonly>
+              <template #append>固定值</template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="authorize_url" required>
+            <el-input v-model="form.authorizeUrl" placeholder="授权地址，需以 http:// 或 https:// 开头" maxlength="300" />
+          </el-form-item>
+          <el-form-item label="redirect_url">
+            <el-input model-value="https://{租户域名}/ego_base_info/v1/public/sso/custom/oauth/login?code=xxx" readonly></el-input>
+            <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">授权成功后的回传授权码地址，固定格式，不可修改</div>
+          </el-form-item>
+          <el-form-item label="access_token_url" required>
+            <el-input v-model="form.accessTokenUrl" placeholder="获取token的地址，需以 http:// 或 https:// 开头" maxlength="300" />
+          </el-form-item>
+          <el-form-item label="access_token_match" required>
+            <el-input v-model="form.accessTokenMatch" placeholder="token字段的key，如 accessToken / access_token" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="content_type">
+            <el-select v-model="form.contentType" style="width:100%" allow-create filterable placeholder="获取token接口的content-type">
+              <el-option label="application/x-www-form-urlencoded" value="application/x-www-form-urlencoded"></el-option>
+              <el-option label="application/json" value="application/json"></el-option>
+            </el-select>
+            <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">获取token接口的content-type，默认 application/x-www-form-urlencoded</div>
+          </el-form-item>
+          <el-form-item label="token_auth_type">
+            <el-select v-model="form.tokenAuthType" style="width:100%" placeholder="获取token接口的鉴权模式">
+              <el-option label="不填（oauth2默认鉴权）" value=""></el-option>
+              <el-option label="Basic（basic鉴权模式）" value="Basic"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="get_userinfo_url" required>
+            <el-input v-model="form.getUserinfoUrl" placeholder="获取用户数据的接口地址，需以 http:// 或 https:// 开头" maxlength="300" />
+          </el-form-item>
+          <el-form-item label="user_info_auth_type">
+            <el-input model-value="Bearer" readonly>
+              <template #append>获取用户信息接口时token的传递方式，目前只支持Bearer</template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="user_info_need_client_id">
+            <el-radio-group v-model="form.userInfoNeedClientId">
+              <el-radio label="true">是</el-radio>
+              <el-radio label="false">否</el-radio>
+            </el-radio-group>
+            <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">获取用户信息的接口是否需要传 client_id，默认否</div>
+          </el-form-item>
+          <el-form-item label="user_id_match" required>
+            <el-input v-model="form.userIdMatch" placeholder="用户id字段的key" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="user_name_match" required>
+            <el-input v-model="form.userNameMatch" placeholder="用户名字段的key" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="avatar_url_match">
+            <el-input v-model="form.avatarUrlMatch" placeholder="用户头像字段的key" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="logout_url">
+            <el-input v-model="form.logoutUrl" placeholder="登出地址，从平台退出登录时会302到此地址（选填）" maxlength="300" />
+          </el-form-item>
+        </template>
+
+        <template v-else>
+          <el-form-item label="client_id" required>
+            <el-input v-model="form.clientId" placeholder="第三方分配给本平台的客户端id" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="authorize_url" required>
+            <el-input v-model="form.authorizeUrl" placeholder="cas授权地址，需以 http:// 或 https:// 开头" maxlength="300" />
+          </el-form-item>
+          <el-form-item label="ticket_match">
+            <el-input v-model="form.ticketMatch" placeholder="授权成功后回传的ticketKey，默认 ticket" maxlength="100" />
+            <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">默认是 ticket，可以是其它的，如 token、unifyToken 等</div>
+          </el-form-item>
+          <el-form-item label="ticket_validate_url" required>
+            <el-input v-model="form.ticketValidateUrl" placeholder="ticket校验地址，需以 http:// 或 https:// 开头" maxlength="300" />
+          </el-form-item>
+          <el-form-item label="ticket_validate_return_data_type">
+            <el-radio-group v-model="form.ticketValidateReturnType">
+              <el-radio label="json">json</el-radio>
+              <el-radio label="xml">xml</el-radio>
+            </el-radio-group>
+            <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">ticket校验通过后返回用户信息的数据格式，默认 json</div>
+          </el-form-item>
+          <el-form-item label="user_id_match" required>
+            <el-input v-model="form.userIdMatch" placeholder="用户id字段的key" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="user_name_match" required>
+            <el-input v-model="form.userNameMatch" placeholder="用户名字段的key" maxlength="100" />
+          </el-form-item>
+          <el-form-item label="avatar_url_match">
+            <el-input v-model="form.avatarUrlMatch" placeholder="用户头像字段的key" maxlength="100" />
+          </el-form-item>
+          <el-alert type="info" :closable="false" title="第三方只需提供以上参数，平台将按照标准CAS认证流程发起认证。" style="margin-bottom:8px" />
+        </template>
+
+        <el-form-item label="备注">
+          <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="请输入备注（选填）" maxlength="200" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:14px">
+        <el-button @click="goBack">返回</el-button>
+        <el-button type="primary" @click="save">保存</el-button>
+      </div>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * P40 单位管理（桂教通超管·机构管理）
+ * 列表：查询单位类型/单位名称/单位id；工具栏「新增」（跳转 P40Form 新界面）、
+ * 「批量操作」下拉（导入 / 导出单位信息 / 导入/导出记录）；
+ * 列表列：单位名称/单位id/单位类型/统一社会信用代码/法人代表/管理员/排序/开通时间/
+ * 服务启停（开关，二次确认）/操作（详情弹窗、后台）。
+ * ===================================================================== */
+app.component('P40', {
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: [...DATA_UNITS],
+      q: { type: '', name: '', unitId: '' },
+      detail: null, detailVisible: false,
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.type || r.type === this.q.type) &&
+        (!this.q.name || r.name.includes(this.q.name)) &&
+        (!this.q.unitId || r.unitId.includes(this.q.unitId))
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { type: '', name: '', unitId: '' }; },
+    add() { this.$root.go('P40Form', { from: 'P40' }); },
+    onBatch(cmd) {
+      const map = { imp: '导入', exp: '导出单位信息', rec: '打开导入/导出记录' };
+      ElMessage.info(map[cmd] + '（示意）');
+    },
+    toggleStatus(row) {
+      const next = row.status === '启用' ? '停用' : '启用';
+      const msg = next === '停用' ? '停用后该单位用户将不可登录平台，确定停用？' : '确定启用「' + row.name + '」的服务？';
+      ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
+        row.status = next;
+        ElMessage.success(next + '成功');
+      }).catch(() => { row.status = row.status === '启用' ? '停用' : '启用'; });
+    },
+    editUnit(row) { this.$root.go('P40Form', { id: row.id, from: 'P40' }); },
+    toAdmin(row) { this.$root.go('P40Org', { unitId: row.id, unitName: row.name }); },
+  },
+  template: `<div>
+    <div class="toolbar">
+      <el-select v-model="q.type" placeholder="请输入单位类型" clearable style="width:160px">
+        <el-option v-for="t in UNIT_TYPES" :key="t" :label="t" :value="t"></el-option>
+      </el-select>
+      <el-input v-model="q.name" placeholder="请输入单位名称" clearable style="width:180px;margin-left:8px" />
+      <el-input v-model="q.unitId" placeholder="请输入单位id" clearable style="width:180px;margin-left:8px" />
+      <el-button @click="resetQ" style="margin-left:8px">重置</el-button>
+      <el-button type="primary">查询</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="add">新增</el-button>
+      <el-dropdown style="margin-left:8px" @command="onBatch">
+        <el-button>批量操作<span style="margin-left:4px">▾</span></el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="imp">导入</el-dropdown-item>
+            <el-dropdown-item command="exp">导出单位信息</el-dropdown-item>
+            <el-dropdown-item command="rec">导入/导出记录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column prop="name" label="单位名称" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="unitId" label="单位id" width="110" />
+        <el-table-column prop="type" label="单位类型" width="100" align="center" />
+        <el-table-column prop="creditCode" label="统一社会信用代码" min-width="170" show-overflow-tooltip />
+        <el-table-column label="管理员手机号" width="130" align="center">
+          <template #default="{row}">{{ maskPhone(row.phone) }}</template>
+        </el-table-column>
+        <el-table-column label="管理员" width="90" align="center">
+          <template #default="{row}">{{ maskName(row.manager) }}</template>
+        </el-table-column>
+        <el-table-column prop="sort" label="排序" width="70" align="center" />
+        <el-table-column prop="openTime" label="开通时间" width="110" />
+        <el-table-column label="服务启停" width="90" align="center">
+          <template #default="{row}"><el-switch :model-value="row.status==='启用'" @change="toggleStatus(row)" /></template>
+        </el-table-column>
+        <el-table-column label="操作" width="110" fixed="right">
+          <template #default="{row}">
+            <el-button type="primary" link @click="editUnit(row)">编辑</el-button>
+            <el-button type="primary" link @click="toAdmin(row)">后台</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end" />
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * P40Form 单位新增（桂教通超管·机构管理，新界面方式）
+ * 从 P40 列表「新增」打开；表单字段：单位Logo/单位名称/统一社会信用代码/单位类型
+ * （单选：供应商/研学单位/合作实习单位）/单位法人（文本）/单位电话（固定电话或手机校验）/
+ * 管理员（必填文本）/管理员手机号码/详细地址（省-市-区县级联下拉 + 详细地址文本）/
+ * 单位简介（≤500字）/营业执照（图片上传）。
+ * 保存写回 DATA_UNITS 并返回列表；返回不保存。
+ * ===================================================================== */
+const REGION_OPTIONS = [
+  { value: '广西壮族自治区', label: '广西壮族自治区', children: [
+    { value: '南宁市', label: '南宁市', children: [ { value: '青秀区', label: '青秀区' }, { value: '兴宁区', label: '兴宁区' }, { value: '西乡塘区', label: '西乡塘区' } ] },
+    { value: '桂林市', label: '桂林市', children: [ { value: '秀峰区', label: '秀峰区' }, { value: '七星区', label: '七星区' } ] },
+    { value: '柳州市', label: '柳州市', children: [ { value: '城中区', label: '城中区' }, { value: '鱼峰区', label: '鱼峰区' } ] },
+  ]},
+  { value: '广东省', label: '广东省', children: [
+    { value: '广州市', label: '广州市', children: [ { value: '天河区', label: '天河区' }, { value: '越秀区', label: '越秀区' } ] },
+    { value: '深圳市', label: '深圳市', children: [ { value: '南山区', label: '南山区' }, { value: '福田区', label: '福田区' } ] },
+  ]},
+];
+app.component('P40Form', {
+  props: ['ctx'],
+  data() {
+    const src = this.ctx && this.ctx.id ? DATA_UNITS.find(r => r.id === this.ctx.id) : null;
+    const base = { name: '', creditCode: '', type: '供应商', legalPerson: '', phone: '', manager: '', managerPhone: '', region: [], detailAddr: '', intro: '' };
+    if (src) {
+      base.name = src.name || ''; base.creditCode = src.creditCode || ''; base.type = src.type || '供应商';
+      base.legalPerson = src.legalRep || ''; base.phone = src.phone || ''; base.manager = src.manager || '';
+      base.managerPhone = src.managerPhone || ''; base.region = src.region ? src.region.slice() : [];
+      base.detailAddr = src.detailAddr || ''; base.intro = src.intro || '';
+    }
+    return { regionOptions: REGION_OPTIONS, form: base, editId: src ? src.id : null };
+  },
+  methods: {
+    backTo() { return this.ctx && this.ctx.from ? this.ctx.from : 'P40'; },
+    goBack() { this.$root.go(this.backTo()); },
+    validPhone(v) { return /^1[3-9]\d{9}$/.test(v) || /^(\d{3,4}-)?\d{7,8}$/.test(v); },
+    save() {
+      const f = this.form;
+      if (!f.name.trim()) return ElMessage.warning('请输入单位名称');
+      if (!f.creditCode.trim()) return ElMessage.warning('请输入统一社会信用代码');
+      if (!f.legalPerson.trim()) return ElMessage.warning('请输入单位法人');
+      if (!this.validPhone(f.phone.trim())) return ElMessage.warning('单位电话需为固定电话或手机号码');
+      if (!f.manager.trim()) return ElMessage.warning('请输入管理员');
+      if (!/^1\d{10}$/.test(f.managerPhone.trim())) return ElMessage.warning('请输入正确的管理员手机号码');
+      if (!f.region.length || !f.detailAddr.trim()) return ElMessage.warning('请选择省-市-区县并填写详细地址');
+      if (this.editId) {
+        const u = DATA_UNITS.find(r => r.id === this.editId);
+        if (u) {
+          u.name = f.name.trim(); u.type = f.type; u.creditCode = f.creditCode.trim();
+          u.legalRep = f.legalPerson.trim(); u.phone = f.phone.trim(); u.manager = f.manager.trim();
+          u.managerPhone = f.managerPhone.trim(); u.region = f.region.slice();
+          u.detailAddr = f.detailAddr.trim(); u.intro = f.intro.trim();
+        }
+        ElMessage.success('保存成功');
+        return this.$root.go(this.backTo());
+      }
+      const now = new Date().toISOString().slice(0, 10);
+      const newId = DATA_UNITS.length ? Math.max(...DATA_UNITS.map(r => r.id)) + 1 : 1;
+      DATA_UNITS.unshift({
+        id: newId, unitId: String(104006300 + newId), name: f.name.trim(), type: '供应商', creditCode: f.creditCode.trim(),
+        legalRep: f.legalPerson.trim(), phone: f.phone.trim(), manager: f.manager.trim(), managerPhone: f.managerPhone.trim(),
+        region: f.region.slice(), detailAddr: f.detailAddr.trim(), intro: f.intro.trim(), sort: DATA_UNITS.length + 1, openTime: now, status: '启用',
+      });
+      ElMessage.success('保存成功');
+      this.$root.go(this.backTo());
+    },
+  },
+  template: `<div>
+    <div class="card" style="max-width:none">
+      <el-form label-width="150px">
+        <el-form-item label="单位 Logo" required>
+          <el-upload action="#" :auto-upload="false" :limit="1" list-type="picture">
+            <el-button type="primary" plain>上传</el-button>
+          </el-upload>
+          <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">建议尺寸不小于100*100px</div>
+        </el-form-item>
+        <el-form-item label="单位名称" required>
+          <el-input v-model="form.name" placeholder="请输入单位名称" maxlength="50" style="width:336px" />
+        </el-form-item>
+        <el-form-item label="统一社会信用代码" required>
+          <el-input v-model="form.creditCode" placeholder="请输入统一社会信用代码" maxlength="18" style="width:336px" />
+        </el-form-item>
+        <el-form-item label="单位类型" required>
+          <el-radio-group v-model="form.type">
+            <el-radio label="供应商">供应商</el-radio>
+            <el-radio label="研学单位">研学单位</el-radio>
+            <el-radio label="合作实习单位">合作实习单位</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="单位法人" required>
+          <el-input v-model="form.legalPerson" placeholder="请输入单位法人" maxlength="20" style="width:336px" />
+        </el-form-item>
+        <el-form-item label="单位电话" required>
+          <el-input v-model="form.phone" placeholder="固定电话或手机号码" maxlength="20" style="width:336px" />
+        </el-form-item>
+        <el-form-item label="管理员" required>
+          <el-input v-model="form.manager" placeholder="请输入管理员姓名" maxlength="20" style="width:336px" />
+        </el-form-item>
+        <el-form-item label="管理员手机号码" required>
+          <el-input v-model="form.managerPhone" placeholder="请输入管理员手机号码" maxlength="11" style="width:336px" />
+        </el-form-item>
+        <el-form-item label="详细地址" required>
+          <el-cascader v-model="form.region" :options="regionOptions" placeholder="请选择省-市-区县" style="width:336px" />
+          <el-input v-model="form.detailAddr" placeholder="请输入详细地址" maxlength="100" style="width:336px;margin-left:8px" />
+        </el-form-item>
+        <el-form-item label="单位简介">
+          <el-input v-model="form.intro" type="textarea" :rows="3" placeholder="请输入单位简介" maxlength="500" show-word-limit style="width:560px" />
+        </el-form-item>
+        <el-form-item label="营业执照">
+          <el-upload action="#" :auto-upload="false" list-type="picture-card" :limit="3">
+            <span style="font-size:22px;color:#909399">＋</span>
+          </el-upload>
+          <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">支持上传扩展名：.jpg .png .jpeg .bmp .gif 图片大小不超过5M</div>
+        </el-form-item>
+      </el-form>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:14px">
+        <el-button type="primary" @click="save">保存</el-button>
+        <el-button @click="goBack">返回</el-button>
+      </div>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * 单位后台（桂教通超管·单位管理「后台」进入，全屏接管平台框架）
+ * 三个模块（顶部导航切换，右上角退出返回 P40）：
+ *   P40Org  组织中心·部门管理：左侧部门树 + 右侧部门信息/查询/新增/批量操作/列表(详情/删除)
+ *   P40User 用户中心·用户管理：左侧部门树 + 用户查询(姓名/手机号码/激活状态)/
+ *           新增职工/批量操作/导入导出/教职工邀请 + 列表(编辑/删除)
+ *   P40Sys  系统管理·管理员管理：左侧菜单（管理员管理/角色管理）
+ * ===================================================================== */
+const DEPT_TREE = [
+  { id: 1, label: '食堂供应商', children: [
+    { id: 11, label: '内设部门' },
+    { id: 12, label: '部门1' }, { id: 13, label: '部门2' }, { id: 14, label: '部门3' }, { id: 15, label: '部门4' },
+    { id: 16, label: '部门5', children: [
+      { id: 161, label: '子部门1' }, { id: 162, label: '子部门2' }, { id: 163, label: '子部门3' }, { id: 164, label: '子部门4' },
+    ]},
+    { id: 17, label: '部门6', children: [
+      { id: 171, label: '子部门6-1' }, { id: 172, label: '子部门6-2' }, { id: 173, label: '子部门6-3' },
+    ]},
+  ]},
+];
+const DEPT_LIST = [
+  { id: 1, name: '普通中小学部', type: '内设部门', owner: '张依依、李斯斯', sort: 1, total: 122 },
+  { id: 2, name: '组织部', type: '内设部门', owner: '张唯一', sort: 2, total: 12 },
+  { id: 3, name: '财务室', type: '内设部门', owner: '周雅诗', sort: 3, total: 32 },
+  { id: 4, name: '政法处', type: '内设部门', owner: '周雅诗', sort: 4, total: 56 },
+  { id: 5, name: '人事处', type: '综合部', owner: '邓子怡', sort: 5, total: 33 },
+  { id: 6, name: '宣传部', type: '综合部', owner: '周雅诗', sort: 6, total: 6 },
+  { id: 7, name: '基教处', type: '综合部', owner: '李斯斯', sort: 7, total: 18 },
+  { id: 8, name: '科研管理', type: '技术部', owner: '张依依、李斯斯', sort: 8, total: 7 },
+  { id: 9, name: '语工处', type: '内设部门', owner: '刘晓霞', sort: 9, total: 51 },
+  { id: 10, name: '学生处', type: '内设部门', owner: '张依依、李斯斯', sort: 10, total: 31 },
+];
+const USER_LIST = Array.from({ length: 10 }, (_, i) => ({
+  id: i + 1,
+  name: ['张*一', '张*三', '李*一'][i % 3],
+  fullName: ['张晓一', '张伟三', '李明一'][i % 3],
+  dept: '主部门:办公室',
+  phone: maskPhoneRaw('1381234' + String(1000 + i).slice(-4)),
+  gender: i % 4 === 0 ? '男' : '女',
+  active: i % 5 === 3 ? '未激活' : '已激活',
+}));
+function maskPhoneRaw(v) { return v && v.length >= 7 ? v.slice(0, 3) + '****' + v.slice(-4) : v; }
+
+app.component('UnitConsoleBar', {
+  props: ['active', 'unitName'],
+  data() {
+    return { tabs: [ { page: 'P40Org', label: '组织中心' }, { page: 'P40User', label: '用户中心' }, { page: 'P40Sys', label: '系统管理' } ] };
+  },
+  methods: {
+    goTab(p) { this.$root.go(p); },
+    exit() { this.$root.go('P40'); },
+    tabStyle(p) {
+      return { padding: '0 20px', height: '48px', lineHeight: '48px', cursor: 'pointer', fontSize: '14px',
+        background: this.active === p ? '#2563eb' : 'transparent', color: this.active === p ? '#fff' : '#c3cddd' };
+    },
+  },
+  template: `<div style="height:48px;background:#152238;display:flex;align-items:center;padding:0 20px;color:#fff;flex-shrink:0">
+    <span style="width:22px;height:22px;border-radius:4px;background:#2563eb;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;font-size:12px">◆</span>
+    <b style="font-size:15px;margin-right:40px">{{ unitName || '单位后台' }}</b>
+    <div v-for="t in tabs" :key="t.page" :style="tabStyle(t.page)" @click="goTab(t.page)">{{ t.label }}</div>
+    <div style="flex:1"></div>
+    <el-button size="small" @click="exit">退出单位后台</el-button>
+  </div>`,
+});
+
+/* P40Org 组织中心·部门管理 */
+app.component('P40Org', {
+  props: ['ctx'],
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      treeData: DEPT_TREE, treeKw: '',
+      info: { name: '委厅办公室', owner: '张棉棉', childCount: 5, memberCount: 128 },
+      q: '', checked: [],
+    };
+  },
+  watch: { treeKw(v) { this.$refs.tree && this.$refs.tree.filter(v); } },
+  computed: { filtered() { return DEPT_LIST.filter(r => !this.q || r.name.includes(this.q)); } },
+  methods: {
+    onNode(node) {
+      this.info = { name: node.label, owner: '张棉棉', childCount: (node.children || []).length, memberCount: Math.max(1, node.id % 200) };
+    },
+    filterNode(v, d) { return !v || d.label.includes(v); },
+    add() { ElMessage.info('新增部门（示意）'); },
+    onBatch(cmd) { ElMessage.info({ imp: '导入部门信息', exp: '导出部门信息', rec: '导入/导出记录', owner: '批量设置负责人' }[cmd] + '（示意）'); },
+    del(row) {
+      ElMessageBox.confirm('数据删除后将无法还原，请确认是否继续删除？', '确认是否删除', { type: 'warning' }).then(() => {
+        ElMessage.success('已删除「' + row.name + '」');
+      }).catch(() => {});
+    },
+  },
+  template: `<div style="min-height:100vh;display:flex;flex-direction:column">
+    <unit-console-bar active="P40Org" :unit-name="ctx.unitName" />
+    <div style="padding:14px 20px;color:#909399;font-size:13px">组织中心 / 部门管理</div>
+    <div style="display:flex;flex:1;gap:0;padding:0 20px 20px">
+      <div class="card" style="width:200px;flex-shrink:0;margin:0;padding:12px">
+        <div style="color:#2563eb;font-size:14px;margin-bottom:12px">◎ 部门管理</div>
+        <el-input v-model="treeKw" placeholder="请输入部门名称" size="small">
+          <template #append><span>🔍</span></template>
+        </el-input>
+        <el-tree ref="tree" :data="treeData" node-key="id" :props="{label:'label', children:'children'}"
+          :filter-node-method="filterNode" :default-expanded-keys="[115,116]" highlight-current
+          @node-click="onNode" style="margin-top:10px;font-size:13px" />
+      </div>
+      <div style="flex:1;margin-left:16px">
+        <div class="card" style="margin:0 0 14px;background:#f8fafc;box-shadow:none;border:1px solid #ebeef5">
+          <div style="display:flex;flex-wrap:wrap;row-gap:8px">
+            <div style="width:50%"><span style="color:#909399">部门名称：</span>{{ info.name }}</div>
+            <div style="width:50%"><span style="color:#909399">部门负责人：</span>{{ info.owner }}</div>
+            <div style="width:50%"><span style="color:#909399">下属部门数：</span>{{ info.childCount }}</div>
+            <div style="width:50%"><span style="color:#909399">部门人数：</span>{{ info.memberCount }}</div>
+          </div>
+        </div>
+        <div class="card" style="margin:0">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span class="q-label">部门名称</span>
+            <el-input v-model="q" placeholder="请输入部门名称" clearable style="width:220px" />
+            <el-button type="primary" plain size="small">🔍</el-button>
+          </div>
+          <div class="toolbar">
+            <el-button type="primary" @click="add">＋ 新增</el-button>
+            <el-dropdown @command="onBatch">
+              <el-button>批量操作<span style="margin-left:4px">▾</span></el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="imp">导入部门信息</el-dropdown-item>
+                  <el-dropdown-item command="exp">导出部门信息</el-dropdown-item>
+                  <el-dropdown-item command="rec">导入/导出记录</el-dropdown-item>
+                  <el-dropdown-item command="owner">批量设置负责人</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+          <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+            <el-table-column type="selection" width="45" />
+            <el-table-column prop="name" label="部门名称" min-width="140" show-overflow-tooltip />
+            <el-table-column prop="type" label="部门类型" width="100" align="center" />
+            <el-table-column prop="owner" label="部门负责人" min-width="130" show-overflow-tooltip />
+            <el-table-column prop="sort" label="排序" width="70" align="center" />
+            <el-table-column prop="total" label="总人数" width="80" align="center" />
+            <el-table-column label="操作" width="110" fixed="right">
+              <template #default="{row}">
+                <el-button type="primary" link>详情</el-button>
+                <el-button type="danger" link @click="del(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination background layout="total,prev,pager,next,sizes" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:14px;justify-content:flex-end" />
+        </div>
+      </div>
+    </div>
+  </div>`,
+});
+
+/* P40User 用户中心·用户管理 */
+app.component('P40User', {
+  props: ['ctx'],
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      treeData: DEPT_TREE, treeKw: '',
+      q: { name: '', phone: '', active: '' },
+      rows: USER_LIST,
+    };
+  },
+  watch: { treeKw(v) { this.$refs.tree && this.$refs.tree.filter(v); } },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.name || r.fullName.includes(this.q.name)) &&
+        (!this.q.phone || r.phone.includes(this.q.phone)) &&
+        (!this.q.active || r.active === this.q.active)
+      );
+    },
+  },
+  methods: {
+    filterNode(v, d) { return !v || d.label.includes(v); },
+    resetQ() { this.q = { name: '', phone: '', active: '' }; },
+    add() { ElMessage.info('新增职工（示意）'); },
+    onBatch(cmd) { ElMessage.info({ del: '批量删除', stop: '批量停用/启用' }[cmd] + '（示意）'); },
+    onImpExp(cmd) { ElMessage.info({ imp: '导入职工信息', exp: '导出职工信息', rec: '导入导出任务列表' }[cmd] + '（示意）'); },
+    onInvite(cmd) { ElMessage.info({ send: '发起邀请', rec: '邀请记录' }[cmd] + '（示意）'); },
+    edit(row) { ElMessage.info('编辑「' + row.fullName + '」（示意）'); },
+    del(row) {
+      ElMessageBox.confirm('数据删除后将无法还原，请确认是否继续删除？', '确认是否删除', { type: 'warning' }).then(() => {
+        ElMessage.success('已删除「' + row.fullName + '」');
+      }).catch(() => {});
+    },
+  },
+  template: `<div style="min-height:100vh;display:flex;flex-direction:column">
+    <unit-console-bar active="P40User" :unit-name="ctx.unitName" />
+    <div style="padding:14px 20px;color:#909399;font-size:13px">用户中心 / 用户管理</div>
+    <div style="display:flex;flex:1;gap:0;padding:0 20px 20px">
+      <div class="card" style="width:200px;flex-shrink:0;margin:0;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;color:#303133;font-size:14px;margin-bottom:8px">
+          <span>👤 用户管理</span><span style="color:#909399;font-size:12px">▾</span>
+        </div>
+        <div style="background:#e8f1ff;color:#2563eb;border-radius:4px;padding:8px 12px;font-size:13px;margin:2px 0">内部职工管理</div>
+        <div style="color:#606266;font-size:13px;padding:8px 12px">账号回收管理</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;color:#606266;font-size:13px;padding:8px 12px"><span>◎ 成员管理</span><span style="color:#909399">▾</span></div>
+        <div style="color:#606266;font-size:13px;padding:8px 12px">历史成员管理</div>
+        <el-divider style="margin:10px 0"></el-divider>
+        <el-input v-model="treeKw" placeholder="请输入部门名称" size="small">
+          <template #append><span>🔍</span></template>
+        </el-input>
+        <el-tree ref="tree" :data="treeData" node-key="id" :props="{label:'label', children:'children'}"
+          :filter-node-method="filterNode" :default-expanded-keys="[115,116]" highlight-current
+          style="margin-top:10px;font-size:13px" />
+      </div>
+      <div style="flex:1;margin-left:16px">
+        <div class="card" style="margin:0 0 14px;background:#f8fafc;box-shadow:none;border:1px solid #ebeef5">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <span class="q-label">姓名</span>
+            <el-input v-model="q.name" placeholder="请输入姓名" clearable style="width:200px" />
+            <span class="q-label">手机号码</span>
+            <el-input v-model="q.phone" placeholder="请输入手机号码" clearable style="width:200px" />
+            <span class="q-label">激活状态</span>
+            <el-select v-model="q.active" placeholder="请选择激活状态" clearable style="width:180px">
+              <el-option label="已激活" value="已激活" />
+              <el-option label="未激活" value="未激活" />
+            </el-select>
+            <div style="flex:1"></div>
+            <el-button type="primary">查询</el-button>
+            <el-button @click="resetQ">重置</el-button>
+          </div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="toolbar">
+            <el-button type="primary" @click="add">新增职工</el-button>
+            <el-dropdown @command="onBatch">
+              <el-button>批量操作<span style="margin-left:4px">▾</span></el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="del">批量删除</el-dropdown-item>
+                  <el-dropdown-item command="stop">批量停用/启用</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-dropdown @command="onImpExp">
+              <el-button>导入/导出<span style="margin-left:4px">▾</span></el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="imp">导入职工信息</el-dropdown-item>
+                  <el-dropdown-item command="exp">导出职工信息</el-dropdown-item>
+                  <el-dropdown-item command="rec">导入导出任务列表</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-dropdown @command="onInvite">
+              <el-button>教职工邀请<span style="margin-left:4px">▾</span></el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="send">发起邀请</el-dropdown-item>
+                  <el-dropdown-item command="rec">邀请记录</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+          <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+            <el-table-column type="selection" width="45" />
+            <el-table-column prop="name" label="姓名" width="110" align="center" />
+            <el-table-column prop="dept" label="主部门" min-width="140" />
+            <el-table-column prop="phone" label="手机号" width="130" align="center" />
+            <el-table-column prop="gender" label="性别" width="70" align="center" />
+            <el-table-column label="激活状态" width="110" align="center">
+              <template #default="{row}">
+                <span :style="{display:'inline-block',width:'8px',height:'8px',borderRadius:'50%',marginRight:'6px',background: row.active==='已激活' ? '#67c23a' : '#e6a23c'}"></span>{{ row.active }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="110" fixed="right">
+              <template #default="{row}">
+                <el-button type="primary" link @click="edit(row)">编辑</el-button>
+                <el-button type="danger" link @click="del(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination background layout="total,prev,pager,next,sizes" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:14px;justify-content:flex-end" />
+        </div>
+      </div>
+    </div>
+  </div>`,
+});
+
+/* P40Sys 系统管理·管理员管理 */
+app.component('P40Sys', {
+  props: ['ctx'],
+  data() { return { menu: '管理员管理' }; },
+  template: `<div style="min-height:100vh;display:flex;flex-direction:column">
+    <unit-console-bar active="P40Sys" :unit-name="ctx.unitName" />
+    <div style="padding:14px 20px;color:#909399;font-size:13px">系统管理 / {{ menu }}</div>
+    <div style="display:flex;flex:1;padding:0 20px 20px">
+      <div class="card" style="width:200px;flex-shrink:0;margin:0;padding:12px;height:fit-content">
+        <div @click="menu='管理员管理'" :style="{color: menu==='管理员管理' ? '#2563eb' : '#606266', background: menu==='管理员管理' ? '#e8f1ff' : 'transparent', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', marginBottom:'4px'}">◎ 管理员管理</div>
+        <div @click="menu='角色管理'" :style="{color: menu==='角色管理' ? '#2563eb' : '#606266', background: menu==='角色管理' ? '#e8f1ff' : 'transparent', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer'}">▣ 角色管理</div>
+      </div>
+      <div style="flex:1;margin-left:16px">
+        <div class="card" style="margin:0;min-height:400px;display:flex;align-items:center;justify-content:center">
+          <el-empty :description="menu + '（界面内容以实际系统为准，示意）'"></el-empty>
+        </div>
+      </div>
+    </div>
   </div>`,
 });
 
