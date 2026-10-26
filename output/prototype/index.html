@@ -28,6 +28,7 @@
     .view-label { width: 110px; flex-shrink: 0; color: #909399; text-align: right; }
     .form-actions { text-align: center; margin-top: 14px; }
     .ro-text { line-height: 32px; color: #303133; word-break: break-all; }
+    .ro-pre { white-space: pre-wrap; word-break: break-all; max-height: 120px; overflow: auto; margin: 0; font-size: 12px; background: #f5f7fa; padding: 8px; border-radius: 4px; line-height: 1.6; color: #303133; }
     .rich-text-view { font-size: 14px; color: #303133; line-height: 1.8; word-break: break-word; }
     .rich-text-view h1, .rich-text-view h2, .rich-text-view h3 { margin: 12px 0 8px; color: #303133; }
     .rich-text-view p { margin: 0 0 8px; }
@@ -137,10 +138,16 @@ const MENU_TREE = {
       { label: '数据表管理', page: 'P37' },
       { label: '业务数据表关联', page: 'P38' },
       { label: '第三方平台单点对接管理', page: 'P39' },
+      { label: '应用授权管理', page: 'P42' },
     ]},
     { label: '审批管理', children: [
       { label: '接口申请审批', page: 'P08' },
       { label: '组织同步审批', page: 'P41' },
+    ]},
+    { label: '数据变更管理', children: [
+      { label: '数据变更事件管理', page: 'P43' },
+      { label: '数据变更记录', page: 'P44' },
+      { label: '数据变更推送记录', page: 'P45' },
     ]},
   ],
   dev: [
@@ -184,7 +191,9 @@ const PAGE_TITLES = {
   P37: '数据表管理', P38: '业务数据表关联', P39: '第三方平台单点对接管理', P39Form: '第三方平台单点对接管理',
   P40: '单位管理', P40Form: '单位新增',
   P40Org: '部门管理', P40User: '用户管理', P40Sys: '管理员管理',
+  P42: '应用授权管理', P42Form: '应用授权管理',
   P41: '组织同步审批',
+  P43: '数据变更事件管理', P43Form: '新增数据变更事件', P44: '数据变更记录', P45: '数据变更推送记录',
 };
 
 /* ---------------- 共享演示数据 ---------------- */
@@ -549,7 +558,7 @@ function searchNameOptions(all, kw) {
   return all.filter(x => !k || x.includes(k)).slice(0, 50);
 }
 
-const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待对接':'warning', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success' };
+const STATUS_TYPE = { '启用':'success', '合作中':'success', '已审核':'success', '通过':'success', '成功':'success', '正常':'success', '未合作':'info', '停用':'info', '已取消':'info', '已下线':'info', '待审批':'warning', '待签字':'warning', '未审核':'warning', '执行中':'primary', '待执行':'primary', '联调中':'primary', '待对接':'warning', '待确认':'warning', '已完成':'success', '已驳回':'danger', '失败':'danger', '不通过':'danger', '已拒绝':'danger', '已过期':'danger', '展示':'success', '审批通过':'success', '使用中':'success', '未使用':'info', '未审批':'warning', '已审批':'success', '审批中':'warning', '草稿':'info', '已通过':'success', 'PENDING':'warning', 'PROCESSING':'primary', 'SUCCESS':'success', 'PARTIAL_FAIL':'danger', 'FAILED':'danger', 'FAIL':'danger' };
 
 const app = Vue.createApp({
   data() {
@@ -3247,7 +3256,6 @@ app.component('P19', {
       </el-select>
       <span class="q-label">接口平台</span><el-select v-model="q.apiType" placeholder="请选择" clearable style="width:120px">
         <el-option label="桂教通平台" value="桂教通平台"></el-option><el-option label="第三方平台" value="第三方平台"></el-option>
-      </el-select>台" value="桂教通平台"></el-option><el-option label="第三方平台" value="第三方平台"></el-option>
       </el-select>
       <span class="q-label">接口分类</span><el-select v-model="q.apiCategory" placeholder="请选择" clearable style="width:130px">
         <el-option label="基础服务" value="基础服务"></el-option><el-option label="业务服务" value="业务服务"></el-option><el-option label="数据服务" value="数据服务"></el-option>
@@ -6059,8 +6067,6 @@ app.component('P36Form', {
       if (this.form.dockingType === '开发者提供接口') {
         if (this.form.domain && !/^https?:\/\//i.test(this.form.domain.trim())) { this.$message.warning('对接域名需以 http:// 或 https:// 开头'); return; }
       } else {
-        if (!this.form.uniqueField || !this.form.uniqueField.trim()) { this.$message.warning('请输入唯一字段'); return; }
-        if (this.form.uniqueField.trim().includes(',')) { this.$message.warning('唯一字段仅支持填写一个字段名'); return; }
         let ok = true;
         this.form.scopes.forEach((s) => {
           const tbl = DATA_TABLES.find(t => t.tableKey === s.tableKey);
@@ -6139,18 +6145,6 @@ app.component('P36Form', {
             <el-radio value="开发者主动推送">开发者主动推送</el-radio>
           </el-radio-group>
           <div v-else class="ro-text">{{ form.dockingType }}</div>
-        </el-form-item>
-        <el-form-item label="推送方式" required>
-          <el-radio-group v-if="!isView && !isUpload" v-model="form.pushMethod">
-            <el-radio value="全量">全量</el-radio>
-            <el-radio value="增量">增量</el-radio>
-          </el-radio-group>
-          <div v-else class="ro-text">{{ form.pushMethod || '—' }}</div>
-        </el-form-item>
-
-        <el-form-item v-if="form.dockingType === '开发者主动推送'" label="唯一字段" required>
-          <el-input v-if="!isView && !isUpload" v-model="form.uniqueField" placeholder="请输入唯一标识字段名（仅支持一个）" maxlength="64" style="width:100%"></el-input>
-          <div v-else class="ro-text">{{ form.uniqueField || '—' }}</div>
         </el-form-item>
 
         <template v-if="form.dockingType === '开发者提供接口'">
@@ -6923,7 +6917,7 @@ app.component('P39', {
         <el-table-column prop="type" label="对接方式" width="120" align="center">
           <template #default="{row}"><el-tag :type="row.type==='标准OAuth2'?'primary':'success'" size="small">{{ row.type }}</el-tag></template>
         </el-table-column>
-        <el-table-column prop="clientId" label="client_id" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="clientId" label="客户端ID" min-width="150" show-overflow-tooltip />
         <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template #default="{row}"><st-tag :v="row.status" /></template>
@@ -7004,108 +6998,108 @@ app.component('P39Form', {
         </el-form-item>
 
         <template v-if="form.type === '标准OAuth2'">
-          <el-form-item label="client_id" required>
+          <el-form-item label="客户端ID" required>
             <el-input v-model="form.clientId" placeholder="客户端id" maxlength="100" />
           </el-form-item>
-          <el-form-item label="client_secret" required>
+          <el-form-item label="客户端密钥" required>
             <el-input v-model="form.clientSecret" placeholder="客户端密钥" maxlength="100" show-password />
           </el-form-item>
-          <el-form-item label="scope">
+          <el-form-item label="授权范围">
             <el-input v-model="form.scope" placeholder="授权范围" maxlength="100" />
           </el-form-item>
-          <el-form-item label="response_type">
+          <el-form-item label="响应类型">
             <el-input model-value="code" readonly>
               <template #append>固定值，目前只支持授权码模式</template>
             </el-input>
           </el-form-item>
-          <el-form-item label="grant_type">
+          <el-form-item label="授权模式">
             <el-input model-value="authorization_code" readonly>
               <template #append>固定值</template>
             </el-input>
           </el-form-item>
-          <el-form-item label="authorize_url" required>
+          <el-form-item label="授权地址" required>
             <el-input v-model="form.authorizeUrl" placeholder="授权地址，需以 http:// 或 https:// 开头" maxlength="300" />
           </el-form-item>
-          <el-form-item label="redirect_url">
+          <el-form-item label="回传授权码地址">
             <el-input model-value="https://{租户域名}/ego_base_info/v1/public/sso/custom/oauth/login?code=xxx" readonly></el-input>
             <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">授权成功后的回传授权码地址，固定格式，不可修改</div>
           </el-form-item>
-          <el-form-item label="access_token_url" required>
+          <el-form-item label="获取token地址" required>
             <el-input v-model="form.accessTokenUrl" placeholder="获取token的地址，需以 http:// 或 https:// 开头" maxlength="300" />
           </el-form-item>
-          <el-form-item label="access_token_match" required>
+          <el-form-item label="token字段名" required>
             <el-input v-model="form.accessTokenMatch" placeholder="token字段的key，如 accessToken / access_token" maxlength="100" />
           </el-form-item>
-          <el-form-item label="content_type">
+          <el-form-item label="内容类型">
             <el-select v-model="form.contentType" style="width:100%" allow-create filterable placeholder="获取token接口的content-type">
               <el-option label="application/x-www-form-urlencoded" value="application/x-www-form-urlencoded"></el-option>
               <el-option label="application/json" value="application/json"></el-option>
             </el-select>
             <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">获取token接口的content-type，默认 application/x-www-form-urlencoded</div>
           </el-form-item>
-          <el-form-item label="token_auth_type">
+          <el-form-item label="token鉴权方式">
             <el-select v-model="form.tokenAuthType" style="width:100%" placeholder="获取token接口的鉴权模式">
               <el-option label="不填（oauth2默认鉴权）" value=""></el-option>
               <el-option label="Basic（basic鉴权模式）" value="Basic"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="get_userinfo_url" required>
+          <el-form-item label="获取用户信息地址" required>
             <el-input v-model="form.getUserinfoUrl" placeholder="获取用户数据的接口地址，需以 http:// 或 https:// 开头" maxlength="300" />
           </el-form-item>
-          <el-form-item label="user_info_auth_type">
+          <el-form-item label="用户信息鉴权方式">
             <el-input model-value="Bearer" readonly>
               <template #append>获取用户信息接口时token的传递方式，目前只支持Bearer</template>
             </el-input>
           </el-form-item>
-          <el-form-item label="user_info_need_client_id">
+          <el-form-item label="获取用户信息需传客户端ID">
             <el-radio-group v-model="form.userInfoNeedClientId">
               <el-radio label="true">是</el-radio>
               <el-radio label="false">否</el-radio>
             </el-radio-group>
             <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">获取用户信息的接口是否需要传 client_id，默认否</div>
           </el-form-item>
-          <el-form-item label="user_id_match" required>
+          <el-form-item label="用户ID字段" required>
             <el-input v-model="form.userIdMatch" placeholder="用户id字段的key" maxlength="100" />
           </el-form-item>
-          <el-form-item label="user_name_match" required>
+          <el-form-item label="用户名字段" required>
             <el-input v-model="form.userNameMatch" placeholder="用户名字段的key" maxlength="100" />
           </el-form-item>
-          <el-form-item label="avatar_url_match">
+          <el-form-item label="用户头像字段">
             <el-input v-model="form.avatarUrlMatch" placeholder="用户头像字段的key" maxlength="100" />
           </el-form-item>
-          <el-form-item label="logout_url">
+          <el-form-item label="登出地址">
             <el-input v-model="form.logoutUrl" placeholder="登出地址，从平台退出登录时会302到此地址（选填）" maxlength="300" />
           </el-form-item>
         </template>
 
         <template v-else>
-          <el-form-item label="client_id" required>
+          <el-form-item label="客户端ID" required>
             <el-input v-model="form.clientId" placeholder="第三方分配给本平台的客户端id" maxlength="100" />
           </el-form-item>
-          <el-form-item label="authorize_url" required>
+          <el-form-item label="授权地址" required>
             <el-input v-model="form.authorizeUrl" placeholder="cas授权地址，需以 http:// 或 https:// 开头" maxlength="300" />
           </el-form-item>
-          <el-form-item label="ticket_match">
+          <el-form-item label="票据参数名">
             <el-input v-model="form.ticketMatch" placeholder="授权成功后回传的ticketKey，默认 ticket" maxlength="100" />
             <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">默认是 ticket，可以是其它的，如 token、unifyToken 等</div>
           </el-form-item>
-          <el-form-item label="ticket_validate_url" required>
+          <el-form-item label="票据校验地址" required>
             <el-input v-model="form.ticketValidateUrl" placeholder="ticket校验地址，需以 http:// 或 https:// 开头" maxlength="300" />
           </el-form-item>
-          <el-form-item label="ticket_validate_return_data_type">
+          <el-form-item label="票据校验返回类型">
             <el-radio-group v-model="form.ticketValidateReturnType">
               <el-radio label="json">json</el-radio>
               <el-radio label="xml">xml</el-radio>
             </el-radio-group>
             <div style="color:#909399;font-size:12px;line-height:1.5;width:100%">ticket校验通过后返回用户信息的数据格式，默认 json</div>
           </el-form-item>
-          <el-form-item label="user_id_match" required>
+          <el-form-item label="用户ID字段" required>
             <el-input v-model="form.userIdMatch" placeholder="用户id字段的key" maxlength="100" />
           </el-form-item>
-          <el-form-item label="user_name_match" required>
+          <el-form-item label="用户名字段" required>
             <el-input v-model="form.userNameMatch" placeholder="用户名字段的key" maxlength="100" />
           </el-form-item>
-          <el-form-item label="avatar_url_match">
+          <el-form-item label="用户头像字段">
             <el-input v-model="form.avatarUrlMatch" placeholder="用户头像字段的key" maxlength="100" />
           </el-form-item>
           <el-alert type="info" :closable="false" title="第三方只需提供以上参数，平台将按照标准CAS认证流程发起认证。" style="margin-bottom:8px" />
@@ -7341,6 +7335,376 @@ app.component('P40Form', {
 });
 
 /* =====================================================================
+ * P42 应用授权管理（桂教通超管·授权管理）
+ * 列表展示 t_auth_third_provider；新增/编辑（P42Form）含认证/用户信息/协议扩展，
+ * 以及内嵌的 SSO 授权目标应用（t_auth_third_provider_app）子表（可增删行）。
+ * ===================================================================== */
+let PROVIDER_SEQ = 3;
+const DATA_PROVIDERS = [
+  {
+    id: 1, provider_code: 'wechat_work', provider_name: '企业微信', protocol_type: 'OAUTH2', response_format: 'AUTO',
+    client_id: 'ww_8aBc1234def', client_secret: 'enc_AES_9f3c2b', authorize_url: 'https://login.work.weixin.qq.com/wwlogin', token_url: 'https://qyapi.weixin.qq.com/cgi-bin/gettoken', access_token_field: 'access_token', token_content_type: 'application/x-www-form-urlencoded', token_auth_method: 'client_secret_post',
+    userinfo_url: 'https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo', userinfo_require_client_id: 0, subject_field: 'sub', username_field: 'name', user_mapping_mode: 1, scopes: 'snsapi_base', state_ttl_seconds: 600, redirect_uri: 'https://sso.edu.cn/cb', callback_path: '', logout_url: 'https://login.work.weixin.qq.com/logout', custom_handler_bean: '', ticket_param_name: 'ticket', ticket_validate_url: '', jwks_url: '', ext_config: '', status: '启用', sort_order: 1, org_id: '', remark: '企业内部接入', created_at: '2026-01-12 09:20', updated_at: '2026-03-01 14:10',
+    apps: [ { app_code: 'app_portal', app_name: '门户应用', platform_app_id: 'PA001', oauth_client_id: 'oc_001', redirect_url: 'https://portal.edu.cn/gw/cb', redirect_match_mode: 1, redirect_param_mode: 'QUERY', code_param_name: 'code', state_param_name: 'state', is_default: 1, status: '启用' } ],
+  },
+  {
+    id: 2, provider_code: 'zf_cas', provider_name: '政务CAS', protocol_type: 'CAS', response_format: 'AUTO',
+    client_id: 'cas_gov_77', client_secret: 'enc_AES_3b8e11', authorize_url: 'https://cas.gov.cn/cas/login', token_url: '', access_token_field: 'access_token', token_content_type: 'application/x-www-form-urlencoded', token_auth_method: 'client_secret_post',
+    userinfo_url: 'https://cas.gov.cn/cas/p3/serviceValidate', userinfo_require_client_id: 0, subject_field: 'sub', username_field: 'uid', user_mapping_mode: 2, scopes: '', state_ttl_seconds: 600, redirect_uri: 'https://sso.edu.cn/cas/service', callback_path: '', logout_url: 'https://cas.gov.cn/cas/logout', custom_handler_bean: '', ticket_param_name: 'ticket', ticket_validate_url: 'https://cas.gov.cn/cas/serviceValidate', jwks_url: '', ext_config: '{"attrList":["uid","cn"]}', status: '停用', sort_order: 2, org_id: '1001', remark: '政务单点', created_at: '2026-02-20 16:40', updated_at: '2026-04-02 10:05',
+    apps: [ { app_code: 'app_exam', app_name: '考试系统', platform_app_id: 'PA020', oauth_client_id: '', redirect_url: 'https://exam.edu.cn/sso/cb', redirect_match_mode: 2, redirect_param_mode: 'QUERY', code_param_name: 'ticket', state_param_name: 'state', is_default: 0, status: '停用' } ],
+  },
+];
+
+app.component('P42', {
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: DATA_PROVIDERS,
+      q: { providerName: '', providerCode: '', protocolType: '', status: '' },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.providerName || r.provider_name.includes(this.q.providerName)) &&
+        (!this.q.providerCode || r.provider_code.includes(this.q.providerCode)) &&
+        (!this.q.protocolType || r.protocol_type === this.q.protocolType) &&
+        (!this.q.status || r.status === this.q.status)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { providerName: '', providerCode: '', protocolType: '', status: '' }; },
+    openAdd() { this.$root.go('P42Form', { from: 'P42' }); },
+    openEdit(row) { this.$root.go('P42Form', { id: row.id, from: 'P42' }); },
+    toggleStatus(row) {
+      const next = row.status === '启用' ? '停用' : '启用';
+      const msg = next === '停用' ? '停用后该接入方将不可单点登录本平台，确定停用？' : '确定启用「' + row.provider_name + '」的接入授权？';
+      ElMessageBox.confirm(msg, next + '确认', { type: 'warning' }).then(() => {
+        row.status = next;
+        const src = DATA_PROVIDERS.find(r => r.id === row.id);
+        if (src) { src.status = next; src.updated_at = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-'); }
+        ElMessage.success(next + '成功');
+      }).catch(() => {});
+    },
+  },
+  template: `<div>
+    <div class="toolbar">
+      <el-input v-model="q.providerName" placeholder="接入名称" clearable style="width:160px" />
+      <el-input v-model="q.providerCode" placeholder="接入编码" clearable style="width:160px;margin-left:8px" />
+      <el-select v-model="q.protocolType" placeholder="协议类型" clearable style="width:140px;margin-left:8px">
+        <el-option label="OAUTH2" value="OAUTH2" />
+        <el-option label="OIDC" value="OIDC" />
+        <el-option label="SAML" value="SAML" />
+        <el-option label="CAS" value="CAS" />
+        <el-option label="CUSTOM" value="CUSTOM" />
+      </el-select>
+      <el-select v-model="q.status" placeholder="状态" clearable style="width:120px;margin-left:8px">
+        <el-option label="启用" value="启用" />
+        <el-option label="停用" value="停用" />
+      </el-select>
+      <el-button type="primary" style="margin-left:8px">查询</el-button>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增接入</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="provider_code" label="接入编码" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="provider_name" label="接入名称" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="protocol_type" label="协议类型" width="110" align="center">
+          <template #default="{row}"><el-tag size="small">{{ row.protocol_type }}</el-tag></template>
+        </el-table-column>
+        <el-table-column prop="response_format" label="响应格式" width="90" align="center" />
+        <el-table-column prop="status" label="状态" width="80" align="center">
+          <template #default="{row}"><st-tag :v="row.status" /></template>
+        </el-table-column>
+        <el-table-column prop="created_at" label="创建时间" width="150" />
+        <el-table-column prop="updated_at" label="更新时间" width="150" />
+        <el-table-column label="操作" width="150" fixed="right">
+          <template #default="{row}">
+            <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
+            <el-button :type="row.status==='启用'?'warning':'success'" link @click="toggleStatus(row)">{{ row.status==='启用'?'停用':'启用' }}</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end" />
+    </div>
+  </div>`,
+});
+
+app.component('P42Form', {
+  props: ['ctx'],
+  data() {
+    const src = this.ctx && this.ctx.id ? DATA_PROVIDERS.find(r => r.id === this.ctx.id) : null;
+    const base = {
+      id: null, provider_code: '', provider_name: '', protocol_type: 'OAUTH2', response_format: 'AUTO',
+      client_id: '', client_secret: '', authorize_url: '', token_url: '', access_token_field: 'access_token', token_content_type: 'application/x-www-form-urlencoded', token_auth_method: 'client_secret_post',
+      userinfo_url: '', userinfo_require_client_id: 0, subject_field: 'sub', username_field: '', user_mapping_mode: 1, scopes: '', state_ttl_seconds: 600, redirect_uri: '', callback_path: '', logout_url: '',
+      custom_handler_bean: '', ticket_param_name: 'ticket', ticket_validate_url: '', jwks_url: '', ext_config: '',
+      status: '启用', sort_order: 0, org_id: '', remark: '', created_at: '', updated_at: '', apps: [],
+    };
+    if (src) {
+      Object.keys(base).forEach(k => { if (src[k] !== undefined && src[k] !== null) base[k] = src[k]; });
+      base.apps = (src.apps || []).map(a => Object.assign({}, a));
+    }
+    return { form: base, mApp: false, appQuery: { name: '', id: '' }, appChosen: [], appPage: 1, appPageSize: 10 };
+  },
+  computed: {
+    isEdit() { return !!(this.ctx && this.ctx.id); },
+    filteredAppList() {
+      return PLATFORM_APPS.filter(a =>
+        (!this.appQuery.name || a.name.includes(this.appQuery.name)) &&
+        (!this.appQuery.id || a.appId.includes(this.appQuery.id))
+      );
+    },
+    pagedAppList() {
+      const start = (this.appPage - 1) * this.appPageSize;
+      return this.filteredAppList.slice(start, start + this.appPageSize);
+    },
+  },
+  methods: {
+    backTo() { return this.ctx && this.ctx.from ? this.ctx.from : 'P42'; },
+    goBack() { this.$root.go(this.backTo()); },
+    checkUrl(v) { return !v || /^https?:\/\//i.test(v.trim()); },
+    openAppDlg() {
+      this.appChosen = this.form.apps.map(a => a.app_code);
+      this.appQuery = { name: '', id: '' };
+      this.appPage = 1;
+      this.mApp = true;
+    },
+    isAppChosen(id) { return this.appChosen.includes(id); },
+    toggleApp(id) { const i = this.appChosen.indexOf(id); if (i >= 0) this.appChosen.splice(i, 1); else this.appChosen.push(id); },
+    toggleAllApp(checked) {
+      if (checked) { this.pagedAppList.forEach(a => { if (!this.appChosen.includes(a.appId)) this.appChosen.push(a.appId); }); }
+      else { const pageIds = this.pagedAppList.map(a => a.appId); this.appChosen = this.appChosen.filter(id => !pageIds.includes(id)); }
+    },
+    confirmApp() {
+      const map = {};
+      this.appChosen.forEach(id => { const a = PLATFORM_APPS.find(x => x.appId === id); if (a) map[id] = a; });
+      this.form.apps = Object.keys(map).map(id => {
+        const a = map[id];
+        return this.form.apps.find(x => x.app_code === id) || { app_code: a.appId, app_name: a.name, platform_app_id: a.appId, oauth_client_id: '', redirect_url: '', redirect_match_mode: 1, redirect_param_mode: 'QUERY', code_param_name: 'code', state_param_name: 'state', is_default: 0, status: '启用' };
+      });
+      this.mApp = false;
+    },
+    removeAppByCode(code) { const i = this.form.apps.findIndex(a => a.app_code === code); if (i >= 0) this.form.apps.splice(i, 1); },
+    save() {
+      const f = this.form;
+      if (!f.provider_name.trim()) return ElMessage.warning('请输入接入名称');
+      if (!this.isEdit && !f.provider_code.trim()) return ElMessage.warning('请输入接入编码');
+      if (!f.client_id.trim()) return ElMessage.warning('请输入 client_id');
+      if (!this.isEdit) {
+        const dup = DATA_PROVIDERS.some(r => r.provider_code.toLowerCase() === f.provider_code.trim().toLowerCase());
+        if (dup) return ElMessage.warning('接入编码已存在，需唯一');
+      }
+      const urlFields = ['authorize_url','token_url','userinfo_url','ticket_validate_url','jwks_url','logout_url','redirect_uri','callback_path'];
+      for (const k of urlFields) { if (f[k] && !this.checkUrl(f[k])) return ElMessage.warning(k + ' 需以 http:// 或 https:// 开头'); }
+      for (const a of f.apps) {
+        if (!a.app_code.trim() || !a.app_name.trim() || !a.platform_app_id.trim()) return ElMessage.warning('授权应用需填写 应用编码/应用名称/平台业务appId');
+      }
+      const now = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\\//g, '-');
+      if (f.id) {
+        const rec = DATA_PROVIDERS.find(r => r.id === f.id);
+        if (rec) Object.assign(rec, JSON.parse(JSON.stringify(f)), { provider_name: f.provider_name.trim(), provider_code: f.provider_code.trim(), updated_at: now });
+        ElMessage.success('编辑成功');
+      } else {
+        const newId = DATA_PROVIDERS.length ? Math.max(...DATA_PROVIDERS.map(r => r.id)) + 1 : 1;
+        DATA_PROVIDERS.unshift(Object.assign({}, JSON.parse(JSON.stringify(f)), { id: newId, provider_code: f.provider_code.trim(), provider_name: f.provider_name.trim(), created_at: now, updated_at: now }));
+        ElMessage.success('新增成功');
+      }
+      this.$root.go(this.backTo());
+    },
+  },
+  template: `<div>
+    <div class="card" style="max-width:none">
+      <div style="font-weight:600;margin-bottom:14px">{{ isEdit ? '编辑接入授权' : '新增接入授权' }}</div>
+      <el-form label-width="200px">
+        <div style="font-weight:600;color:#2563eb;margin:6px 0 12px">基础信息</div>
+        <el-form-item label="接入编码" required>
+          <el-input v-model="form.provider_code" placeholder="接入编码，唯一" maxlength="64" :disabled="isEdit" />
+        </el-form-item>
+        <el-form-item label="接入名称" required>
+          <el-input v-model="form.provider_name" placeholder="接入名称" maxlength="128" />
+        </el-form-item>
+        <el-form-item label="协议类型" required>
+          <el-select v-model="form.protocol_type" style="width:240px">
+            <el-option label="OAUTH2" value="OAUTH2" />
+            <el-option label="OIDC" value="OIDC" />
+            <el-option label="SAML" value="SAML" />
+            <el-option label="CAS" value="CAS" />
+            <el-option label="CUSTOM" value="CUSTOM" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="响应格式">
+          <el-select v-model="form.response_format" style="width:240px">
+            <el-option label="JSON" value="JSON" />
+            <el-option label="XML" value="XML" />
+            <el-option label="AUTO（按 Content-Type 嗅探）" value="AUTO" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="机构ID">
+          <el-input v-model="form.org_id" placeholder="机构ID（可选）" maxlength="20" style="width:240px" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="form.remark" type="textarea" :rows="2" maxlength="512" placeholder="备注（可选）" style="width:480px" />
+        </el-form-item>
+
+        <div style="font-weight:600;color:#2563eb;margin:14px 0 12px">认证与授权</div>
+        <el-form-item label="客户端ID" required>
+          <el-input v-model="form.client_id" placeholder="第三方 client_id" maxlength="128" style="width:420px" />
+        </el-form-item>
+        <el-form-item label="客户端密钥">
+          <el-input v-model="form.client_secret" placeholder="client_secret（AES 加密存储）" maxlength="512" show-password style="width:420px" />
+        </el-form-item>
+        <el-form-item label="授权地址">
+          <el-input v-model="form.authorize_url" placeholder="授权页 URL，需以 http:// 或 https:// 开头" maxlength="512" style="width:480px" />
+        </el-form-item>
+        <el-form-item label="获取token地址">
+          <el-input v-model="form.token_url" placeholder="换 token URL" maxlength="512" style="width:480px" />
+        </el-form-item>
+        <el-form-item label="token字段名">
+          <el-input v-model="form.access_token_field" placeholder="token 响应中 access token 的字段路径" maxlength="64" style="width:360px" />
+        </el-form-item>
+        <el-form-item label="内容类型">
+          <el-select v-model="form.token_content_type" style="width:360px">
+            <el-option label="application/x-www-form-urlencoded" value="application/x-www-form-urlencoded" />
+            <el-option label="application/json" value="application/json" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="token鉴权方式">
+          <el-select v-model="form.token_auth_method" style="width:360px">
+            <el-option label="client_secret_post" value="client_secret_post" />
+            <el-option label="client_secret_basic" value="client_secret_basic" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="授权范围">
+          <el-input v-model="form.scopes" placeholder="默认 scope，逗号分隔" maxlength="256" style="width:420px" />
+        </el-form-item>
+        <el-form-item label="state有效期">
+          <el-input-number v-model="form.state_ttl_seconds" :min="0" />
+          <span style="color:#909399;font-size:12px;margin-left:8px">state 有效期（秒），默认 600</span>
+        </el-form-item>
+        <el-form-item label="重定向地址">
+          <el-input v-model="form.redirect_uri" placeholder="在身份源登记的 redirect_uri；CAS 用作 service" maxlength="512" style="width:480px" />
+        </el-form-item>
+        <el-form-item label="回调路径">
+          <el-input v-model="form.callback_path" placeholder="浏览器回调路径（legacy，可选）" maxlength="256" style="width:420px" />
+        </el-form-item>
+        <el-form-item label="登出地址">
+          <el-input v-model="form.logout_url" placeholder="单点登出 URL" maxlength="512" style="width:480px" />
+        </el-form-item>
+
+        <div style="font-weight:600;color:#2563eb;margin:14px 0 12px">用户信息</div>
+        <el-form-item label="获取用户信息地址">
+          <el-input v-model="form.userinfo_url" placeholder="用户信息 URL" maxlength="512" style="width:480px" />
+        </el-form-item>
+        <el-form-item label="获取用户信息需传客户端ID">
+          <el-radio-group v-model="form.userinfo_require_client_id">
+            <el-radio :label="0">否</el-radio>
+            <el-radio :label="1">是</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="用户唯一标识字段">
+          <el-input v-model="form.subject_field" placeholder="外部用户唯一标识字段" maxlength="64" style="width:300px" />
+        </el-form-item>
+        <el-form-item label="平台账号字段">
+          <el-input v-model="form.username_field" placeholder="映射平台账号字段" maxlength="64" style="width:300px" />
+        </el-form-item>
+        <el-form-item label="用户映射模式">
+          <el-select v-model="form.user_mapping_mode" style="width:300px">
+            <el-option label="1 仅绑定已有" :value="1" />
+            <el-option label="2 自动创建" :value="2" />
+            <el-option label="3 首次引导绑定" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="扩展配置">
+          <el-input v-model="form.ext_config" type="textarea" :rows="2" placeholder="协议扩展配置（JSON，可选）" style="width:480px" />
+        </el-form-item>
+
+        <template v-if="form.protocol_type === 'CAS'">
+          <div style="font-weight:600;color:#2563eb;margin:14px 0 12px">CAS 协议扩展</div>
+          <el-form-item label="票据参数名">
+            <el-input v-model="form.ticket_param_name" placeholder="CAS 回传票据参数名" maxlength="64" style="width:300px" />
+          </el-form-item>
+          <el-form-item label="票据校验地址">
+            <el-input v-model="form.ticket_validate_url" placeholder="CAS 票据校验地址，空则使用 userinfo_url" maxlength="512" style="width:480px" />
+          </el-form-item>
+        </template>
+        <template v-if="form.protocol_type === 'OIDC'">
+          <div style="font-weight:600;color:#2563eb;margin:14px 0 12px">OIDC 协议扩展</div>
+          <el-form-item label="JWKS地址">
+            <el-input v-model="form.jwks_url" placeholder="OIDC JWKS URL" maxlength="512" style="width:480px" />
+          </el-form-item>
+        </template>
+        <template v-if="form.protocol_type === 'CUSTOM'">
+          <div style="font-weight:600;color:#2563eb;margin:14px 0 12px">CUSTOM 协议扩展</div>
+          <el-form-item label="自定义处理器">
+            <el-input v-model="form.custom_handler_bean" placeholder="实现 CustomThirdLoginProvider 的 Spring bean 名" maxlength="128" style="width:420px" />
+          </el-form-item>
+        </template>
+
+        <div style="font-weight:600;color:#2563eb;margin:14px 0 12px">SSO 授权目标应用</div>
+        <el-form-item label="授权目标应用" required>
+          <div style="display:flex;gap:10px;align-items:center">
+            <el-input :value="form.apps.map(a=>a.app_name).join('、')" placeholder="请选择授权目标应用（可多选）" readonly style="width:520px" />
+            <el-button type="primary" plain @click="openAppDlg">选择应用</el-button>
+          </div>
+          <div style="margin-top:8px">
+            <el-tag v-for="(a,i) in form.apps" :key="i" closable @close="removeAppByCode(a.app_code)" style="margin:0 6px 6px 0">{{ a.app_name }}（{{ a.app_code }}）</el-tag>
+            <span v-if="!form.apps.length" style="color:#c0c4cc;font-size:12px">尚未选择授权目标应用</span>
+          </div>
+        </el-form-item>
+
+        <el-divider></el-divider>
+        <div style="text-align:right">
+          <el-button @click="goBack">返回</el-button>
+          <el-button type="primary" @click="save">保存</el-button>
+        </div>
+      </el-form>
+      <el-dialog v-model="mApp" title="选择授权目标应用（可多选）" width="820px" :close-on-click-modal="false">
+        <div style="display:flex;gap:16px;min-height:380px">
+          <div style="flex:1;display:flex;flex-direction:column">
+            <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <span class="q-label">应用名称</span><el-input v-model="appQuery.name" placeholder="请输入应用名称" clearable style="width:150px" />
+              <span class="q-label">应用ID</span><el-input v-model="appQuery.id" placeholder="请输入应用ID" clearable style="width:130px" />
+            </div>
+            <el-table :data="pagedAppList" border size="small" style="width:100%">
+              <el-table-column width="44" align="center">
+                <template #header><el-checkbox :model-value="pagedAppList.length>0 && pagedAppList.every(a=>isAppChosen(a.appId))" @change="toggleAllApp($event)"></el-checkbox></template>
+                <template #default="s"><el-checkbox :model-value="isAppChosen(s.row.appId)" @change="toggleApp(s.row.appId)"></el-checkbox></template>
+              </el-table-column>
+              <el-table-column prop="appId" label="应用ID" width="90"></el-table-column>
+              <el-table-column prop="name" label="应用名称" min-width="120"></el-table-column>
+              <el-table-column prop="category" label="分类" min-width="90"></el-table-column>
+              <el-table-column prop="vendor" label="厂商" min-width="120"></el-table-column>
+            </el-table>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px">
+              <el-pagination v-model:current-page="appPage" :page-size="appPageSize" :total="filteredAppList.length" layout="total, prev, pager, next" small></el-pagination>
+            </div>
+          </div>
+          <div style="width:200px;border-left:1px solid #e4e7ed;padding-left:14px;display:flex;flex-direction:column">
+            <div style="font-size:13px;color:#909399;margin-bottom:8px;font-weight:500">已选应用（{{ appChosen.length }}）</div>
+            <div style="flex:1;overflow-y:auto">
+              <div v-for="id in appChosen" :key="id" style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f2f3f5">
+                <span style="font-size:13px">{{ (PLATFORM_APPS.find(x=>x.appId===id)||{}).name }}</span>
+                <el-button link type="danger" size="small" @click="toggleApp(id)" style="font-size:14px;padding:0">×</el-button>
+              </div>
+              <div v-if="!appChosen.length" style="color:#c0c4cc;font-size:12px;text-align:center;padding:20px 0">尚未选择</div>
+            </div>
+          </div>
+        </div>
+        <template #footer>
+          <el-button @click="mApp=false">取消</el-button>
+          <el-button type="primary" :disabled="!appChosen.length" @click="confirmApp">确认</el-button>
+        </template>
+      </el-dialog>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
  * 单位后台（桂教通超管·单位管理「后台」进入，全屏接管平台框架）
  * 三个模块（顶部导航切换，右上角退出返回 P40）：
  *   P40Org  组织中心·部门管理：左侧部门树 + 右侧部门信息/查询/新增/批量操作/列表(详情/删除)
@@ -7435,8 +7799,12 @@ app.component('P40Org', {
     <unit-console-bar active="P40Org" :unit-name="ctx.unitName" />
     <div style="padding:14px 20px;color:#909399;font-size:13px">组织中心 / 部门管理</div>
     <div style="display:flex;flex:1;gap:0;padding:0 20px 20px">
-      <div class="card" style="width:200px;flex-shrink:0;margin:0;padding:12px">
-        <div style="color:#2563eb;font-size:14px;margin-bottom:12px">◎ 部门管理</div>
+      <!-- 左侧菜单 -->
+      <div class="card" style="width:160px;flex-shrink:0;margin:0;padding:12px;height:fit-content">
+        <div style="background:#e8f1ff;color:#2563eb;border-radius:4px;padding:8px 12px;font-size:13px;cursor:pointer">部门管理</div>
+      </div>
+      <!-- 中间部门树 -->
+      <div class="card" style="width:220px;flex-shrink:0;margin:0 0 0 16px;padding:12px">
         <el-input v-model="treeKw" placeholder="请输入部门名称" size="small">
           <template #append><span>🔍</span></template>
         </el-input>
@@ -7444,7 +7812,8 @@ app.component('P40Org', {
           :filter-node-method="filterNode" :default-expanded-keys="[115,116]" highlight-current
           @node-click="onNode" style="margin-top:10px;font-size:13px" />
       </div>
-      <div style="flex:1;margin-left:16px">
+      <!-- 右侧内容 -->
+      <div style="flex:1;margin-left:16px;min-width:0">
         <div class="card" style="margin:0 0 14px;background:#f8fafc;box-shadow:none;border:1px solid #ebeef5">
           <div style="display:flex;flex-wrap:wrap;row-gap:8px">
             <div style="width:50%"><span style="color:#909399">部门名称：</span>{{ info.name }}</div>
@@ -7533,15 +7902,13 @@ app.component('P40User', {
     <unit-console-bar active="P40User" :unit-name="ctx.unitName" />
     <div style="padding:14px 20px;color:#909399;font-size:13px">用户中心 / 用户管理</div>
     <div style="display:flex;flex:1;gap:0;padding:0 20px 20px">
-      <div class="card" style="width:200px;flex-shrink:0;margin:0;padding:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;color:#303133;font-size:14px;margin-bottom:8px">
-          <span>👤 用户管理</span><span style="color:#909399;font-size:12px">▾</span>
-        </div>
-        <div style="background:#e8f1ff;color:#2563eb;border-radius:4px;padding:8px 12px;font-size:13px;margin:2px 0">内部职工管理</div>
-        <div style="color:#606266;font-size:13px;padding:8px 12px">账号回收管理</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;color:#606266;font-size:13px;padding:8px 12px"><span>◎ 成员管理</span><span style="color:#909399">▾</span></div>
-        <div style="color:#606266;font-size:13px;padding:8px 12px">历史成员管理</div>
-        <el-divider style="margin:10px 0"></el-divider>
+      <!-- 左侧菜单 -->
+      <div class="card" style="width:160px;flex-shrink:0;margin:0;padding:12px;height:fit-content">
+        <div style="color:#303133;font-size:14px;margin-bottom:8px">用户管理</div>
+        <div style="background:#e8f1ff;color:#2563eb;border-radius:4px;padding:8px 12px;font-size:13px">内部职工管理</div>
+      </div>
+      <!-- 中间部门树 -->
+      <div class="card" style="width:220px;flex-shrink:0;margin:0 0 0 16px;padding:12px">
         <el-input v-model="treeKw" placeholder="请输入部门名称" size="small">
           <template #append><span>🔍</span></template>
         </el-input>
@@ -7549,7 +7916,7 @@ app.component('P40User', {
           :filter-node-method="filterNode" :default-expanded-keys="[115,116]" highlight-current
           style="margin-top:10px;font-size:13px" />
       </div>
-      <div style="flex:1;margin-left:16px">
+      <div style="flex:1;margin-left:16px;min-width:0">
         <div class="card" style="margin:0 0 14px;background:#f8fafc;box-shadow:none;border:1px solid #ebeef5">
           <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
             <span class="q-label">姓名</span>
@@ -8035,6 +8402,411 @@ app.component('P41', {
           <el-button size="small" text type="primary" @click="copyText(viewDlg.row.clientSecret)">复制</el-button>
         </el-descriptions-item>
       </el-descriptions>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * 数据变更管理（桂教通超管）演示数据
+ * P43 数据变更事件管理：变更类型 + 关联 API 接口 + 备注
+ * P44 数据变更记录：表 t_record_datachange_event
+ * P45 数据变更推送记录：表 t_record_datachange_notice
+ * ===================================================================== */
+const DC_CHANGE_TYPES = ['新增', '修改', '删除'];
+
+const DC_EVENTS = [
+  { id: 1, changeType: '新增', apis: [{ id: 1, name: '学生信息查询接口' }, { id: 2, name: '课程同步接口' }], remark: '学生信息新增后同步通知已授权应用', createTime: '2026-09-01 10:30', updateTime: '2026-09-01 10:30' },
+  { id: 2, changeType: '修改', apis: [{ id: 1, name: '学生信息查询接口' }], remark: '学生信息变更后通知相关应用更新', createTime: '2026-09-02 14:20', updateTime: '2026-09-05 09:15' },
+  { id: 3, changeType: '删除', apis: [{ id: 3, name: '成绩上报接口' }, { id: 5, name: '教学计划接口' }], remark: '', createTime: '2026-09-10 08:50', updateTime: '2026-09-10 08:50' },
+];
+
+const DC_RECORDS = [
+  { id: 1, eventId: 'EVT_20261001_0001', suiteId: '1001', authCorpId: 'CORP_100', infoType: '学生信息', changeType: '新增', bizId: 'STU_20261001_001', changeTimestamp: 1727740800000, status: 'SUCCESS', mqMsgId: 'MQ_A1B2C3D4', traceId: 'TRC_001', startedAt: '2026-10-01 08:00:01', finishedAt: '2026-10-01 08:00:03', createdAt: '2026-10-01 08:00:00', updatedAt: '2026-10-01 08:00:03' },
+  { id: 2, eventId: 'EVT_20261001_0002', suiteId: '1002', authCorpId: 'CORP_200', infoType: '课程信息', changeType: '修改', bizId: 'CRS_20261001_005', changeTimestamp: 1727741400000, status: 'PROCESSING', mqMsgId: 'MQ_E5F6G7H8', traceId: 'TRC_002', startedAt: '2026-10-01 08:10:01', finishedAt: '', createdAt: '2026-10-01 08:10:00', updatedAt: '2026-10-01 08:10:01' },
+  { id: 3, eventId: 'EVT_20261001_0003', suiteId: '1001', authCorpId: 'CORP_100', infoType: '成绩信息', changeType: '删除', bizId: 'SCR_20261001_010', changeTimestamp: 1727742000000, status: 'FAIL', mqMsgId: 'MQ_I9J0K1L2', traceId: 'TRC_003', startedAt: '2026-10-01 08:20:01', finishedAt: '2026-10-01 08:20:05', createdAt: '2026-10-01 08:20:00', updatedAt: '2026-10-01 08:20:05' },
+  { id: 4, eventId: 'EVT_20261002_0001', suiteId: '1003', authCorpId: 'CORP_300', infoType: '组织架构', changeType: '新增', bizId: 'ORG_20261002_001', changeTimestamp: 1727827200000, status: 'PENDING', mqMsgId: '', traceId: '', startedAt: '', finishedAt: '', createdAt: '2026-10-02 08:00:00', updatedAt: '2026-10-02 08:00:00' },
+  { id: 5, eventId: 'EVT_20261002_0002', suiteId: '1002', authCorpId: 'CORP_200', infoType: '学生信息', changeType: '修改', bizId: 'STU_20261002_003', changeTimestamp: 1727828800000, status: 'PARTIAL_FAIL', mqMsgId: 'MQ_M3N4O5P6', traceId: 'TRC_005', startedAt: '2026-10-02 08:26:41', finishedAt: '2026-10-02 08:26:48', createdAt: '2026-10-02 08:26:40', updatedAt: '2026-10-02 08:26:48' },
+];
+
+const DC_NOTICES = [
+  { id: 1, eventId: 'EVT_20261001_0001', subjectType: 1, targetId: '1001', targetName: '课堂互动助手', targetUrl: 'https://class.edu.com/api/callback/datachange', pushDataType: 'json', plainPayload: '{"eventId":"EVT_20261001_0001","changeType":"新增","infoType":"学生信息","bizId":"STU_20261001_001","data":{...}}', requestUrl: 'https://class.edu.com/api/callback/datachange?msg_signature=abc123&timestamp=1727740801&nonce=xyz', requestBody: '{"encrypt":"AES256_ENCRYPTED_PAYLOAD..."}', status: 'SUCCESS', attemptCount: 1, lastError: '', requestSnapshot: 'POST /api/callback/datachange', responseSnapshot: '{"errcode":0,"errmsg":"ok"}', sentAt: '2026-10-01 08:00:02', createdAt: '2026-10-01 08:00:01', updatedAt: '2026-10-01 08:00:03' },
+  { id: 2, eventId: 'EVT_20261001_0001', subjectType: 2, targetId: 'CLI_001', targetName: '校园通客户端', targetUrl: 'https://xy.edu.com/webhook/dc', pushDataType: 'json', plainPayload: '{"eventId":"EVT_20261001_0001","changeType":"新增","infoType":"学生信息","bizId":"STU_20261001_001","data":{...}}', requestUrl: 'https://xy.edu.com/webhook/dc?msg_signature=def456&timestamp=1727740802&nonce=uvw', requestBody: '{"encrypt":"AES256_ENCRYPTED_PAYLOAD..."}', status: 'FAILED', attemptCount: 3, lastError: 'Connection timeout after 5000ms', requestSnapshot: 'POST /webhook/dc', responseSnapshot: '', sentAt: '2026-10-01 08:01:15', createdAt: '2026-10-01 08:00:01', updatedAt: '2026-10-01 08:01:15' },
+  { id: 3, eventId: 'EVT_20261001_0002', subjectType: 1, targetId: '1001', targetName: '课堂互动助手', targetUrl: 'https://class.edu.com/api/callback/datachange', pushDataType: 'json', plainPayload: '{"eventId":"EVT_20261001_0002","changeType":"修改","infoType":"课程信息","bizId":"CRS_20261001_005","data":{...}}', requestUrl: 'https://class.edu.com/api/callback/datachange?msg_signature=ghi789&timestamp=1727741401&nonce=rst', requestBody: '{"encrypt":"AES256_ENCRYPTED_PAYLOAD..."}', status: 'SUCCESS', attemptCount: 1, lastError: '', requestSnapshot: 'POST /api/callback/datachange', responseSnapshot: '{"errcode":0,"errmsg":"ok"}', sentAt: '2026-10-01 08:10:02', createdAt: '2026-10-01 08:10:01', updatedAt: '2026-10-01 08:10:03' },
+  { id: 4, eventId: 'EVT_20261002_0002', subjectType: 1, targetId: '1003', targetName: '英语听说训练', targetUrl: 'https://m.eng.edu.com/api/dc/notify', pushDataType: 'xml', plainPayload: '<xml><eventId>EVT_20261002_0002</eventId><changeType>修改</changeType>...</xml>', requestUrl: 'https://m.eng.edu.com/api/dc/notify?msg_signature=jkl012&timestamp=1727828801&nonce=mno', requestBody: '<xml><Encrypt>AES256_ENCRYPTED...</Encrypt></xml>', status: 'PENDING', attemptCount: 0, lastError: '', requestSnapshot: '', responseSnapshot: '', sentAt: '', createdAt: '2026-10-02 08:26:41', updatedAt: '2026-10-02 08:26:41' },
+];
+
+/* =====================================================================
+ * P43 数据变更事件管理（桂教通超管·数据变更管理）
+ * 记录变更操作对应的所有接口：变更类型 + 关联 API 接口（可多选）+ 备注
+ * ===================================================================== */
+app.component('P43', {
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: [...DC_EVENTS],
+      changeTypes: DC_CHANGE_TYPES,
+      q: { changeType: '' },
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r => (!this.q.changeType || r.changeType === this.q.changeType));
+    },
+  },
+  methods: {
+    resetQ() { this.q = { changeType: '' }; },
+    openAdd() { this.$root.go('P43Form', { from: 'P43' }); },
+    openEdit(row) { this.$root.go('P43Form', { id: row.id, from: 'P43' }); },
+    apiNames(row) { return (row.apis || []).map(a => a.name).join('、'); },
+    deleteRow(row) {
+      ElMessageBox.confirm('确定删除该数据变更事件？删除后不可恢复。', '删除确认', { type: 'warning' }).then(() => {
+        const idx = DC_EVENTS.findIndex(r => r.id === row.id);
+        if (idx !== -1) DC_EVENTS.splice(idx, 1);
+        const idx2 = this.rows.findIndex(r => r.id === row.id);
+        if (idx2 !== -1) this.rows.splice(idx2, 1);
+        ElMessage.success('删除成功');
+      }).catch(() => {});
+    },
+  },
+  template: `<div>
+    <div class="toolbar">
+      <span class="q-label">变更类型</span>
+      <el-select v-model="q.changeType" placeholder="请选择" clearable style="width:120px">
+        <el-option v-for="t in changeTypes" :key="t" :label="t" :value="t"></el-option>
+      </el-select>
+      <el-button type="primary" @click="filteredPage=1">查询</el-button>
+      <el-button @click="resetQ">重置</el-button>
+      <div style="flex:1"></div>
+      <el-button type="primary" @click="openAdd">新增</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="changeType" label="变更类型" width="110" align="center">
+          <template #default="{row}"><el-tag size="small">{{ row.changeType }}</el-tag></template>
+        </el-table-column>
+        <el-table-column label="关联API接口" min-width="320" show-overflow-tooltip>
+          <template #default="{row}">{{ apiNames(row) }}</template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="220" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="150"></el-table-column>
+        <el-table-column prop="updateTime" label="更新时间" width="150"></el-table-column>
+        <el-table-column label="操作" width="140" fixed="right">
+          <template #default="{row}">
+            <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
+            <el-button type="danger" link @click="deleteRow(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end"></el-pagination>
+    </div>
+  </div>`,
+});
+
+/* =====================================================================
+ * P43Form 数据变更事件管理·新增/编辑（新界面）
+ * ===================================================================== */
+app.component('P43Form', {
+  props: ['ctx'],
+  data() {
+    const src = this.ctx && this.ctx.id ? DC_EVENTS.find(r => r.id === this.ctx.id) : null;
+    const form = { id: null, changeType: '', apis: [], remark: '' };
+    if (src) {
+      form.id = src.id;
+      form.changeType = src.changeType;
+      form.apis = (src.apis || []).map(a => ({ id: a.id, name: a.name }));
+      form.remark = src.remark || '';
+    }
+    return { form, changeTypes: DC_CHANGE_TYPES, mApi: false, apiQuery: { name: '' }, apiChosen: [], apiPage: 1, apiPageSize: 10 };
+  },
+  computed: {
+    isEdit() { return !!(this.ctx && this.ctx.id); },
+    filteredApis() {
+      return APIS.filter(a => !this.apiQuery.name || a.name.includes(this.apiQuery.name));
+    },
+    pagedApis() {
+      const start = (this.apiPage - 1) * this.apiPageSize;
+      return this.filteredApis.slice(start, start + this.apiPageSize);
+    },
+  },
+  methods: {
+    backTo() { return this.ctx && this.ctx.from ? this.ctx.from : 'P43'; },
+    goBack() { this.$root.go(this.backTo()); },
+    openApiDlg() {
+      this.apiChosen = this.form.apis.map(a => a.id);
+      this.apiQuery = { name: '' };
+      this.apiPage = 1;
+      this.mApi = true;
+    },
+    isApiChosen(id) { return this.apiChosen.includes(id); },
+    toggleApi(id) { const i = this.apiChosen.indexOf(id); if (i >= 0) this.apiChosen.splice(i, 1); else this.apiChosen.push(id); },
+    toggleAllApi(checked) {
+      if (checked) { this.pagedApis.forEach(a => { if (!this.apiChosen.includes(a.id)) this.apiChosen.push(a.id); }); }
+      else { const ids = this.pagedApis.map(a => a.id); this.apiChosen = this.apiChosen.filter(id => !ids.includes(id)); }
+    },
+    confirmApi() {
+      this.form.apis = this.apiChosen.map(id => {
+        const a = APIS.find(x => x.id === id);
+        return a ? { id: a.id, name: a.name } : null;
+      }).filter(Boolean);
+      this.mApi = false;
+    },
+    removeApi(id) { const i = this.form.apis.findIndex(a => a.id === id); if (i >= 0) this.form.apis.splice(i, 1); },
+    save() {
+      const f = this.form;
+      if (!f.changeType) return ElMessage.warning('请选择变更类型');
+      if (!f.apis.length) return ElMessage.warning('请选择关联API接口');
+      const now = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
+      if (f.id) {
+        const rec = DC_EVENTS.find(r => r.id === f.id);
+        if (rec) { rec.changeType = f.changeType; rec.apis = f.apis.map(a => ({ ...a })); rec.remark = f.remark; rec.updateTime = now; }
+        ElMessage.success('编辑成功');
+      } else {
+        const newId = DC_EVENTS.length ? Math.max(...DC_EVENTS.map(r => r.id)) + 1 : 1;
+        DC_EVENTS.unshift({ id: newId, changeType: f.changeType, apis: f.apis.map(a => ({ ...a })), remark: f.remark, createTime: now, updateTime: now });
+        ElMessage.success('新增成功');
+      }
+      this.$root.go(this.backTo());
+    },
+  },
+  template: `<div>
+    <div class="card" style="max-width:760px">
+      <div style="font-weight:600;margin-bottom:14px">{{ isEdit ? '编辑数据变更事件' : '新增数据变更事件' }}</div>
+      <el-form label-width="110px">
+        <el-form-item label="变更类型" required>
+          <el-select v-model="form.changeType" placeholder="请选择变更类型" style="width:240px">
+            <el-option v-for="t in changeTypes" :key="t" :label="t" :value="t"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="API接口" required>
+          <div style="display:flex;gap:10px;align-items:center;width:100%">
+            <el-input :value="form.apis.map(a=>a.name).join('、')" placeholder="请选择API接口（可多选）" readonly style="width:420px"></el-input>
+            <el-button type="primary" plain @click="openApiDlg">选择接口</el-button>
+          </div>
+          <div style="margin-top:8px">
+            <el-tag v-for="a in form.apis" :key="a.id" closable @close="removeApi(a.id)" style="margin:0 6px 6px 0">{{ a.name }}</el-tag>
+            <span v-if="!form.apis.length" style="color:#c0c4cc;font-size:12px">尚未选择接口</span>
+          </div>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="form.remark" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="请输入备注（选填）" style="width:480px"></el-input>
+        </el-form-item>
+      </el-form>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:14px">
+        <el-button @click="goBack">返回</el-button>
+        <el-button type="primary" @click="save">保存</el-button>
+      </div>
+    </div>
+
+    <el-dialog v-model="mApi" title="选择API接口（可多选）" width="760px" :close-on-click-modal="false">
+      <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center">
+        <span class="q-label">接口名称</span>
+        <el-input v-model="apiQuery.name" placeholder="请输入接口名称" clearable style="width:200px"></el-input>
+        <span style="color:#909399;font-size:12px;margin-left:auto">已选 {{ apiChosen.length }} 个接口</span>
+      </div>
+      <el-table :data="pagedApis" border size="small" style="width:100%">
+        <el-table-column width="44" align="center">
+          <template #header><el-checkbox :model-value="pagedApis.length>0 && pagedApis.every(a=>isApiChosen(a.id))" @change="toggleAllApi($event)"></el-checkbox></template>
+          <template #default="s"><el-checkbox :model-value="isApiChosen(s.row.id)" @change="toggleApi(s.row.id)"></el-checkbox></template>
+        </el-table-column>
+        <el-table-column prop="name" label="接口名称" min-width="160" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="reqUrl" label="请求路径" min-width="220" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="type" label="数据敏感等级" width="110" align="center"></el-table-column>
+      </el-table>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <el-pagination v-model:current-page="apiPage" :page-size="apiPageSize" :total="filteredApis.length" layout="total, prev, pager, next" small></el-pagination>
+      </div>
+      <template #footer>
+        <el-button @click="mApi=false">取消</el-button>
+        <el-button type="primary" @click="confirmApi">确定</el-button>
+      </template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P44 数据变更记录（桂教通超管·数据变更管理）对应表 t_record_datachange_event
+ * ===================================================================== */
+app.component('P44', {
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: DC_RECORDS,
+      q: { eventId: '', suiteId: '', authCorpId: '', changeType: '', status: '' },
+      viewVisible: false,
+      viewRow: null,
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.eventId || r.eventId.includes(this.q.eventId)) &&
+        (!this.q.suiteId || r.suiteId.includes(this.q.suiteId)) &&
+        (!this.q.authCorpId || r.authCorpId.includes(this.q.authCorpId)) &&
+        (!this.q.changeType || r.changeType === this.q.changeType) &&
+        (!this.q.status || r.status === this.q.status)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { eventId: '', suiteId: '', authCorpId: '', changeType: '', status: '' }; },
+    viewDetail(row) { this.viewRow = row; this.viewVisible = true; },
+    tsText(ts) { return ts ? new Date(ts).toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-') : '—'; },
+  },
+  template: `<div>
+    <div class="toolbar" style="flex-wrap:wrap;row-gap:8px">
+      <span class="q-label">事件ID</span><el-input v-model="q.eventId" placeholder="请输入事件ID" clearable style="width:190px"></el-input>
+      <span class="q-label">应用ID</span><el-input v-model="q.suiteId" placeholder="请输入应用ID" clearable style="width:130px"></el-input>
+      <span class="q-label">机构ID</span><el-input v-model="q.authCorpId" placeholder="请输入机构ID" clearable style="width:130px"></el-input>
+      <span class="q-label">变更类型</span>
+      <el-select v-model="q.changeType" placeholder="请选择" clearable style="width:110px">
+        <el-option label="新增" value="新增"></el-option><el-option label="修改" value="修改"></el-option><el-option label="删除" value="删除"></el-option>
+      </el-select>
+      <span class="q-label">状态</span>
+      <el-select v-model="q.status" placeholder="请选择" clearable style="width:140px">
+        <el-option label="PENDING" value="PENDING"></el-option><el-option label="PROCESSING" value="PROCESSING"></el-option><el-option label="SUCCESS" value="SUCCESS"></el-option><el-option label="PARTIAL_FAIL" value="PARTIAL_FAIL"></el-option><el-option label="FAIL" value="FAIL"></el-option>
+      </el-select>
+      <el-button type="primary" @click="filteredPage=1">查询</el-button>
+      <el-button @click="resetQ">重置</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="eventId" label="事件ID" min-width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="suiteId" label="应用ID" width="90"></el-table-column>
+        <el-table-column prop="authCorpId" label="机构ID" width="110" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="infoType" label="事件类型" width="100"></el-table-column>
+        <el-table-column prop="changeType" label="变更类型" width="90" align="center"></el-table-column>
+        <el-table-column prop="bizId" label="业务数据ID" min-width="160" show-overflow-tooltip></el-table-column>
+        <el-table-column label="变更时间戳" width="160">
+          <template #default="{row}">{{ tsText(row.changeTimestamp) }}</template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="120" align="center">
+          <template #default="{row}"><el-tag :type="row.status==='SUCCESS'?'success':(row.status==='PENDING'?'warning':(row.status==='PROCESSING'?'primary':'danger'))" size="small">{{ row.status }}</el-tag></template>
+        </el-table-column>
+        <el-table-column prop="mqMsgId" label="MQ消息ID" width="140" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="traceId" label="链路ID" width="110" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="startedAt" label="开始处理时间" width="150"></el-table-column>
+        <el-table-column prop="finishedAt" label="结束处理时间" width="150"></el-table-column>
+        <el-table-column prop="createdAt" label="创建时间" width="150"></el-table-column>
+        <el-table-column prop="updatedAt" label="更新时间" width="150"></el-table-column>
+        <el-table-column label="操作" width="80" fixed="right">
+          <template #default="{row}"><el-button type="primary" link @click="viewDetail(row)">查看</el-button></template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end"></el-pagination>
+    </div>
+
+    <el-dialog v-model="viewVisible" title="数据变更记录详情" width="820px">
+      <el-form v-if="viewRow" label-width="140px">
+        <el-row>
+          <el-col :span="12"><el-form-item label="事件ID"><div class="ro-text">{{ viewRow.eventId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="应用ID"><div class="ro-text">{{ viewRow.suiteId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="机构ID"><div class="ro-text">{{ viewRow.authCorpId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="事件类型"><div class="ro-text">{{ viewRow.infoType }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="变更类型"><div class="ro-text">{{ viewRow.changeType }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="业务数据ID"><div class="ro-text">{{ viewRow.bizId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="变更时间戳"><div class="ro-text">{{ tsText(viewRow.changeTimestamp) }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="状态"><div class="ro-text">{{ viewRow.status }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="MQ消息ID"><div class="ro-text">{{ viewRow.mqMsgId || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="链路ID"><div class="ro-text">{{ viewRow.traceId || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="开始处理时间"><div class="ro-text">{{ viewRow.startedAt || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="结束处理时间"><div class="ro-text">{{ viewRow.finishedAt || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="创建时间"><div class="ro-text">{{ viewRow.createdAt }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="更新时间"><div class="ro-text">{{ viewRow.updatedAt }}</div></el-form-item></el-col>
+        </el-row>
+      </el-form>
+      <template #footer><el-button @click="viewVisible=false">关闭</el-button></template>
+    </el-dialog>
+  </div>`,
+});
+
+/* =====================================================================
+ * P45 数据变更推送记录（桂教通超管·数据变更管理）对应表 t_record_datachange_notice
+ * ===================================================================== */
+app.component('P45', {
+  data() {
+    return {
+      filteredPage: 1, filteredSize: 10,
+      rows: DC_NOTICES,
+      q: { eventId: '', targetName: '', status: '' },
+      viewVisible: false,
+      viewRow: null,
+    };
+  },
+  computed: {
+    filtered() {
+      return this.rows.filter(r =>
+        (!this.q.eventId || r.eventId.includes(this.q.eventId)) &&
+        (!this.q.targetName || r.targetName.includes(this.q.targetName)) &&
+        (!this.q.status || r.status === this.q.status)
+      );
+    },
+  },
+  methods: {
+    resetQ() { this.q = { eventId: '', targetName: '', status: '' }; },
+    subjectLabel(v) { return v === 1 ? '应用' : (v === 2 ? '客户端' : String(v)); },
+    viewDetail(row) { this.viewRow = row; this.viewVisible = true; },
+  },
+  template: `<div>
+    <div class="toolbar" style="flex-wrap:wrap;row-gap:8px">
+      <span class="q-label">事件ID</span><el-input v-model="q.eventId" placeholder="请输入事件ID" clearable style="width:190px"></el-input>
+      <span class="q-label">通知对象</span><el-input v-model="q.targetName" placeholder="请输入通知对象名称" clearable style="width:170px"></el-input>
+      <span class="q-label">状态</span>
+      <el-select v-model="q.status" placeholder="请选择" clearable style="width:120px">
+        <el-option label="PENDING" value="PENDING"></el-option><el-option label="SUCCESS" value="SUCCESS"></el-option><el-option label="FAILED" value="FAILED"></el-option>
+      </el-select>
+      <el-button type="primary" @click="filteredPage=1">查询</el-button>
+      <el-button @click="resetQ">重置</el-button>
+    </div>
+    <div class="card">
+      <el-table :data="pageSlice(filtered,'filtered')" border stripe>
+        <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="eventId" label="事件ID" min-width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column label="主体类型" width="90" align="center">
+          <template #default="{row}">{{ subjectLabel(row.subjectType) }}</template>
+        </el-table-column>
+        <el-table-column prop="targetId" label="通知对象ID" width="110" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="targetName" label="通知对象名称" min-width="140" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="targetUrl" label="回调地址" min-width="240" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="pushDataType" label="推送数据类型" width="110" align="center"></el-table-column>
+        <el-table-column prop="status" label="状态" width="100" align="center">
+          <template #default="{row}"><el-tag :type="row.status==='SUCCESS'?'success':(row.status==='PENDING'?'warning':'danger')" size="small">{{ row.status }}</el-tag></template>
+        </el-table-column>
+        <el-table-column prop="attemptCount" label="已尝试次数" width="100" align="center"></el-table-column>
+        <el-table-column prop="lastError" label="最后错误" min-width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="sentAt" label="最后发送时间" width="150"></el-table-column>
+        <el-table-column prop="createdAt" label="创建时间" width="150"></el-table-column>
+        <el-table-column label="操作" width="80" fixed="right">
+          <template #default="{row}"><el-button type="primary" link @click="viewDetail(row)">查看</el-button></template>
+        </el-table-column>
+      </el-table>
+      <el-pagination background layout="total,sizes,prev,pager,next,jumper" :total="filtered.length" v-model:current-page="filteredPage" v-model:page-size="filteredSize" :page-sizes="[10,20,50]" style="margin-top:16px;justify-content:flex-end"></el-pagination>
+    </div>
+
+    <el-dialog v-model="viewVisible" title="数据变更推送记录详情" width="860px">
+      <el-form v-if="viewRow" label-width="160px">
+        <el-row>
+          <el-col :span="12"><el-form-item label="事件ID"><div class="ro-text">{{ viewRow.eventId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="主体类型"><div class="ro-text">{{ subjectLabel(viewRow.subjectType) }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="通知对象ID"><div class="ro-text">{{ viewRow.targetId }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="通知对象名称"><div class="ro-text">{{ viewRow.targetName }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="回调地址"><div class="ro-text">{{ viewRow.targetUrl }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="推送数据类型"><div class="ro-text">{{ viewRow.pushDataType }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="状态"><div class="ro-text">{{ viewRow.status }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="已尝试次数"><div class="ro-text">{{ viewRow.attemptCount }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="最后错误"><div class="ro-text">{{ viewRow.lastError || '—' }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="推送数据（明文）"><pre class="ro-pre">{{ viewRow.plainPayload || '—' }}</pre></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="实际请求地址"><div class="ro-text" style="font-size:12px">{{ viewRow.requestUrl || '—' }}</div></el-form-item></el-col>
+          <el-col :span="24"><el-form-item label="请求体（密文）"><pre class="ro-pre">{{ viewRow.requestBody || '—' }}</pre></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="请求摘要"><div class="ro-text">{{ viewRow.requestSnapshot || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="响应摘要"><div class="ro-text">{{ viewRow.responseSnapshot || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="最后发送时间"><div class="ro-text">{{ viewRow.sentAt || '—' }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="创建时间"><div class="ro-text">{{ viewRow.createdAt }}</div></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="更新时间"><div class="ro-text">{{ viewRow.updatedAt }}</div></el-form-item></el-col>
+        </el-row>
+      </el-form>
+      <template #footer><el-button @click="viewVisible=false">关闭</el-button></template>
     </el-dialog>
   </div>`,
 });

@@ -103,7 +103,7 @@ h2, h3, h4 { scroll-margin-top: 16px; }
 <p>进入模块后，侧栏直接展示二级菜单（不含一级包裹）：</p>
 <ul>
 <li>机构管理员：数据授权记录（P08Auth，顶层菜单，原接口申请记录改名，审批开发者数据授权申请）、组织同步申请（P32，与数据授权记录同层级，顶层菜单；已删除"API接口管理"一级菜单）</li>
-<li>桂教通超管：机构管理（→单位管理 P40）、开发者管理（→开发者管理 P01、开发者信息审批 P01a）、能力管理（→API接口管理 P04、接口能力管理 P35、接口分类管理 P04a、应用管理 P28All、接口调用记录 P27、运营统计 P13）、授权管理（→客户端授权管理 P30、数据回流管理 P36Admin、数据回流明细 P36Detail、数据表管理 P37、业务数据表关联 P38、第三方平台单点对接管理 P39）、审批管理（→接口申请审批 P08、组织同步审批 P41）</li>
+<li>桂教通超管：机构管理（→单位管理 P40）、开发者管理（→开发者管理 P01、开发者信息审批 P01a）、能力管理（→API接口管理 P04、接口能力管理 P35、接口分类管理 P04a、应用管理 P28All、接口调用记录 P27、运营统计 P13）、授权管理（→客户端授权管理 P30、数据回流管理 P36Admin、数据回流明细 P36Detail、数据表管理 P37、业务数据表关联 P38、第三方平台单点对接管理 P39、应用授权管理 P42）、审批管理（→接口申请审批 P08、组织同步审批 P41）、数据变更管理（→数据变更事件管理 P43、数据变更记录 P44、数据变更推送记录 P45）</li>
 <li>开发者管理员：账号管理（→P16/P17）、接口管理（→P19）、接口数据申请管理（→P28、接口申请记录 P08、数据授权记录 P08Auth）、数据回流（→数据回流管理 P36）</li>
 </ul>
 <p>用户体系、组织树、消息通知、审计日志、角色权限、门户、开发者应用实体与密钥等基础能力均复用桂教通现有体系，本平台只新增能力管理业务模块与页面。</p>
@@ -1010,12 +1010,11 @@ flowchart TD
 <li><strong>应用名称</strong>：下拉选择（可搜索），必填；根据应用名称模糊匹配，最多展示 30 个匹配应用（候选不含生态应用）。两种对接方式下均为下拉选择，不随对接方式变化、不自动回填。</li>
 <li><strong>开发者名称</strong>：下拉选择（可搜索），必填；查询平台所有开发者，单选。</li>
 <li><strong>对接方式</strong>：单选（开发者提供接口/开发者主动推送，默认开发者提供接口）。</li>
-<li><strong>推送方式</strong>：单选（全量/增量），必填；两种对接方式下均需选择。</li>
 <li>选「开发者提供接口」：展示认证key（文本输入，选填，加密存储与展示）与对接域名（文本输入，选填，需以 http:// 或 https:// 开头）。对接文档区域不展示（由开发者后续上传）。应用名称保持下拉选择可用。</li>
-<li>选「开发者主动推送」：先展示「唯一字段」（文本输入，必填，最多 64 字符，仅允许填写单个字段名；位于推送方式与同步数据表之间，属于表单级别字段，不在数据表卡片内），再展示「同步数据表」区域，包含多个数据表卡片，每个卡片含「数据表key」（下拉选择，可搜索，数据来源 P37 数据表管理中启用状态的记录，必填，选择后自动带出该数据表在数据表管理（P37）配置的表json）；「表json」随数据表key 自动带出并只读展示（本页不可编辑；若该数据表未配置表json 则提示「请先在数据表管理中为该数据表维护表json」且禁止提交）；每个卡片可删除（至少保留一个）；底部「+ 添加数据表key」按钮新增卡片。同时展示认证key（选填）。</li>
+<li>选「开发者主动推送」：展示「同步数据表」区域，包含多个数据表卡片，每个卡片含「数据表key」（下拉选择，可搜索，数据来源 P37 数据表管理中启用状态的记录，必填，选择后自动带出该数据表在数据表管理（P37）配置的表json）；「表json」随数据表key 自动带出并只读展示（本页不可编辑；若该数据表未配置表json 则提示「请先在数据表管理中为该数据表维护表json」且禁止提交）；每个卡片可删除（至少保留一个）；底部「+ 添加数据表key」按钮新增卡片。同时展示认证key（选填）。</li>
 <li><strong>申请理由</strong>：多行文本，必填，最多 500 字符，显示字数统计。</li>
 <li><strong>免责声明</strong>：「我已阅读并同意」+ 可点击的《数据使用免责申明》链接，弹窗展示声明全文，弹窗内也可一键勾选同意。</li>
-<li><strong>提交校验</strong>：名称必填；开发者名称必选；推送方式必选；应用名称必选（未选择时提示「请选择应用名称」）；对接方式为「开发者主动推送」时唯一字段必填（最多 64 字符，仅允许单个字段名）、每个数据表卡片必须选择已配置合法表json 的数据表key（表json 自动带出、只读）；对接域名若存在须以 http:// 或 https:// 开头；申请理由必填；免责声明必须勾选。</li>
+<li><strong>提交校验</strong>：名称必填；开发者名称必选；应用名称必选（未选择时提示「请选择应用名称」）；对接方式为「开发者主动推送」时每个数据表卡片必须选择已配置合法表json 的数据表key（表json 自动带出、只读）；对接域名若存在须以 http:// 或 https:// 开头；申请理由必填；免责声明必须勾选。（注：新增表单已移除「推送方式」「唯一字段」字段）</li>
 <li><strong>提交后</strong>：对接方式为「开发者提供接口」时状态为「待对接」，对接方式为「开发者主动推送」时状态为「联调中」；返回来源列表（P36Admin）。</li>
 </ul>
 <p><strong>开发者上传文档模式</strong>（从 P36 上传文档进入，ctx.upload=true）：</p>
@@ -1348,6 +1347,10 @@ flowchart TD
 <tr><td>数据表管理（P37）</td><td>—</td><td>全平台数据表 CRUD</td><td>—</td></tr>
 <tr><td>业务数据表关联（P38）</td><td>—</td><td>全平台数据目录及目录-数据表关联</td><td>—</td></tr>
 <tr><td>组织同步审批（P41）</td><td>—</td><td>全平台组织同步申请</td><td>—</td></tr>
+<tr><td>应用授权管理（P42）</td><td>—</td><td>全平台第三方对接授权配置（t_auth_third_provider，新增/编辑/启用停用）与 SSO 授权目标应用（t_auth_third_provider_app）</td><td>—</td></tr>
+<tr><td>数据变更事件管理（P43/P43Form）</td><td>—</td><td>全平台数据变更事件（新增/编辑/删除）</td><td>—</td></tr>
+<tr><td>数据变更记录（P44）</td><td>—</td><td>全平台数据变更记录（只读查询/查看）</td><td>—</td></tr>
+<tr><td>数据变更推送记录（P45）</td><td>—</td><td>全平台数据变更推送记录（只读查询/查看）</td><td>—</td></tr>
 </tbody>
 </table>
 <h3>（二）操作权限矩阵</h3>
@@ -1682,6 +1685,62 @@ flowchart TD
 <tr><td>关联数据表</td><td>array</td><td>—</td><td>否</td><td>空</td><td>—</td><td>数据表key 数组</td><td>用户选择</td><td>该目录关联的数据表；候选为数据表管理（P37）中启用状态且未被该目录关联的数据表；一级目录不可关联</td></tr>
 </tbody>
 </table>
+<h3>（十三-D）数据变更事件实体（P43/P43Form）</h3>
+<table>
+<thead><tr><th>字段</th><th>类型</th><th>长度</th><th>必填</th><th>默认值</th><th>枚举值</th><th>格式</th><th>业务来源</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>变更类型</td><td>string</td><td>10</td><td>是</td><td>—</td><td>新增、修改、删除</td><td>—</td><td>用户选择</td><td>下拉选择，标识订阅的数据变更动作</td></tr>
+<tr><td>API接口</td><td>array</td><td>—</td><td>是</td><td>—</td><td>—</td><td>接口 ID 数组</td><td>用户选择</td><td>弹窗多选关联接口，至少选择一个；列表以顿号拼接展示接口名称</td></tr>
+<tr><td>备注</td><td>string</td><td>500</td><td>否</td><td>—</td><td>—</td><td>—</td><td>用户输入</td><td>多行文本框，最多 500 字符</td></tr>
+<tr><td>创建时间</td><td>datetime</td><td>—</td><td>是</td><td>当前时间</td><td>—</td><td>YYYY-MM-DD HH:mm</td><td>系统生成</td><td>—</td></tr>
+<tr><td>更新时间</td><td>datetime</td><td>—</td><td>是</td><td>当前时间</td><td>—</td><td>YYYY-MM-DD HH:mm</td><td>系统生成</td><td>编辑时更新</td></tr>
+</tbody>
+</table>
+<h3>（十三-E）数据变更记录实体（P44，表 <code>t_record_datachange_event</code>）</h3>
+<table>
+<thead><tr><th>字段</th><th>类型</th><th>长度</th><th>必填</th><th>默认值</th><th>枚举值</th><th>格式</th><th>业务来源</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>主键</td><td>bigint</td><td>—</td><td>是</td><td>自增</td><td>—</td><td>—</td><td>系统生成</td><td>id</td></tr>
+<tr><td>平台事件唯一ID</td><td>string</td><td>64</td><td>是</td><td>—</td><td>—</td><td>—</td><td>系统生成</td><td>event_id，唯一约束 uk_event_id</td></tr>
+<tr><td>应用ID</td><td>string</td><td>64</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>suite_id</td></tr>
+<tr><td>机构ID</td><td>string</td><td>64</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>auth_corp_id</td></tr>
+<tr><td>事件类型</td><td>string</td><td>64</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>info_type</td></tr>
+<tr><td>变更类型</td><td>string</td><td>64</td><td>否</td><td>—</td><td>新增、修改、删除</td><td>—</td><td>系统记录</td><td>change_type</td></tr>
+<tr><td>业务数据ID</td><td>string</td><td>128</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>biz_id</td></tr>
+<tr><td>变更时间戳</td><td>bigint</td><td>—</td><td>否</td><td>—</td><td>—</td><td>毫秒</td><td>系统记录</td><td>change_timestamp，展示为 YYYY-MM-DD HH:mm:ss</td></tr>
+<tr><td>状态</td><td>string</td><td>32</td><td>是</td><td>PENDING</td><td>PENDING、PROCESSING、SUCCESS、PARTIAL_FAIL、FAIL</td><td>—</td><td>系统记录</td><td>处理状态</td></tr>
+<tr><td>MQ消息ID</td><td>string</td><td>64</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>mq_msg_id</td></tr>
+<tr><td>链路ID</td><td>string</td><td>64</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>trace_id</td></tr>
+<tr><td>开始处理时间</td><td>datetime</td><td>—</td><td>否</td><td>—</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>started_at</td></tr>
+<tr><td>结束处理时间</td><td>datetime</td><td>—</td><td>否</td><td>—</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>finished_at</td></tr>
+<tr><td>创建时间</td><td>datetime</td><td>—</td><td>是</td><td>CURRENT_TIMESTAMP</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>created_at</td></tr>
+<tr><td>更新时间</td><td>datetime</td><td>—</td><td>是</td><td>CURRENT_TIMESTAMP</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>updated_at</td></tr>
+</tbody>
+</table>
+<h3>（十三-F）数据变更推送记录实体（P45，表 <code>t_record_datachange_notice</code>）</h3>
+<table>
+<thead><tr><th>字段</th><th>类型</th><th>长度</th><th>必填</th><th>默认值</th><th>枚举值</th><th>格式</th><th>业务来源</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>主键</td><td>bigint</td><td>—</td><td>是</td><td>自增</td><td>—</td><td>—</td><td>系统生成</td><td>id</td></tr>
+<tr><td>平台事件ID</td><td>string</td><td>64</td><td>是</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>event_id，唯一约束 uk_event_target(event_id, target_id)</td></tr>
+<tr><td>主体类型</td><td>int</td><td>2</td><td>否</td><td>—</td><td>1应用、2客户端</td><td>—</td><td>系统记录</td><td>subject_type，展示为应用/客户端</td></tr>
+<tr><td>通知对象ID</td><td>string</td><td>64</td><td>是</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>target_id</td></tr>
+<tr><td>通知对象名称</td><td>string</td><td>128</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>target_name</td></tr>
+<tr><td>回调地址</td><td>string</td><td>512</td><td>否</td><td>—</td><td>—</td><td>http(s) URL</td><td>系统记录</td><td>target_url</td></tr>
+<tr><td>推送数据类型</td><td>string</td><td>32</td><td>是</td><td>json</td><td>json、xml 等</td><td>—</td><td>系统记录</td><td>push_data_type</td></tr>
+<tr><td>推送数据（明文）</td><td>text</td><td>—</td><td>否</td><td>—</td><td>—</td><td>单次为一条变更事件</td><td>系统记录</td><td>plain_payload</td></tr>
+<tr><td>实际请求地址</td><td>string</td><td>1024</td><td>否</td><td>—</td><td>—</td><td>含签名参数</td><td>系统记录</td><td>request_url（含 msg_signature/timestamp/nonce）</td></tr>
+<tr><td>请求体（密文）</td><td>text</td><td>—</td><td>否</td><td>—</td><td>—</td><td>单次为一条变更事件</td><td>系统记录</td><td>request_body</td></tr>
+<tr><td>状态</td><td>string</td><td>32</td><td>是</td><td>PENDING</td><td>PENDING、SUCCESS、FAILED</td><td>—</td><td>系统记录</td><td>推送状态</td></tr>
+<tr><td>已尝试次数</td><td>int</td><td>—</td><td>是</td><td>0</td><td>—</td><td>非负整数</td><td>系统记录</td><td>attempt_count</td></tr>
+<tr><td>最后错误摘要</td><td>string</td><td>1024</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>last_error</td></tr>
+<tr><td>请求摘要</td><td>text</td><td>—</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>request_snapshot</td></tr>
+<tr><td>响应摘要</td><td>text</td><td>—</td><td>否</td><td>—</td><td>—</td><td>—</td><td>系统记录</td><td>response_snapshot</td></tr>
+<tr><td>最后发送时间</td><td>datetime</td><td>—</td><td>否</td><td>—</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>sent_at</td></tr>
+<tr><td>创建时间</td><td>datetime</td><td>—</td><td>是</td><td>CURRENT_TIMESTAMP</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>created_at</td></tr>
+<tr><td>更新时间</td><td>datetime</td><td>—</td><td>是</td><td>CURRENT_TIMESTAMP</td><td>—</td><td>YYYY-MM-DD HH:mm:ss</td><td>系统记录</td><td>updated_at</td></tr>
+</tbody>
+</table>
 <h3>（十四）接口调用记录实体（P27）</h3>
 <table>
 <thead><tr><th>字段</th><th>类型</th><th>长度</th><th>必填</th><th>默认值</th><th>枚举值</th><th>格式</th><th>业务来源</th><th>说明</th></tr></thead>
@@ -1764,6 +1823,19 @@ flowchart TD
 <li>待审批 → 已通过：审批通过；入驻申请类生成开发者管理员账号，企业信息变更类使修改生效。</li>
 <li>待审批 → 已驳回：审批驳回（审批说明必填）；入驻申请类申请人需重新提交，企业信息变更类维持原企业信息、可重新编辑提交。</li>
 </ul>
+<h3>（九）数据变更状态机（P44/P45）</h3>
+<p>数据变更记录（P44）状态集合：PENDING、PROCESSING、SUCCESS、PARTIAL_FAIL、FAIL。</p>
+<ul>
+<li>PENDING → PROCESSING：消费到变更消息并开始分发推送。</li>
+<li>PROCESSING → SUCCESS：全部通知对象推送成功。</li>
+<li>PROCESSING → PARTIAL_FAIL：部分通知对象推送失败，其余成功。</li>
+<li>PROCESSING → FAIL：全部通知对象推送失败或处理异常。</li>
+</ul>
+<p>数据变更推送记录（P45）状态集合：PENDING、SUCCESS、FAILED。</p>
+<ul>
+<li>PENDING → SUCCESS：单次推送收到成功响应。</li>
+<li>PENDING → FAILED：重试次数耗尽仍未成功，记录最后错误摘要。</li>
+</ul>
 <h3>（十）业务规则汇总</h3>
 <table>
 <thead><tr><th>规则编号</th><th>规则内容</th><th>触发条件</th><th>适用范围</th></tr></thead>
@@ -1809,8 +1881,10 @@ flowchart TD
 <tr><td>R41</td><td>客户端取消授权（P30AuthCancel）接口授权记录与数据授权记录两个 Tab 均支持全部/批量取消：行前多选框可勾选记录，工具栏提供「全部取消」（二次确认提示共 N 条，移除该 Tab 全部记录）与「批量取消（已选 N 条）」（勾选后二次确认移除所选记录）；取消均把对应记录从客户端当前授权中移除、记录不再展示，无记录或未勾选时按钮置灰</td><td>全部/批量取消（客户端接口/数据授权记录）</td><td>客户端授权管理</td></tr>
 <tr><td>R42</td><td>所有「选择授权接口」弹窗（应用接口授权 P28ApiAuth、应用数据授权 P28DataAuth、数据授权申请 P28Apply、接口申请 P28ApplyApi、客户端数据授权配置 P31、客户端接口授权配置 P31B）均新增「接口分类」查询条件，可与接口名称/服务名关键字叠加过滤候选接口；选用后候选列表仅展示该分类下的接口</td><td>授权接口弹窗查询</td><td>应用授权、数据授权、接口申请</td></tr>
 <tr><td>R43</td><td>业务数据表关联（P38）采用左右分栏（布局与交互同接口能力管理 P35）：左侧树形数据目录（最多四级）仅展示目录名称、无启用/停用状态，支持按目录名称/编码筛选、新增（一级/子级）、编辑、删除（删除前校验是否被使用：已关联数据表或存在子目录的目录不可删除并提示原因；未被使用的目录二次确认后删除）；目录名称必填（≤50字符）、目录编码必填且全局唯一；四级目录下不可再新增子目录（「新增」置灰），一级目录不可关联数据表（「新增关联」置灰，已有关联保留）；点击目录节点后右侧展示该目录关联的数据表（列表不展示数据表状态列），「新增关联」弹窗仅可选启用状态且未被当前目录关联的数据表，弹窗顶部支持按数据表key/数据库表名称模糊查询（含查询/重置，勾选结果翻页与换查询条件后保留）；「移出」需二次确认</td><td>数据目录维护、目录-数据表关联/移出</td><td>业务数据表关联</td></tr>
-<tr><td>R44</td><td>第三方平台单点对接管理（P39）：列表含第三方平台名称/对接方式/client_id/备注/状态/创建时间/更新时间，查询支持平台名称模糊匹配与对接方式、状态筛选；新增/编辑弹窗按对接方式（标准OAuth2/CAS）切换参数表单，编辑时对接方式不可切换；OAuth2 固定参数（response_type=code、grant_type=authorization_code、redirect_url 固定格式 https://{租户域名}/ego_base_info/v1/public/sso/custom/oauth/login?code=xxx、user_info_auth_type=Bearer）只读展示；必填校验：OAuth2 需 client_id/client_secret/authorize_url/access_token_url/access_token_match/get_userinfo_url/user_id_match/user_name_match，CAS 需 client_id/authorize_url/ticket_validate_url/user_id_match/user_name_match；URL 参数需以 http:// 或 https:// 开头；启用/停用与删除均需二次确认，停用后该平台不可单点登录，删除后不可恢复</td><td>第三方单点对接记录维护</td><td>第三方平台单点对接管理</td></tr>
+<tr><td>R44</td><td>第三方平台单点对接管理（P39）：列表含第三方平台名称/对接方式/客户端ID（client_id）/备注/状态/创建时间/更新时间，查询支持平台名称模糊匹配与对接方式、状态筛选；新增/编辑弹窗按对接方式（标准OAuth2/CAS）切换参数表单，编辑时对接方式不可切换；OAuth2 固定参数（response_type=code、grant_type=authorization_code、redirect_url 固定格式 https://{租户域名}/ego_base_info/v1/public/sso/custom/oauth/login?code=xxx、user_info_auth_type=Bearer）只读展示；必填校验：OAuth2 需 client_id/client_secret/authorize_url/access_token_url/access_token_match/get_userinfo_url/user_id_match/user_name_match，CAS 需 client_id/authorize_url/ticket_validate_url/user_id_match/user_name_match；URL 参数需以 http:// 或 https:// 开头；启用/停用与删除均需二次确认，停用后该平台不可单点登录，删除后不可恢复</td><td>第三方单点对接记录维护</td><td>第三方平台单点对接管理</td></tr>
 <tr><td>R45</td><td>单位管理（P40 / P40Form）：列表含单位名称/单位id/单位类型/统一社会信用代码/管理员手机号（脱敏 134****9098）/管理员（姓名脱敏 李*一）/排序/开通时间/服务启停/操作，查询支持单位类型（下拉）、单位名称、单位id；「新增」跳转新界面 P40Form（内容区域铺满容器的白色卡片，表单输入/下拉框宽度 336px），必填：单位Logo/单位名称/统一社会信用代码/单位类型[单选：供应商/研学单位/合作实习单位]/单位法人[文本]/单位电话[固定电话或手机校验]/管理员[文本]/管理员手机号码[11位校验]/详细地址[省-市-区县级联 + 详细地址文本]；选填：单位简介[≤500字]/营业执照[.jpg/.png/.jpeg/.bmp/.gif，≤5M]；保存写回列表并跳回、返回不保存；操作列「编辑」打开新界面 P40Form 并按 id 回填内容（编辑覆盖原记录），「后台」进入单位后台（P40Org/P40User/P40Sys：组织中心/用户中心/系统管理三页签，全屏接管平台框架，右上角退出返回列表）；「批量操作」下拉提供导入/导出单位信息/导入导出记录；「服务启停」开关二次确认，停用后该单位用户不可登录平台</td><td>单位台账维护</td><td>单位管理</td></tr>
+<tr><td>R46</td><td>应用授权管理（P42 / P42Form）：列表含接入编码/接入名称/协议类型[OAUTH2、OIDC、SAML、CAS、CUSTOM 标签]/响应格式/状态[启用、停用 标签]/创建时间/更新时间，查询支持接入名称、接入编码、协议类型、状态筛选；列表「新增接入」/「编辑」跳转新界面 P42Form（内容区域铺满白色卡片，按协议类型切换扩展字段，字段名称仅展示中文）；表单不维护状态与排序字段；必填：接入名称、客户端ID，新增时接入编码必填且全局唯一（编辑时锁定不可改）；各 URL 字段（授权地址/获取token地址/获取用户信息地址/票据校验地址/JWKS地址/登出地址/重定向地址/回调路径）若填写需以 http:// 或 https:// 开头；协议扩展：CAS 额外维护票据参数名[默认 ticket]、票据校验地址，OIDC 额外维护 JWKS 地址，CUSTOM 额外维护自定义处理器；「授权目标应用」通过「选择应用」按钮弹框多选（可搜索/分页，右侧已选面板可移除），确认后写入 SSO 授权目标应用（t_auth_third_provider_app，自动带入应用编码/应用名称/平台业务appId）；列表「启用/停用」二次确认，停用后该接入方不可单点登录本平台；编辑按 id 回填并覆盖原记录，保存写回列表并跳回、返回不保存</td><td>第三方对接授权配置维护</td><td>应用授权管理</td></tr>
+<tr><td>R47</td><td>数据变更管理（P43/P43Form/P44/P45）：P43 列表含变更类型/关联API接口/备注/创建时间/更新时间，查询支持变更类型筛选，操作列编辑/删除（删除二次确认），「新增」跳转 P43Form；P43Form 字段为变更类型（下拉必填：新增/修改/删除）、API接口（必填，弹窗多选，支持按接口名称搜索与分页，已选以标签展示可移除）、备注（选填，多行文本≤500字符）；P44 数据变更记录（t_record_datachange_event）与 P45 数据变更推送记录（t_record_datachange_notice）为系统只读台账，仅提供查询与查看详情，不提供新增/编辑/删除；P45 主体类型按 1应用/2客户端 展示</td><td>数据变更事件维护、变更台账查看</td><td>数据变更管理</td></tr>
 </tbody>
 </table>
 <h2>八、验收标准汇总</h2>
@@ -1917,7 +1991,7 @@ flowchart TD
 </ul>
 <h3>（十一）数据回流（P36/P36Admin/P36Detail）</h3>
 <ul>
-<li>AC-RFL-01：超管在 P36Admin 点击「新增」跳转 P36Form 新增模式；应用名称为可搜索下拉（模糊匹配最多 30 个），两种对接方式下应用名称均为可搜索下拉（模糊匹配最多 30 个，候选不含生态应用），必选（未选择时提示「请选择应用名称」）；开发者名称为可搜索下拉（查询平台所有开发者，单选）；对接方式单选（开发者提供接口/开发者主动推送）控制展示区域；推送方式（全量/增量）为必填单选，两种对接方式下均需选择；名称必填、推送方式必选、申请理由必填（最多 500 字符）、免责声明必须勾选；对接方式为「开发者主动推送」时唯一字段必填（文本输入，最多 64 字符，仅允许单个字段名，表单级别字段，位于推送方式与同步数据表之间）、每个数据表卡片必须选择数据表key（下拉选择，数据来源 P37 数据表管理中启用状态的记录），且该数据表已在「数据表管理」配置合法的表json（选择数据表key 后自动带出、本页不可编辑）。</li>
+<li>AC-RFL-01：超管在 P36Admin 点击「新增」跳转 P36Form 新增模式；应用名称为可搜索下拉（模糊匹配最多 30 个），两种对接方式下应用名称均为可搜索下拉（模糊匹配最多 30 个，候选不含生态应用），必选（未选择时提示「请选择应用名称」）；开发者名称为可搜索下拉（查询平台所有开发者，单选）；对接方式单选（开发者提供接口/开发者主动推送）控制展示区域；名称必填、申请理由必填（最多 500 字符）、免责声明必须勾选；对接方式为「开发者主动推送」时每个数据表卡片必须选择数据表key（下拉选择，数据来源 P37 数据表管理中启用状态的记录），且该数据表已在「数据表管理」配置合法的表json（选择数据表key 后自动带出、本页不可编辑）。（注：新增表单已移除「推送方式」「唯一字段」，列表/查看页仍展示历史数据）</li>
 <li>AC-RFL-02：对接方式为「开发者提供接口」时提交后状态为「待对接」，对接方式为「开发者主动推送」时提交后状态为「联调中」。</li>
 <li>AC-RFL-03：开发者在 P36 可查看与本企业相关的记录；对接方式为「开发者提供接口」且状态为「待对接」时可点击「上传文档」进入上传模式（仅对接文档区域可编辑），提交后状态变为「联调中」。</li>
 <li>AC-RFL-04：超管「联调完成」仅联调中时展示，二次确认后状态变为「已完成」。</li>
@@ -1948,12 +2022,12 @@ flowchart TD
 <h4>（一）列表页（P39）</h4>
 <ul>
 <li><strong>查询条件</strong>：第三方平台名称（模糊匹配）、对接方式（标准OAuth2/CAS）、状态（启用/停用），含「查询」「重置」。</li>
-<li><strong>列表列</strong>：序号、第三方平台名称、对接方式（标签）、client_id、备注、状态（启用/停用标签）、创建时间、更新时间。</li>
+<li><strong>列表列</strong>：序号、第三方平台名称、对接方式（标签）、客户端ID、备注、状态（启用/停用标签）、创建时间、更新时间。</li>
 <li><strong>操作列</strong>：编辑（弹窗）、启用/停用（二次确认，停用后该第三方平台不可单点登录本平台）、删除（二次确认「确定删除第三方平台「xxx」的单点对接记录？删除后该平台将不可再单点登录，不可恢复」）。</li>
 <li><strong>工具栏</strong>：「新增单点对接」按钮跳转新界面 P39Form。</li>
 </ul>
 <h4>（二）新增/编辑（新界面 P39Form）</h4>
-<p>新增/编辑以独立新界面方式完成：列表「新增单点对接」/「编辑」跳转至新界面 <strong>P39Form</strong>，填写完成后「保存」写回列表并跳回；「返回」不保存直接跳回列表；编辑时对接方式不可切换。</p>
+<p>新增/编辑以独立新界面方式完成：列表「新增单点对接」/「编辑」跳转至新界面 <strong>P39Form</strong>，填写完成后「保存」写回列表并跳回；「返回」不保存直接跳回列表；编辑时对接方式不可切换。表单字段名称仅展示中文（如「客户端ID」「客户端密钥」「授权范围」「响应类型」），不展示 client_id 等英文字段标识。</p>
 <p><strong>公共字段</strong>：</p>
 <table>
 <thead><tr><th>字段</th><th>必填</th><th>说明</th></tr></thead>
@@ -2067,6 +2141,72 @@ flowchart TD
 <li>AC-UNIT-04：列表管理员手机号脱敏展示（134****9098）、管理员姓名脱敏展示（李*一）；操作列「编辑」打开新界面 P40Form 并回填该单位全部字段，保存后覆盖原记录；「后台」进入单位后台。</li>
 <li>AC-UNIT-05：新增（新界面 P40Form）必填校验：单位Logo、单位名称、统一社会信用代码、单位类型、单位法人（文本）、单位电话（固定电话或手机校验）、管理员（文本）、管理员手机号码（11位）、详细地址（省-市-区县 + 详细地址文本，表单输入/下拉框宽度 336px）；选填单位简介（≤500字）、营业执照；保存写回列表并跳回，返回不保存。</li>
 <li>AC-UNIT-06：操作列「后台」进入单位后台（组织中心/用户中心/系统管理三页签，全屏接管平台框架），各页签内容符合（三）中描述，右上角「退出单位后台」返回单位管理列表。</li>
+</ul>
+<h3>（十一-F）应用授权管理（桂教通超管，P42/P42Form）</h3>
+<p>本模块由桂教通超管维护第三方对接授权配置（<code>t_auth_third_provider</code>）与 SSO 授权目标应用（<code>t_auth_third_provider_app</code>），对应菜单：桂教通超管后台 → 授权管理 → 应用授权管理。包含应用授权管理列表（P42）与应用授权新增/编辑（P42Form，新界面）。</p>
+<h4>（一）应用授权管理列表（P42）</h4>
+<ul>
+<li><strong>查询条件</strong>：接入名称、接入编码、协议类型（OAUTH2/OIDC/SAML/CAS/CUSTOM）、状态（启用/停用），含「查询」「重置」。</li>
+<li><strong>列表列</strong>：序号、接入编码（provider_code）、接入名称（provider_name）、协议类型（标签）、响应格式（response_format）、状态（启用/停用，标签）、创建时间、更新时间、操作（编辑、启用/停用）。</li>
+<li><strong>工具栏</strong>：「新增接入」（跳转新界面 P42Form）。</li>
+<li><strong>操作列</strong>：「编辑」打开新界面 P42Form 并按记录 id 回填全部字段；「启用/停用」二次确认，停用后该接入方不可单点登录本平台。</li>
+</ul>
+<h4>（二）应用授权新增/编辑（P42Form）</h4>
+<ul>
+<li>内容区域为铺满容器的白色卡片，按协议类型切换扩展字段；表单字段名称仅展示中文（不展示 provider_code、client_id 等英文标识）。</li>
+<li><strong>基础信息</strong>：接入编码（新增必填且全局唯一、编辑时锁定不可改）、接入名称（必填）、协议类型（OAUTH2/OIDC/SAML/CAS/CUSTOM）、响应格式（JSON/XML/AUTO，默认 AUTO）、机构ID、备注。</li>
+<li><strong>认证与授权</strong>：客户端ID（必填）、客户端密钥（AES 加密存储）、授权地址、获取token地址、token字段名（默认 access_token）、内容类型（默认 application/x-www-form-urlencoded）、token鉴权方式（client_secret_post / client_secret_basic）、授权范围、state有效期（默认 600）、重定向地址、回调路径、登出地址。</li>
+<li><strong>用户信息</strong>：获取用户信息地址、获取用户信息需传客户端ID（0否/1是）、用户唯一标识字段（默认 sub）、平台账号字段、用户映射模式（1仅绑定已有/2自动创建/3首次引导绑定）、扩展配置（JSON）。</li>
+<li><strong>协议扩展</strong>（按协议类型显示）：CAS → 票据参数名（默认 ticket）、票据校验地址；OIDC → JWKS地址；CUSTOM → 自定义处理器。</li>
+<li><strong>不再维护的字段</strong>：状态、排序（记录默认启用，启用/停用由列表操作列切换）。</li>
+<li><strong>SSO 授权目标应用（t_auth_third_provider_app）</strong>：表单「授权目标应用」通过「选择应用」按钮打开弹框（展示平台全部应用：应用ID/应用名称/分类/厂商，支持按应用名称/应用ID 搜索与分页多选，右侧已选面板可逐项 × 移除），确认后自动写入授权目标应用（自动带入应用编码/应用名称/平台业务appId）。</li>
+<li><strong>提交校验</strong>：接入名称、客户端ID 必填；新增时接入编码必填且全局唯一；各 URL 字段（授权地址 / 获取token地址 / 获取用户信息地址 / 票据校验地址 / JWKS地址 / 登出地址 / 重定向地址 / 回调路径）若填写需以 http:// 或 https:// 开头；授权目标应用通过「选择应用」弹框写入（无需手填字段）；保存写回列表并跳回，返回不保存；编辑按 id 覆盖原记录。</li>
+</ul>
+<h4>（三）验收标准（AC-APP）</h4>
+<ul>
+<li>AC-APP-01：列表查询支持接入名称、接入编码、协议类型、状态筛选；列表含接入编码/接入名称/协议类型（标签）/响应格式/状态（启用/停用 标签）/创建时间/更新时间。</li>
+<li>AC-APP-02：列表「新增接入」跳转新界面 P42Form；基础信息（接入编码[新增必填且唯一、编辑锁定]、接入名称[必填]、协议类型、响应格式、机构ID、备注）、认证与授权、用户信息字段按上述（二）展示；表单不展示状态与排序字段。</li>
+<li>AC-APP-03：协议类型切换扩展字段：CAS 额外展示票据参数名（默认 ticket）与票据校验地址；OIDC 额外展示 JWKS地址；CUSTOM 额外展示自定义处理器；全部字段名称仅展示中文。</li>
+<li>AC-APP-04：表单「授权目标应用」提供「选择应用」按钮，点击打开弹框（平台全部应用，支持按应用名称/应用ID 搜索、分页多选，右侧已选面板可移除），确认后写入 SSO 授权目标应用（t_auth_third_provider_app，自动带入应用编码/应用名称/平台业务appId）。</li>
+<li>AC-APP-05：列表「编辑」打开新界面 P42Form 并回填该接入全部字段（含授权应用子表），保存后覆盖原记录；「启用/停用」二次确认，停用后该接入方不可单点登录本平台。</li>
+</ul>
+<h3>（十一-G）数据变更管理（桂教通超管，P43/P43Form/P44/P45）</h3>
+<p>数据变更管理为桂教通超管一级菜单，包含数据变更事件管理（P43/P43Form）、数据变更记录（P44）、数据变更推送记录（P45）。对应菜单：桂教通超管后台 → 数据变更管理。</p>
+<h4>（一）数据变更事件管理（P43/P43Form）</h4>
+<ul>
+<li><strong>查询条件</strong>：变更类型（新增/修改/删除），含「查询」「重置」。</li>
+<li><strong>列表列</strong>：序号、变更类型（标签）、关联API接口（多个以顿号拼接）、备注、创建时间、更新时间、操作（编辑、删除）。</li>
+<li><strong>工具栏</strong>：「新增」跳转新界面 P43Form。</li>
+<li><strong>操作列</strong>：「编辑」跳转 P43Form 并按 id 回填；「删除」二次确认（「确定删除该数据变更事件？删除后不可恢复」）后移除记录。</li>
+<li><strong>新增/编辑页（P43Form）字段</strong>：</li>
+<li>变更类型：下拉选择，必填，枚举：新增、修改、删除。</li>
+<li>API接口：必填，点击「选择接口」打开弹窗多选；弹窗展示接口名称、请求路径、数据敏感等级，支持按接口名称搜索与分页；已选接口以标签展示，可逐个移除；未选择时保存提示「请选择关联API接口」。</li>
+<li>备注：非必填，多行文本框，最多 500 字符，显示字数统计。</li>
+<li><strong>保存</strong>：写回列表并跳回；「返回」不保存直接跳回。</li>
+</ul>
+<h4>（二）数据变更记录（P44）</h4>
+<ul>
+<li>只读台账，对应表 <code>t_record_datachange_event</code>，不提供新增/编辑/删除。</li>
+<li><strong>查询条件</strong>：事件ID、应用ID、机构ID、变更类型、状态，含「查询」「重置」。</li>
+<li><strong>列表列</strong>：序号、事件ID、应用ID、机构ID、事件类型、变更类型、业务数据ID、变更时间戳、状态（PENDING/PROCESSING/SUCCESS/PARTIAL_FAIL/FAIL）、MQ消息ID、链路ID、开始处理时间、结束处理时间、创建时间、更新时间、操作（查看）。</li>
+<li><strong>查看</strong>：弹窗以只读表单（form-item）方式展示上述全部字段（含 MQ消息ID、链路ID、开始/结束处理时间等）。</li>
+</ul>
+<h4>（三）数据变更推送记录（P45）</h4>
+<ul>
+<li>只读台账，对应表 <code>t_record_datachange_notice</code>，不提供新增/编辑/删除。</li>
+<li><strong>查询条件</strong>：事件ID、通知对象名称、状态（PENDING/SUCCESS/FAILED），含「查询」「重置」。</li>
+<li><strong>列表列</strong>：序号、事件ID、主体类型（应用/客户端）、通知对象ID、通知对象名称、回调地址、推送数据类型、状态、已尝试次数、最后错误、最后发送时间、创建时间、操作（查看）。</li>
+<li><strong>查看</strong>：弹窗以只读表单（form-item）方式展示全部字段，含推送数据（明文）、实际请求地址（含签名参数）、请求体（密文）、请求摘要、响应摘要、更新时间。</li>
+</ul>
+<h4>（四）验收标准（AC-DCM）</h4>
+<ul>
+<li>AC-DCM-01：桂教通超管侧栏出现一级菜单「数据变更管理」，二级菜单为数据变更事件管理、数据变更记录、数据变更推送记录，点击分别进入 P43、P44、P45。</li>
+<li>AC-DCM-02：P43 新增/编辑页变更类型为下拉（新增/修改/删除）且必填，未选择保存时提示「请选择变更类型」。</li>
+<li>AC-DCM-03：P43 新增/编辑页 API接口 必填，点击「选择接口」弹出接口选择弹窗（可搜索、可分页、可多选），确认后已选接口以标签展示并可逐个移除；未选择保存时提示「请选择关联API接口」。</li>
+<li>AC-DCM-04：P43 备注为非必填多行文本框，最多 500 字符，超出不可输入并显示字数统计。</li>
+<li>AC-DCM-05：P43 列表按变更类型可筛选；编辑回填原值；删除需二次确认，确认后记录移除且列表实时刷新。</li>
+<li>AC-DCM-06：P44 按表 <code>t_record_datachange_event</code> 展示字段，支持事件ID/应用ID/机构ID/变更类型/状态查询，「查看」弹窗以只读表单（form-item）方式展示全部字段；页面无新增/编辑/删除入口。</li>
+<li>AC-DCM-07：P45 按表 <code>t_record_datachange_notice</code> 展示字段，主体类型展示为应用/客户端，支持事件ID/通知对象名称/状态查询，「查看」弹窗以只读表单（form-item）方式展示推送明文、请求地址、密文请求体与请求/响应摘要；页面无新增/编辑/删除入口。</li>
 </ul>
 <h3>（十二）组织同步审批（P41）</h3>
 <ul>
