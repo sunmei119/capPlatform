@@ -8408,16 +8408,28 @@ app.component('P41', {
 
 /* =====================================================================
  * 数据变更管理（桂教通超管）演示数据
- * P43 数据变更事件管理：变更类型 + 关联 API 接口 + 备注
+ * P43 数据变更事件管理：变更事件类型 + 变更类型 + 关联 API 接口 + 备注
  * P44 数据变更记录：表 t_record_datachange_event
  * P45 数据变更推送记录：表 t_record_datachange_notice
  * ===================================================================== */
 const DC_CHANGE_TYPES = ['新增', '修改', '删除'];
 
+// 变更事件类型字典（模拟后端接口 /datachange/event-type/list 返回）
+function mockListDcEventTypes() {
+  return Promise.resolve([
+    { code: 'STUDENT', name: '学生信息' },
+    { code: 'TEACHER', name: '教师信息' },
+    { code: 'COURSE', name: '课程信息' },
+    { code: 'SCORE', name: '成绩信息' },
+    { code: 'ORG', name: '组织架构' },
+    { code: 'CLASS_SCHEDULE', name: '排课信息' },
+  ]);
+}
+
 const DC_EVENTS = [
-  { id: 1, changeType: '新增', apis: [{ id: 1, name: '学生信息查询接口' }, { id: 2, name: '课程同步接口' }], remark: '学生信息新增后同步通知已授权应用', createTime: '2026-09-01 10:30', updateTime: '2026-09-01 10:30' },
-  { id: 2, changeType: '修改', apis: [{ id: 1, name: '学生信息查询接口' }], remark: '学生信息变更后通知相关应用更新', createTime: '2026-09-02 14:20', updateTime: '2026-09-05 09:15' },
-  { id: 3, changeType: '删除', apis: [{ id: 3, name: '成绩上报接口' }, { id: 5, name: '教学计划接口' }], remark: '', createTime: '2026-09-10 08:50', updateTime: '2026-09-10 08:50' },
+  { id: 1, eventType: '学生信息', changeType: '新增', apis: [{ id: 1, name: '学生信息查询接口' }, { id: 2, name: '课程同步接口' }], remark: '学生信息新增后同步通知已授权应用', createTime: '2026-09-01 10:30', updateTime: '2026-09-01 10:30' },
+  { id: 2, eventType: '课程信息', changeType: '修改', apis: [{ id: 1, name: '学生信息查询接口' }], remark: '学生信息变更后通知相关应用更新', createTime: '2026-09-02 14:20', updateTime: '2026-09-05 09:15' },
+  { id: 3, eventType: '成绩信息', changeType: '删除', apis: [{ id: 3, name: '成绩上报接口' }, { id: 5, name: '教学计划接口' }], remark: '', createTime: '2026-09-10 08:50', updateTime: '2026-09-10 08:50' },
 ];
 
 const DC_RECORDS = [
@@ -8437,7 +8449,7 @@ const DC_NOTICES = [
 
 /* =====================================================================
  * P43 数据变更事件管理（桂教通超管·数据变更管理）
- * 记录变更操作对应的所有接口：变更类型 + 关联 API 接口（可多选）+ 备注
+ * 记录变更操作对应的所有接口：变更事件类型（数据来源后端接口字典）+ 变更类型 + 关联 API 接口（可多选）+ 备注
  * ===================================================================== */
 app.component('P43', {
   data() {
@@ -8445,16 +8457,20 @@ app.component('P43', {
       filteredPage: 1, filteredSize: 10,
       rows: [...DC_EVENTS],
       changeTypes: DC_CHANGE_TYPES,
-      q: { changeType: '' },
+      eventTypes: [],
+      q: { eventType: '', changeType: '' },
     };
   },
   computed: {
     filtered() {
-      return this.rows.filter(r => (!this.q.changeType || r.changeType === this.q.changeType));
+      return this.rows.filter(r =>
+        (!this.q.eventType || r.eventType === this.q.eventType) &&
+        (!this.q.changeType || r.changeType === this.q.changeType));
     },
   },
+  created() { mockListDcEventTypes().then(list => { this.eventTypes = list; }); },
   methods: {
-    resetQ() { this.q = { changeType: '' }; },
+    resetQ() { this.q = { eventType: '', changeType: '' }; },
     openAdd() { this.$root.go('P43Form', { from: 'P43' }); },
     openEdit(row) { this.$root.go('P43Form', { id: row.id, from: 'P43' }); },
     apiNames(row) { return (row.apis || []).map(a => a.name).join('、'); },
@@ -8470,6 +8486,10 @@ app.component('P43', {
   },
   template: `<div>
     <div class="toolbar">
+      <span class="q-label">变更事件类型</span>
+      <el-select v-model="q.eventType" placeholder="请选择" clearable style="width:130px">
+        <el-option v-for="t in eventTypes" :key="t.code" :label="t.name" :value="t.name"></el-option>
+      </el-select>
       <span class="q-label">变更类型</span>
       <el-select v-model="q.changeType" placeholder="请选择" clearable style="width:120px">
         <el-option v-for="t in changeTypes" :key="t" :label="t" :value="t"></el-option>
@@ -8482,6 +8502,7 @@ app.component('P43', {
     <div class="card">
       <el-table :data="pageSlice(filtered,'filtered')" border stripe>
         <el-table-column type="index" label="序号" width="60"></el-table-column>
+        <el-table-column prop="eventType" label="变更事件类型" width="120" align="center"></el-table-column>
         <el-table-column prop="changeType" label="变更类型" width="110" align="center">
           <template #default="{row}"><el-tag size="small">{{ row.changeType }}</el-tag></template>
         </el-table-column>
@@ -8510,14 +8531,15 @@ app.component('P43Form', {
   props: ['ctx'],
   data() {
     const src = this.ctx && this.ctx.id ? DC_EVENTS.find(r => r.id === this.ctx.id) : null;
-    const form = { id: null, changeType: '', apis: [], remark: '' };
+    const form = { id: null, eventType: '', changeType: '', apis: [], remark: '' };
     if (src) {
       form.id = src.id;
+      form.eventType = src.eventType || '';
       form.changeType = src.changeType;
       form.apis = (src.apis || []).map(a => ({ id: a.id, name: a.name }));
       form.remark = src.remark || '';
     }
-    return { form, changeTypes: DC_CHANGE_TYPES, mApi: false, apiQuery: { name: '' }, apiChosen: [], apiPage: 1, apiPageSize: 10 };
+    return { form, changeTypes: DC_CHANGE_TYPES, eventTypes: [], mApi: false, apiQuery: { name: '' }, apiChosen: [], apiPage: 1, apiPageSize: 10 };
   },
   computed: {
     isEdit() { return !!(this.ctx && this.ctx.id); },
@@ -8529,6 +8551,7 @@ app.component('P43Form', {
       return this.filteredApis.slice(start, start + this.apiPageSize);
     },
   },
+  created() { mockListDcEventTypes().then(list => { this.eventTypes = list; }); },
   methods: {
     backTo() { return this.ctx && this.ctx.from ? this.ctx.from : 'P43'; },
     goBack() { this.$root.go(this.backTo()); },
@@ -8554,16 +8577,17 @@ app.component('P43Form', {
     removeApi(id) { const i = this.form.apis.findIndex(a => a.id === id); if (i >= 0) this.form.apis.splice(i, 1); },
     save() {
       const f = this.form;
+      if (!f.eventType) return ElMessage.warning('请选择变更事件类型');
       if (!f.changeType) return ElMessage.warning('请选择变更类型');
       if (!f.apis.length) return ElMessage.warning('请选择关联API接口');
       const now = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
       if (f.id) {
         const rec = DC_EVENTS.find(r => r.id === f.id);
-        if (rec) { rec.changeType = f.changeType; rec.apis = f.apis.map(a => ({ ...a })); rec.remark = f.remark; rec.updateTime = now; }
+        if (rec) { rec.eventType = f.eventType; rec.changeType = f.changeType; rec.apis = f.apis.map(a => ({ ...a })); rec.remark = f.remark; rec.updateTime = now; }
         ElMessage.success('编辑成功');
       } else {
         const newId = DC_EVENTS.length ? Math.max(...DC_EVENTS.map(r => r.id)) + 1 : 1;
-        DC_EVENTS.unshift({ id: newId, changeType: f.changeType, apis: f.apis.map(a => ({ ...a })), remark: f.remark, createTime: now, updateTime: now });
+        DC_EVENTS.unshift({ id: newId, eventType: f.eventType, changeType: f.changeType, apis: f.apis.map(a => ({ ...a })), remark: f.remark, createTime: now, updateTime: now });
         ElMessage.success('新增成功');
       }
       this.$root.go(this.backTo());
@@ -8573,6 +8597,11 @@ app.component('P43Form', {
     <div class="card" style="max-width:760px">
       <div style="font-weight:600;margin-bottom:14px">{{ isEdit ? '编辑数据变更事件' : '新增数据变更事件' }}</div>
       <el-form label-width="110px">
+        <el-form-item label="变更事件类型" required>
+          <el-select v-model="form.eventType" placeholder="请选择变更事件类型" style="width:240px">
+            <el-option v-for="t in eventTypes" :key="t.code" :label="t.name" :value="t.name"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="变更类型" required>
           <el-select v-model="form.changeType" placeholder="请选择变更类型" style="width:240px">
             <el-option v-for="t in changeTypes" :key="t" :label="t" :value="t"></el-option>
